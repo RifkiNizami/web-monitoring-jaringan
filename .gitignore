@@ -19,5 +19,10 @@ yarn-error.log
 /.fleet
 /.idea
 /.nova
-/.vscode
 /.zed
+
+# PRD & Dokumen Perencanaan
+prd.md
+desain.md
+*.docx
+PRD_Sistem_IT_Solution_dan_Network_Monitoring.docx

@@ -1,12 +1,100 @@
-@import 'tailwindcss';
-
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source "../**/*.blade.php";
-@source "../**/*.js";
-@source "../**/*.vue";
+@import "tailwindcss";
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+
+    --color-netfly-blue: #0066cc;
+    --color-netfly-blue-dark: #0052a3;
+    --color-netfly-green: #62b300;
+    --color-netfly-green-dark: #4f9100;
+    --color-netfly-red: #e50012;
+    --color-netfly-gray: #475569;
+    --color-netfly-light: #f8fafc;
+    --color-netfly-border: #e2e8f0;
+}
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+        /* Mencegah horizontal scrolling pada mobile */
+        overflow-x: hidden;
+        width: 100%;
+        position: relative;
+    }
+    
+    /* Custom Scrollbar untuk kesan premium */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+        background: #0f172a; /* Tailwind slate-950 */
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #334155; /* Tailwind slate-700 */
+        border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #3b82f6; /* Tailwind blue-500 */
+    }
+}
+
+@layer utilities {
+    /* Animasi Floating Card di Hero Section */
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-15px); }
+    }
+    .animate-float {
+        animation: float 6s ease-in-out infinite;
+    }
+
+    /* Base class untuk Scroll Reveal (Intersection Observer) */
+    .reveal {
+        opacity: 0;
+        transform: translateY(40px);
+        transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    /* Variasi arah animasi */
+    .reveal-left {
+        opacity: 0;
+        transform: translateX(-40px);
+        transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    .reveal-right {
+        opacity: 0;
+        transform: translateX(40px);
+        transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Class yang ditambahkan oleh JS saat elemen masuk viewport */
+    .is-visible {
+        opacity: 1;
+        transform: translate(0);
+    }
+
+    /* Utility untuk delay animasi pada grid (contoh: Feature Cards) */
+    .delay-100 { transition-delay: 100ms; }
+    .delay-200 { transition-delay: 200ms; }
+    .delay-300 { transition-delay: 300ms; }
+    .delay-400 { transition-delay: 400ms; }
+
+    /* Custom Spring Transition & Grid Background */
+    .ease-spring {
+        transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    .bg-tech-grid-light {
+        background-image: 
+            linear-gradient(to right, rgba(226, 232, 240, 0.6) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(226, 232, 240, 0.6) 1px, transparent 1px);
+        background-size: 36px 36px;
+    }
 }
