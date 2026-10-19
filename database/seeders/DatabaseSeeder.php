@@ -25,5 +25,17 @@ class DatabaseSeeder extends Seeder
                 'phone' => '0811-9988-7766',
             ]
         );
+
+        User::firstOrCreate(
+            ['email' => 'admin@gmail.com'],
+            [
+                'name' => 'Administrator',
+                'username' => 'admin_gmail',
+                'password' => Hash::make('password123'),
+                'role' => 'admin',
+                'is_active' => true,
+                'phone' => '0812-3456-7890',
+            ]
+        );
     }
 }
