@@ -113,6 +113,6 @@ class DashboardController extends Controller
             ],
         ];
 
-        return view('user', compact('metrics', 'alerts', 'tickets'));
+        return view('admin', compact('metrics', 'alerts', 'tickets'));
     }
 }

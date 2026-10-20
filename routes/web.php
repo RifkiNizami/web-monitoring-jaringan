@@ -3,6 +3,8 @@
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\TicketController;
+use App\Http\Controllers\DeviceController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -19,6 +21,13 @@ Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::any('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Dashboard User (mengarah ke file user.blade.php)
+// Dashboard Admin (mengarah ke file admin.blade.php)
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-Route::get('/user', [DashboardController::class, 'index'])->name('user');
+Route::get('/admin', [DashboardController::class, 'index'])->name('admin');
+Route::redirect('/user', '/admin');
+
+// Layanan Pelanggan & Penanganan Insiden (Antrean Tiket Komplain)
+Route::get('/tickets', [TicketController::class, 'index'])->name('tickets.index');
+
+// Inventaris Perangkat Jaringan (Network Devices Management)
+Route::get('/devices', [DeviceController::class, 'index'])->name('devices.index');
