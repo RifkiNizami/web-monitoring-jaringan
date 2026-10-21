@@ -80,8 +80,8 @@ Sistem terdiri dari 3 pilar platform utama:
 - **Backend Framework:** Laravel 12.x (PHP 8.2+)
 - **Frontend Web:** Blade Templating, Tailwind CSS v4, JavaScript (ES Modules)
 - **Asset Bundler:** Vite 6.x
-- **Autentikasi & API:** Laravel Sanctum (Bearer Token)
-- **Database:** MySQL / PostgreSQL / SQLite
+- **API:** Restful Api
+- **Database:** MySQL
 - **Font & Tipografi:** Plus Jakarta Sans & JetBrains Mono
 
 ---
