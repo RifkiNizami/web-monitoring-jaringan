@@ -92,8 +92,8 @@
                     LAPORAN & AUDIT
                 </p>
                 <nav class="space-y-1">
-                    <a href="#report-generator" class="flex items-center gap-3 px-3 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors group">
-                        <svg class="w-4 h-4 text-slate-400 group-hover:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <a href="{{ route('reports.index') }}" class="flex items-center gap-3 px-3 py-2 text-xs {{ request()->routeIs('reports.*') ? 'font-semibold text-slate-900 bg-slate-100/90' : 'font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50' }} rounded-lg transition-colors group">
+                        <svg class="w-4 h-4 {{ request()->routeIs('reports.*') ? 'text-slate-700' : 'text-slate-400 group-hover:text-slate-600' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                         <span>Report Generator</span>

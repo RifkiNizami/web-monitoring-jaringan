@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\DeviceController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -31,3 +32,7 @@ Route::get('/tickets', [TicketController::class, 'index'])->name('tickets.index'
 
 // Inventaris Perangkat Jaringan (Network Devices Management)
 Route::get('/devices', [DeviceController::class, 'index'])->name('devices.index');
+
+// Laporan Kinerja SLA & Audit (Executive Report Generator & PDF Export)
+Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+Route::get('/reports/export-pdf', [ReportController::class, 'exportPdf'])->name('reports.exportPdf');
