@@ -239,8 +239,8 @@
                                     <th scope="col" class="py-3 px-5 whitespace-nowrap">ID & PRIORITAS</th>
                                     <th scope="col" class="py-3 px-5 whitespace-nowrap">KLIEN / PROJECT</th>
                                     <th scope="col" class="py-3 px-5 whitespace-nowrap">SUBJEK / MASALAH</th>
-                                    <th scope="col" class="py-3 px-5 whitespace-nowrap min-w-[190px]">TEKNISI DITUGASKAN (ASSIGN)</th>
-                                    <th scope="col" class="py-3 px-5 whitespace-nowrap min-w-[210px]">STATUS PENANGANAN (WORKFLOW)</th>
+                                    <th scope="col" class="py-3 px-5 whitespace-nowrap min-w-47.5">TEKNISI DITUGASKAN (ASSIGN)</th>
+                                    <th scope="col" class="py-3 px-5 whitespace-nowrap min-w-52.5">STATUS PENANGANAN (WORKFLOW)</th>
                                     <th scope="col" class="py-3 px-5 whitespace-nowrap">WAKTU LAPOR</th>
                                     <th scope="col" class="py-3 px-5 text-center whitespace-nowrap">AKSI</th>
                                 </tr>
@@ -431,7 +431,7 @@
     </div>
 
     <!-- MODAL: BUAT TIKET BARU -->
-    <div id="createTicketModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div id="createTicketModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs items-center justify-center p-4 hidden [&:not(.hidden)]:flex">
         <div class="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                 <div>
@@ -494,7 +494,7 @@
     </div>
 
     <!-- MODAL: LIHAT LAPORAN SLA -->
-    <div id="slaModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div id="slaModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs items-center justify-center p-4 hidden [&:not(.hidden)]:flex">
         <div class="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                 <div>

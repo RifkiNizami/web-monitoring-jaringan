@@ -511,11 +511,11 @@
     <!-- MODAL 1: FORM BUAT AKUN USER BARU UNTUK PERWAKILAN CUSTOMER                -->
     <!-- ALUR: 1. Pilih Customer -> 2. Buat Username -> 3. Tetapkan Password Awal   -->
     <!-- ========================================================================= -->
-    <div id="createAccountModal" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div id="createAccountModal" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs items-center justify-center p-4 hidden [&:not(.hidden)]:flex">
         <div class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-2xl w-full overflow-hidden transform transition-all animate-in fade-in zoom-in duration-200 my-8">
             
             <!-- Modal Header with Steps Indicator -->
-            <div class="px-6 py-5 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
+            <div class="px-6 py-5 border-b border-slate-100 bg-linear-to-r from-slate-50 to-white">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-2.5">
                         <div class="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-sm">
@@ -804,7 +804,7 @@
     <!-- ========================================================================= -->
     <!-- MODAL 2: FITUR RESET PASSWORD AKUN CUSTOMER                                -->
     <!-- ========================================================================= -->
-    <div id="resetPasswordModal" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div id="resetPasswordModal" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs items-center justify-center p-4 hidden [&:not(.hidden)]:flex">
         <div class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-lg w-full overflow-hidden transform transition-all animate-in fade-in zoom-in duration-200">
             
             <!-- Modal Header -->
@@ -854,7 +854,7 @@
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="text-slate-400 font-medium">Email PIC:</span>
-                            <span class="text-slate-600 truncate max-w-[200px]" id="resetModalEmail">pic@mandiri.co.id</span>
+                            <span class="text-slate-600 truncate max-w-50" id="resetModalEmail">pic@mandiri.co.id</span>
                         </div>
                     </div>
 
@@ -944,7 +944,7 @@
     <!-- ========================================================================= -->
     <!-- MODAL 3: DETAIL KREDENSIAL AKUN                                            -->
     <!-- ========================================================================= -->
-    <div id="detailAccountModal" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div id="detailAccountModal" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs items-center justify-center p-4 hidden [&:not(.hidden)]:flex">
         <div class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-md w-full overflow-hidden transform transition-all animate-in fade-in zoom-in duration-200">
             <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
                 <h3 class="text-sm font-bold text-slate-900">
@@ -993,7 +993,7 @@
     <!-- ========================================================================= -->
     <!-- MODAL 4: KONFIRMASI HAPUS AKUN                                             -->
     <!-- ========================================================================= -->
-    <div id="deleteAccountModal" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div id="deleteAccountModal" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs items-center justify-center p-4 hidden [&:not(.hidden)]:flex">
         <div class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-sm w-full overflow-hidden transform transition-all animate-in fade-in zoom-in duration-200">
             <div class="p-6 text-center space-y-4">
                 <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">

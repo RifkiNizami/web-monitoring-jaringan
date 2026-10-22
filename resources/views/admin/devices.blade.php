@@ -349,7 +349,7 @@
     <!-- ========================================== -->
     <!-- MODAL 1: TAMBAH INVENTARIS PERANGKAT BARU  -->
     <!-- ========================================== -->
-    <div id="createDeviceModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div id="createDeviceModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs items-center justify-center p-4 hidden [&:not(.hidden)]:flex">
         <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             
             <!-- Modal Header -->
@@ -543,7 +543,7 @@
     <!-- ========================================== -->
     <!-- MODAL 2: EDIT DATA PERANGKAT               -->
     <!-- ========================================== -->
-    <div id="editDeviceModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div id="editDeviceModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs items-center justify-center p-4 hidden [&:not(.hidden)]:flex">
         <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             
             <!-- Modal Header -->
@@ -737,7 +737,7 @@
     <!-- ========================================== -->
     <!-- MODAL 3: HAPUS PERANGKAT JARINGAN          -->
     <!-- ========================================== -->
-    <div id="deleteDeviceModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div id="deleteDeviceModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs items-center justify-center p-4 hidden [&:not(.hidden)]:flex">
         <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             
             <!-- Modal Header (Rose trash badge, Title, Subtitle, Close X) -->

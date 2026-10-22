@@ -266,7 +266,7 @@
                                                 <div class="space-y-0.5">
                                                     <p class="font-semibold text-slate-800 text-xs">{{ $c['pic_name'] }}</p>
                                                     <p class="text-[11px] text-slate-500 font-mono">{{ $c['phone'] }}</p>
-                                                    <a href="mailto:{{ $c['email'] }}" class="text-[11px] text-blue-600 hover:text-blue-800 hover:underline block truncate max-w-[200px]">
+                                                    <a href="mailto:{{ $c['email'] }}" class="text-[11px] text-blue-600 hover:text-blue-800 hover:underline block truncate max-w-50">
                                                         {{ $c['email'] }}
                                                     </a>
                                                 </div>
@@ -523,7 +523,7 @@
     <!-- ========================================================================= -->
     <!-- MODAL 1: TAMBAH MITRA CUSTOMER BARU (FIGMA MODAL 1)                       -->
     <!-- ========================================================================= -->
-    <div id="modalCreateCustomer" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div id="modalCreateCustomer" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs items-center justify-center p-4 hidden [&:not(.hidden)]:flex">
         <div class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-lg w-full overflow-hidden transform transition-all animate-in fade-in zoom-in duration-200 my-8">
             <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
                 <h3 class="text-sm font-bold text-slate-900">Tambah Mitra Customer Baru</h3>
@@ -665,7 +665,7 @@
     <!-- ========================================================================= -->
     <!-- MODAL 2: EDIT DATA MITRA CUSTOMER (FIGMA MODAL 2)                         -->
     <!-- ========================================================================= -->
-    <div id="modalEditCustomer" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div id="modalEditCustomer" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs items-center justify-center p-4 hidden [&:not(.hidden)]:flex">
         <div class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-lg w-full overflow-hidden transform transition-all animate-in fade-in zoom-in duration-200 my-8">
             <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
                 <h3 class="text-sm font-bold text-slate-900">Edit Data Mitra Customer</h3>
@@ -802,7 +802,7 @@
     <!-- ========================================================================= -->
     <!-- MODAL 3: TAMBAH PROJECT BARU (FIGMA MODAL 3)                              -->
     <!-- ========================================================================= -->
-    <div id="modalCreateProject" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div id="modalCreateProject" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs items-center justify-center p-4 hidden [&:not(.hidden)]:flex">
         <div class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-lg w-full overflow-hidden transform transition-all animate-in fade-in zoom-in duration-200 my-8">
             <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
                 <h3 class="text-sm font-bold text-slate-900">Tambah Project Baru</h3>
@@ -966,7 +966,7 @@
     <!-- ========================================================================= -->
     <!-- MODAL 4: EDIT DATA PROJECT (FIGMA MODAL 4)                                -->
     <!-- ========================================================================= -->
-    <div id="modalEditProject" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div id="modalEditProject" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs items-center justify-center p-4 hidden [&:not(.hidden)]:flex">
         <div class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-lg w-full overflow-hidden transform transition-all animate-in fade-in zoom-in duration-200 my-8">
             <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
                 <h3 class="text-sm font-bold text-slate-900">Edit Data Project</h3>
@@ -1126,7 +1126,7 @@
     <!-- ========================================================================= -->
     <!-- MODAL 5: HAPUS CUSTOMER (FIGMA MODAL 5)                                   -->
     <!-- ========================================================================= -->
-    <div id="modalDeleteCustomer" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div id="modalDeleteCustomer" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs items-center justify-center p-4 hidden [&:not(.hidden)]:flex">
         <div class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-sm w-full overflow-hidden transform transition-all animate-in fade-in zoom-in duration-200">
             <div class="p-6 text-center space-y-4">
                 <div class="w-12 h-12 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center mx-auto border border-rose-100">
@@ -1170,7 +1170,7 @@
     <!-- ========================================================================= -->
     <!-- MODAL 6: HAPUS PROJECT (FIGMA MODAL 6)                                    -->
     <!-- ========================================================================= -->
-    <div id="modalDeleteProject" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div id="modalDeleteProject" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs items-center justify-center p-4 hidden [&:not(.hidden)]:flex">
         <div class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-sm w-full overflow-hidden transform transition-all animate-in fade-in zoom-in duration-200">
             <div class="p-6 text-center space-y-4">
                 <div class="w-12 h-12 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center mx-auto border border-rose-100">
