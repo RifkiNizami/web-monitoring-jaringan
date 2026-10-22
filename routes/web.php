@@ -8,6 +8,7 @@ use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\CustomerProjectController;
+use App\Http\Controllers\MonitoringController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -48,6 +49,11 @@ Route::get('/tickets', [TicketController::class, 'index'])->name('tickets.index'
 
 // Inventaris Perangkat Jaringan (Network Devices Management)
 Route::get('/devices', [DeviceController::class, 'index'])->name('devices.index');
+
+// Telemetri Jaringan & Live Alert (NOC Monitoring)
+Route::get('/monitoring', [MonitoringController::class, 'index'])->name('monitoring.index');
+Route::post('/monitoring/alerts/{id}/resolve', [MonitoringController::class, 'resolveAlert'])->name('monitoring.alerts.resolve');
+Route::post('/monitoring/devices/{id}/ping', [MonitoringController::class, 'pollDevice'])->name('monitoring.devices.ping');
 
 // Laporan Kinerja SLA & Audit (Executive Report Generator & PDF Export)
 Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');

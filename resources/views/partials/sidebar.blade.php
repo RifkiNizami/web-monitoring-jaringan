@@ -58,9 +58,9 @@
                     </a>
 
                     <!-- Monitoring & Alert -->
-                    <a href="#monitoring-alert" class="flex items-center justify-between px-3 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors group">
+                    <a href="{{ route('monitoring.index') }}" class="flex items-center justify-between px-3 py-2 text-xs {{ request()->routeIs('monitoring.*') ? 'font-semibold text-slate-900 bg-slate-100/90' : 'font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50' }} rounded-lg transition-colors group">
                         <div class="flex items-center gap-3">
-                            <svg class="w-4 h-4 text-slate-400 group-hover:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg class="w-4 h-4 {{ request()->routeIs('monitoring.*') ? 'text-slate-700' : 'text-slate-400 group-hover:text-slate-600' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
                             <span>Monitoring & Alert</span>

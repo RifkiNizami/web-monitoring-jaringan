@@ -1,4 +1,4 @@
-<section class="py-24 sm:py-32 border-b border-slate-200/80 bg-white">
+<section id="arsitektur" class="py-24 sm:py-32 border-b border-slate-200/80 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-14">
         
         <div class="max-w-3xl space-y-3">

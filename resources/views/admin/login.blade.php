@@ -163,21 +163,5 @@
 
     </div>
 
-    <!-- Password visibility toggle script -->
-    <script>
-        const toggleBtn = document.getElementById('togglePassword');
-        const passwordInput = document.getElementById('password');
-        const eyeIcon = document.getElementById('eyeIcon');
-        const eyeOffIcon = document.getElementById('eyeOffIcon');
-
-        if (toggleBtn && passwordInput) {
-            toggleBtn.addEventListener('click', function() {
-                const isPassword = passwordInput.getAttribute('type') === 'password';
-                passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
-                eyeIcon.classList.toggle('hidden', isPassword);
-                eyeOffIcon.classList.toggle('hidden', !isPassword);
-            });
-        }
-    </script>
 </body>
 </html>

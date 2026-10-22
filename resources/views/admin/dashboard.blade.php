@@ -559,41 +559,5 @@
 
     </div>
 
-    <!-- Live Digital Clock & Mobile Sidebar Script -->
-    <script>
-        // Update Live Clock WIB
-        function updateClock() {
-            const clockEl = document.getElementById('liveClock');
-            if (!clockEl) return;
-            const now = new Date();
-            // WIB format HH.mm.ss WIB
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            clockEl.textContent = `${hours}.${minutes}.${seconds} WIB`;
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-
-        // Mobile Sidebar Controls
-        const sidebar = document.getElementById('sidebar');
-        const openSidebarBtn = document.getElementById('openSidebar');
-        const closeSidebarBtn = document.getElementById('closeSidebar');
-        const sidebarBackdrop = document.getElementById('sidebarBackdrop');
-
-        function toggleMobileSidebar(open) {
-            if (open) {
-                sidebar.classList.remove('-translate-x-full');
-                sidebarBackdrop.classList.remove('hidden');
-            } else {
-                sidebar.classList.add('-translate-x-full');
-                sidebarBackdrop.classList.add('hidden');
-            }
-        }
-
-        if (openSidebarBtn) openSidebarBtn.addEventListener('click', () => toggleMobileSidebar(true));
-        if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', () => toggleMobileSidebar(false));
-        if (sidebarBackdrop) sidebarBackdrop.addEventListener('click', () => toggleMobileSidebar(false));
-    </script>
 </body>
 </html>

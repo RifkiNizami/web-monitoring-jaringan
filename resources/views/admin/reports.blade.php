@@ -536,57 +536,5 @@
 
     </div>
 
-    <!-- SCRIPT REALTIME CLOCK & SIDEBAR TOGGLE -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Clock Realtime
-            function updateClock() {
-                const clockEl = document.getElementById('liveClock');
-                if (!clockEl) return;
-                const now = new Date();
-                const hours = String(now.getHours()).padStart(2, '0');
-                const minutes = String(now.getMinutes()).padStart(2, '0');
-                const seconds = String(now.getSeconds()).padStart(2, '0');
-                clockEl.textContent = `${hours}.${minutes}.${seconds} WIB`;
-            }
-            setInterval(updateClock, 1000);
-
-            // Sidebar Drawer Mobile
-            const openBtn = document.getElementById('openSidebar');
-            const closeBtn = document.getElementById('closeSidebar');
-            const sidebar = document.getElementById('sidebar');
-
-            if (openBtn && sidebar) {
-                openBtn.addEventListener('click', () => {
-                    sidebar.classList.remove('-translate-x-full');
-                });
-            }
-            if (closeBtn && sidebar) {
-                closeBtn.addEventListener('click', () => {
-                    sidebar.classList.add('-translate-x-full');
-                });
-            }
-
-            // Loading feedback on Export PDF button to avoid double clicks
-            const exportBtn = document.getElementById('btnExportPdf');
-            if (exportBtn) {
-                exportBtn.addEventListener('click', function () {
-                    const originalHtml = this.innerHTML;
-                    this.classList.add('opacity-75', 'pointer-events-none');
-                    this.innerHTML = `
-                        <svg class="animate-spin -ml-0.5 mr-2 h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                        </svg>
-                        <span>Menyiapkan PDF...</span>
-                    `;
-                    setTimeout(() => {
-                        this.classList.remove('opacity-75', 'pointer-events-none');
-                        this.innerHTML = originalHtml;
-                    }, 3500);
-                });
-            }
-        });
-    </script>
 </body>
 </html>
