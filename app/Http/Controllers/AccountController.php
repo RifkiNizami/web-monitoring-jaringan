@@ -277,7 +277,7 @@ class AccountController extends Controller
             'customers_count' => $totalCustomers,
         ];
 
-        return view('accounts', compact('summary', 'customers', 'accounts'));
+        return view('admin.accounts', compact('summary', 'customers', 'accounts'));
     }
 
     /**

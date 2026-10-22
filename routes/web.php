@@ -10,33 +10,28 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\CustomerProjectController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes - NetFly NMS & Monitoring Portal
-|--------------------------------------------------------------------------
-*/
 
-// Landing page publik (tanpa tombol login sesuai instruksi PRD)
+// Landing page publik (tanpa tombol login sesuai instruksi)
 Route::get('/', [LandingPageController::class, 'index'])->name('home');
 
-// Autentikasi Admin & Petugas NOC
+// Form login
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::any('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Dashboard Admin (Pusat Kendali NOC)
+// Dashboard Admin (mengarah ke file admin/dashboard.blade.php)
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('/admin', [DashboardController::class, 'index'])->name('admin');
 Route::redirect('/user', '/admin');
 
-// Customer & Project Management (Kemitraan B2B & Infrastruktur Jaringan)
+// Customer & Project Management (Kemitraan & Infrastruktur)
 Route::get('/customers', [CustomerProjectController::class, 'index'])->name('customers.index');
 Route::post('/customers', [CustomerProjectController::class, 'storeCustomer'])->name('customers.store');
 Route::match(['post', 'put'], '/customers/{id}', [CustomerProjectController::class, 'updateCustomer'])->name('customers.update');
 Route::delete('/customers/{id}', [CustomerProjectController::class, 'destroyCustomer'])->name('customers.destroy');
 
-// Sub-modul Project (Terhubung ke Controller Kemitraan)
 Route::get('/projects', [CustomerProjectController::class, 'index'])->name('projects.index');
+
 Route::post('/projects', [CustomerProjectController::class, 'storeProject'])->name('projects.store');
 Route::match(['post', 'put'], '/projects/{id}', [CustomerProjectController::class, 'updateProject'])->name('projects.update');
 Route::delete('/projects/{id}', [CustomerProjectController::class, 'destroyProject'])->name('projects.destroy');

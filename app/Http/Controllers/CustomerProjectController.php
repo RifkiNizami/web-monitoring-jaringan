@@ -208,7 +208,7 @@ class CustomerProjectController extends Controller
             $customers[$k]['active_projects'] = $projectCountMap[$c['id']] ?? 0;
         }
 
-        return view('customers', compact('customers', 'projects', 'activeTab'));
+        return view('admin.customers', compact('customers', 'projects', 'activeTab'));
     }
 
     /**

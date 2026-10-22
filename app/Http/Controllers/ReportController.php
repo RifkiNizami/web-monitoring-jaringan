@@ -51,7 +51,7 @@ class ReportController extends Controller
     {
         $reportData = $this->resolveReportData($request);
 
-        return view('reports', $reportData);
+        return view('admin.reports', $reportData);
     }
 
     /**
@@ -61,7 +61,7 @@ class ReportController extends Controller
     {
         $reportData = $this->resolveReportData($request);
 
-        $pdf = Pdf::loadView('reports.pdf', $reportData)
+        $pdf = Pdf::loadView('admin.reports.pdf', $reportData)
             ->setPaper('a4', 'portrait')
             ->setWarnings(false)
             ->setOption([

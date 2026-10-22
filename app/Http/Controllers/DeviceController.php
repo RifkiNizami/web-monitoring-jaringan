@@ -113,6 +113,6 @@ class DeviceController extends Controller
             ],
         ];
 
-        return view('devices', compact('summary', 'deviceTypes', 'statusOptions', 'customers', 'projects', 'devices'));
+        return view('admin.devices', compact('summary', 'deviceTypes', 'statusOptions', 'customers', 'projects', 'devices'));
     }
 }

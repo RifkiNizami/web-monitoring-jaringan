@@ -112,6 +112,6 @@ class TicketController extends Controller
             ],
         ];
 
-        return view('tickets', compact('summary', 'technicians', 'statusOptions', 'tickets'));
+        return view('admin.tickets', compact('summary', 'technicians', 'statusOptions', 'tickets'));
     }
 }
