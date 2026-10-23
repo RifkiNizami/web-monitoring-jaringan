@@ -12,8 +12,6 @@
 
     @include('landing.monitoring')
 
-    @include('landing.workflow')
-
     @include('landing.advantages')
 
     @include('landing.about')

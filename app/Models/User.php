@@ -51,4 +51,12 @@ class User extends Authenticatable
             'is_active' => 'boolean',
         ];
     }
+
+    /**
+     * Relationship with Customer
+     */
+    public function customer(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
 }

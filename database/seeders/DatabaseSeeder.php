@@ -13,7 +13,16 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Admin user
+        // 1. Seed Core Master Data
+        $this->call([
+            CustomerSeeder::class,
+            ProjectSeeder::class,
+            DeviceSeeder::class,
+            TicketSeeder::class,
+            MonitoringAlertSeeder::class,
+        ]);
+
+        // 2. Admin users
         User::firstOrCreate(
             ['email' => 'admin@netfly.id'],
             [

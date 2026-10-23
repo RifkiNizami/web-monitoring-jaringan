@@ -2,16 +2,28 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
 use Tests\TestCase;
 
 class MonitoringAlertTest extends TestCase
 {
+    protected User $adminUser;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->adminUser = User::where('email', 'admin@netfly.id')->first() ?? User::factory()->create([
+            'email' => 'admin@netfly.id',
+            'role' => 'admin',
+        ]);
+    }
+
     /**
      * Memastikan halaman Monitoring & Alert dapat diakses dan menampilkan komponen telemetri.
      */
     public function test_monitoring_page_renders_successfully(): void
     {
-        $response = $this->get('/monitoring');
+        $response = $this->actingAs($this->adminUser)->get('/monitoring');
 
         $response->assertStatus(200);
         $response->assertViewIs('admin.monitoring');
@@ -30,7 +42,7 @@ class MonitoringAlertTest extends TestCase
      */
     public function test_resolve_alert_endpoint_works(): void
     {
-        $response = $this->postJson('/monitoring/alerts/1/resolve', [
+        $response = $this->actingAs($this->adminUser)->postJson('/monitoring/alerts/1/resolve', [
             'resolved' => true,
         ]);
 
@@ -46,7 +58,7 @@ class MonitoringAlertTest extends TestCase
      */
     public function test_device_polling_ping_endpoint_works(): void
     {
-        $response = $this->postJson('/monitoring/devices/1/ping');
+        $response = $this->actingAs($this->adminUser)->postJson('/monitoring/devices/1/ping');
 
         $response->assertStatus(200);
         $response->assertJsonStructure([

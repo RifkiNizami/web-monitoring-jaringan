@@ -1,6 +1,7 @@
 import './bootstrap';
 
 import { initClientsCarousel } from './landing/clients';
+import { initWorkflowScrollytelling } from './landing/workflow';
 import { initAdminCommon } from './admin/common';
 import { initAdminLogin } from './admin/login';
 import { initAdminReports } from './admin/reports';
@@ -14,51 +15,69 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ==========================================
        1. Mobile Navbar Toggle (Landing Page)
     ========================================== */
-    const menuBtn = document.getElementById('menu-btn');
-    const mobileMenu = document.getElementById('mobile-menu');
-    const iconOpen = document.getElementById('icon-open');
-    const iconClose = document.getElementById('icon-close');
-    const mobileLinks = mobileMenu ? mobileMenu.querySelectorAll('a') : [];
+    const drawerBtn = document.getElementById('mobile-drawer-btn') || document.getElementById('menu-btn');
+    const mobileDrawer = document.getElementById('mobile-drawer') || document.getElementById('mobile-menu');
+    const mobileLinks = mobileDrawer ? mobileDrawer.querySelectorAll('a') : [];
 
-    if (menuBtn && mobileMenu) {
-        const toggleMenu = () => {
-            const isHidden = mobileMenu.classList.contains('hidden');
-            mobileMenu.classList.toggle('hidden');
-            if (iconOpen) iconOpen.classList.toggle('hidden');
-            if (iconClose) iconClose.classList.toggle('hidden');
-            menuBtn.setAttribute('aria-expanded', String(isHidden));
+    if (drawerBtn && mobileDrawer) {
+        const toggleDrawer = () => {
+            const isHidden = mobileDrawer.classList.contains('hidden');
+            mobileDrawer.classList.toggle('hidden');
+            drawerBtn.setAttribute('aria-expanded', String(isHidden));
         };
 
-        menuBtn.addEventListener('click', toggleMenu);
+        drawerBtn.addEventListener('click', toggleDrawer);
 
         // Close menu when a link is clicked
         mobileLinks.forEach(link => {
-            link.addEventListener('click', toggleMenu);
+            link.addEventListener('click', () => {
+                if (!mobileDrawer.classList.contains('hidden')) {
+                    toggleDrawer();
+                }
+            });
         });
 
         // Accessibility: Close on Escape key
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && !mobileMenu.classList.contains('hidden')) {
-                toggleMenu();
+            if (e.key === 'Escape' && !mobileDrawer.classList.contains('hidden')) {
+                toggleDrawer();
             }
         });
     }
 
     /* ==========================================
-       2. Sticky Navbar Effect (Landing Page)
+       2. Shrinking Sticky Header Effect (Landing Page)
     ========================================== */
-    const navbar = document.getElementById('navbar');
-    if (navbar) {
-        const handleScroll = () => {
-            if (window.scrollY > 50) {
-                navbar.classList.add('bg-slate-950/95', 'shadow-lg', 'shadow-blue-900/10', 'backdrop-blur-lg');
-                navbar.classList.remove('bg-slate-950/80', 'backdrop-blur-md');
-            } else {
-                navbar.classList.add('bg-slate-950/80', 'backdrop-blur-md');
-                navbar.classList.remove('bg-slate-950/95', 'shadow-lg', 'shadow-blue-900/10', 'backdrop-blur-lg');
+    const headerWrapper = document.getElementById('header-wrapper');
+    if (headerWrapper) {
+        let isShrunk = false;
+        let ticking = false;
+
+        const updateHeaderState = () => {
+            const scrollY = window.scrollY;
+
+            // Gunakan hysteresis (ambang 50px untuk shrink, 20px untuk kembali normal)
+            // agar bebas dari efek flickering/jitter di batas scroll
+            if (!isShrunk && scrollY > 50) {
+                isShrunk = true;
+                headerWrapper.classList.add('is-shrunk');
+            } else if (isShrunk && scrollY < 20) {
+                isShrunk = false;
+                headerWrapper.classList.remove('is-shrunk');
             }
+
+            ticking = false;
         };
-        window.addEventListener('scroll', handleScroll, { passive: true });
+
+        window.addEventListener('scroll', () => {
+            if (!ticking) {
+                window.requestAnimationFrame(updateHeaderState);
+                ticking = true;
+            }
+        }, { passive: true });
+
+        // Evaluasi posisi awal saat halaman pertama kali dimuat/di-refresh
+        updateHeaderState();
     }
 
     /* ==========================================
@@ -77,8 +96,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }, {
             root: null,
-            threshold: 0.15,
-            rootMargin: '0px 0px -50px 0px'
+            threshold: 0.1,
+            rootMargin: '0px 0px -20px 0px'
         });
 
         revealElements.forEach(el => revealObserver.observe(el));
@@ -114,6 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
        5. Module Initializations
     ========================================== */
     initClientsCarousel();
+    initWorkflowScrollytelling();
     initAdminCommon();
     initAdminLogin();
     initAdminReports();

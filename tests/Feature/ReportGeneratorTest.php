@@ -2,16 +2,28 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
 use Tests\TestCase;
 
 class ReportGeneratorTest extends TestCase
 {
+    protected User $adminUser;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->adminUser = User::where('email', 'admin@netfly.id')->first() ?? User::factory()->create([
+            'email' => 'admin@netfly.id',
+            'role' => 'admin',
+        ]);
+    }
+
     /**
      * Uji pemuatan halaman Executive Report Generator dengan status 200 OK.
      */
     public function test_report_generator_page_renders_successfully(): void
     {
-        $response = $this->get(route('reports.index'));
+        $response = $this->actingAs($this->adminUser)->get(route('reports.index'));
 
         $response->assertStatus(200);
         $response->assertSee('Executive Report Generator');
@@ -31,7 +43,7 @@ class ReportGeneratorTest extends TestCase
      */
     public function test_report_generator_filters_customer_data_properly(): void
     {
-        $response = $this->get(route('reports.index', [
+        $response = $this->actingAs($this->adminUser)->get(route('reports.index', [
             'customer' => 'mandiri',
             'month' => 10,
             'year' => 2026,
@@ -48,7 +60,7 @@ class ReportGeneratorTest extends TestCase
      */
     public function test_export_pdf_generates_valid_pdf_download(): void
     {
-        $response = $this->get(route('reports.exportPdf', [
+        $response = $this->actingAs($this->adminUser)->get(route('reports.exportPdf', [
             'customer' => 'all',
             'month' => 10,
             'year' => 2026,
@@ -70,7 +82,7 @@ class ReportGeneratorTest extends TestCase
      */
     public function test_export_pdf_preview_mode(): void
     {
-        $response = $this->get(route('reports.exportPdf', [
+        $response = $this->actingAs($this->adminUser)->get(route('reports.exportPdf', [
             'customer' => 'mandiri',
             'month' => 10,
             'year' => 2026,

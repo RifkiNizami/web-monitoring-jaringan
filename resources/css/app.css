@@ -93,8 +93,252 @@
     
     .bg-tech-grid-light {
         background-image: 
-            linear-gradient(to right, rgba(226, 232, 240, 0.6) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(226, 232, 240, 0.6) 1px, transparent 1px);
+            linear-gradient(to right, rgba(203, 213, 225, 0.75) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(203, 213, 225, 0.75) 1px, transparent 1px);
         background-size: 36px 36px;
+    }
+
+    /* Hero Staggered Entrance Animations (On Load / Refresh) */
+    @keyframes heroFadeDown {
+        0% {
+            opacity: 0;
+            transform: translateY(-16px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes heroFadeUp {
+        0% {
+            opacity: 0;
+            transform: translateY(28px);
+            filter: blur(4px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+            filter: blur(0);
+        }
+    }
+
+    .animate-hero-badge {
+        animation: heroFadeDown 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .animate-hero-title {
+        animation: heroFadeUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both;
+    }
+
+    .animate-hero-desc {
+        animation: heroFadeUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.25s both;
+    }
+
+    .animate-hero-cta {
+        animation: heroFadeUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.38s both;
+    }
+
+    .animate-hero-card-1 {
+        animation: heroFadeUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
+    }
+
+    .animate-hero-card-2 {
+        animation: heroFadeUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.62s both;
+    }
+
+    .animate-hero-card-3 {
+        animation: heroFadeUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.74s both;
+    }
+
+    /* Scrollytelling Micro-animations */
+    @keyframes laserPulse {
+        0% { stroke-dashoffset: 40; }
+        100% { stroke-dashoffset: 0; }
+    }
+
+    @keyframes electricArc {
+        0%, 100% { opacity: 0.8; transform: scaleY(1); }
+        50% { opacity: 1; transform: scaleY(1.3) scaleX(1.15); }
+    }
+
+    @keyframes shimmerMove {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    .animate-laser {
+        stroke-dasharray: 10, 6;
+        animation: laserPulse 2s linear infinite;
+    }
+
+    .animate-arc {
+        animation: electricArc 0.12s ease-in-out infinite;
+    }
+
+    .animate-shimmer {
+        animation: shimmerMove 2.5s infinite;
+    }
+
+    /* ==========================================
+       Shrinking Header (Landing Page Scroll)
+    ========================================== */
+    #header-wrapper.is-shrunk {
+        padding-top: 0.5rem;
+    }
+
+    #header-wrapper.is-shrunk #main-header {
+        max-width: 68rem;
+        background-color: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-color: rgba(203, 213, 225, 0.95);
+        box-shadow: 0 12px 32px -6px rgba(15, 23, 42, 0.10), 0 4px 12px -2px rgba(0, 102, 204, 0.06);
+        border-radius: 1rem;
+    }
+
+    @media (min-width: 1024px) {
+        #header-wrapper.is-shrunk #main-header {
+            border-radius: 9999px;
+        }
+    }
+
+    #header-wrapper.is-shrunk #header-container {
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+    }
+
+    #header-wrapper.is-shrunk #header-inner {
+        height: 3.35rem;
+    }
+
+    #header-wrapper.is-shrunk #header-logo {
+        height: 1.85rem;
+    }
+
+    #header-wrapper.is-shrunk #header-nav {
+        gap: 0.125rem;
+        font-size: 0.8125rem;
+    }
+
+    #header-wrapper.is-shrunk #header-nav a {
+        padding: 0.25rem 0.75rem;
+    }
+
+    #header-wrapper.is-shrunk #header-badge {
+        padding: 0.25rem 0.625rem;
+        font-size: 0.65rem;
+    }
+
+    #header-wrapper.is-shrunk #header-cta {
+        padding: 0.25rem 0.25rem 0.25rem 0.875rem;
+        font-size: 0.725rem;
+    }
+
+    #header-wrapper.is-shrunk #header-cta-icon {
+        width: 1.35rem;
+        height: 1.35rem;
+        margin-left: 0.5rem;
+    }
+
+    /* ==========================================
+       Login Page Entrance & Interactive Animations
+    ========================================== */
+    @keyframes loginShake {
+        0%, 100% { transform: translateX(0); }
+        20% { transform: translateX(-6px); }
+        40% { transform: translateX(6px); }
+        60% { transform: translateX(-4px); }
+        80% { transform: translateX(4px); }
+    }
+
+    @keyframes loginRingPulse {
+        0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.9; }
+        50% { transform: scale(1.04) rotate(4deg); opacity: 1; }
+    }
+
+    .login-item {
+        opacity: 0;
+        transform: translateY(22px);
+        filter: blur(4px);
+        transition:
+            opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+            transform 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+            filter 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .login-logo-item {
+        opacity: 0;
+        transform: translateY(-18px) scale(0.94);
+        filter: blur(4px);
+        transition:
+            opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+            transform 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+            filter 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .login-curve-enter {
+        opacity: 0;
+        transform: translateX(-32px) scaleX(0.85);
+        transform-origin: left center;
+        transition:
+            opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+            transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .login-hero-content {
+        opacity: 0;
+        transform: translateX(28px);
+        filter: blur(6px);
+        transition:
+            opacity 0.95s cubic-bezier(0.16, 1, 0.3, 1) 0.22s,
+            transform 0.95s cubic-bezier(0.16, 1, 0.3, 1) 0.22s,
+            filter 0.95s cubic-bezier(0.16, 1, 0.3, 1) 0.22s;
+    }
+
+    .login-orb-enter {
+        opacity: 0;
+        transform: scale(0.5);
+        transition:
+            opacity 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.35s,
+            transform 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.35s;
+    }
+
+    /* Active State Triggered by JS on Page Load */
+    #login-page.is-loaded .login-logo-item,
+    #login-page.is-loaded .login-item,
+    #login-page.is-loaded .login-curve-enter,
+    #login-page.is-loaded .login-hero-content {
+        opacity: 1;
+        transform: translate(0) scale(1);
+        filter: blur(0);
+    }
+
+    #login-page.is-loaded .login-orb-enter {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    .login-delay-1 { transition-delay: 80ms; }
+    .login-delay-2 { transition-delay: 160ms; }
+    .login-delay-3 { transition-delay: 240ms; }
+    .login-delay-4 { transition-delay: 320ms; }
+    .login-delay-5 { transition-delay: 400ms; }
+    .login-delay-6 { transition-delay: 480ms; }
+
+    .login-error-shake {
+        animation: loginShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) 0.2s both;
+    }
+
+    .animate-login-ring {
+        animation: loginRingPulse 10s ease-in-out infinite;
+    }
+
+    .login-star-delay-1 {
+        animation-delay: 0.8s;
+    }
+
+    .login-star-delay-2 {
+        animation-delay: 1.5s;
     }
 }

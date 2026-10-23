@@ -15,7 +15,7 @@
 </head>
 <body class="h-full bg-white font-sans text-slate-800 antialiased selection:bg-blue-600 selection:text-white">
 
-    <div class="min-h-screen w-full flex flex-col lg:flex-row overflow-hidden bg-white">
+    <div id="login-page" class="min-h-screen w-full flex flex-col lg:flex-row overflow-hidden bg-white">
         
         <!-- SISI KIRI: Form Login -->
         <div class="w-full lg:w-[42%] xl:w-[38%] min-h-screen flex flex-col justify-between px-8 sm:px-14 lg:px-16 py-10 z-10 bg-white">
@@ -23,12 +23,12 @@
 
             <div class="w-full max-w-sm mx-auto">
                 <!-- Logo NETFly -->
-                <div class="mb-10 text-center flex flex-col items-center">
+                <div class="mb-10 text-center flex flex-col items-center login-logo-item">
                     <img src="{{ asset('assets/images/netfly-logo.png') }}" alt="NetFly Logo" class="h-16 sm:h-20 w-auto object-contain">
                 </div>
 
                 @if ($errors->any())
-                    <div class="mb-5 p-3.5 rounded-xl bg-red-50 border border-red-200/80 text-xs text-red-600 flex items-start gap-2.5">
+                    <div class="mb-5 p-3.5 rounded-xl bg-red-50 border border-red-200/80 text-xs text-red-600 flex items-start gap-2.5 login-item login-error-shake">
                         <svg class="w-4 h-4 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                         </svg>
@@ -41,43 +41,42 @@
                 @endif
 
                 <!-- Form Login -->
-                <form action="{{ url('/login') }}" method="POST" class="space-y-5">
+                <form id="loginForm" action="{{ url('/login') }}" method="POST" class="space-y-5">
                     @csrf
 
                     <!-- Email Field -->
-                    <div>
+                    <div class="login-item login-delay-1">
                         <label for="email" class="block text-xs font-semibold text-slate-700 mb-1.5 tracking-tight">Email</label>
                         <div class="relative">
                             <input 
                                 type="email" 
                                 id="email" 
                                 name="email" 
-                                value="{{ old('email', 'admin@gmail.com') }}" 
+                                value="{{ old('email') }}" 
                                 required 
                                 autofocus
-                                placeholder="admin@gmail.com"
-                                class="w-full px-3.5 py-2.5 text-sm text-slate-800 bg-white border border-slate-300 rounded-lg shadow-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                placeholder="example@gmail.com"
+                                class="w-full px-3.5 py-2.5 text-sm text-slate-800 bg-white border border-slate-300 rounded-lg shadow-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                             >
                         </div>
                     </div>
 
                     <!-- Password Field -->
-                    <div>
+                    <div class="login-item login-delay-2">
                         <label for="password" class="block text-xs font-semibold text-slate-700 mb-1.5 tracking-tight">Kata Sandi</label>
                         <div class="relative">
                             <input 
                                 type="password" 
                                 id="password" 
                                 name="password" 
-                                value="password123"
                                 required 
                                 placeholder="••••••••••••"
-                                class="w-full pl-3.5 pr-10 py-2.5 text-sm text-slate-800 bg-white border border-slate-300 rounded-lg shadow-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all font-mono"
+                                class="w-full pl-3.5 pr-10 py-2.5 text-sm text-slate-800 bg-white border border-slate-300 rounded-lg shadow-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 font-mono"
                             >
                             <button 
                                 type="button" 
                                 id="togglePassword" 
-                                class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none"
+                                class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none transition-colors"
                                 aria-label="Toggle password visibility"
                             >
                                 <svg id="eyeIcon" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -92,13 +91,12 @@
                     </div>
 
                     <!-- Remember Me -->
-                    <div class="flex items-center">
+                    <div class="flex items-center login-item login-delay-3">
                         <input 
                             type="checkbox" 
                             id="remember" 
                             name="remember" 
-                            checked
-                            class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                            class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer transition-colors"
                         >
                         <label for="remember" class="ml-2 text-xs text-slate-600 cursor-pointer select-none">
                             Ingat saya
@@ -106,28 +104,33 @@
                     </div>
 
                     <!-- Tombol Masuk -->
-                    <div class="pt-2 text-center">
+                    <div class="pt-2 text-center login-item login-delay-4">
                         <button 
                             type="submit" 
-                            class="w-auto min-w-[130px] px-8 py-2.5 bg-[#0066cc] hover:bg-[#0052a3] text-white text-xs font-bold rounded-lg shadow-lg shadow-blue-500/40 hover:shadow-blue-500/60 active:scale-95 transition-all duration-200 tracking-wider uppercase cursor-pointer"
+                            id="loginSubmitBtn"
+                            class="inline-flex items-center justify-center gap-2 w-auto min-w-[130px] px-8 py-2.5 bg-[#0066cc] hover:bg-[#0052a3] text-white text-xs font-bold rounded-lg shadow-lg shadow-blue-500/40 hover:shadow-blue-500/60 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 tracking-wider uppercase cursor-pointer"
                         >
-                            MASUK
+                            <svg id="loginBtnSpinner" class="hidden w-3.5 h-3.5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                            </svg>
+                            <span id="loginBtnText">MASUK</span>
                         </button>
                     </div>
                 </form>
             </div>
 
             <!-- Footer Kiri -->
-            <div class="text-center text-[11px] text-slate-400 mt-10">
+            <div class="text-center text-[11px] text-slate-400 mt-10 login-item login-delay-5">
                 &copy; {{ date('Y') }} PT Netmedia Fiberoptik Lancarmulya
             </div>
         </div>
 
         <!-- SISI KANAN: Visual Hero Curve & Portal Branding -->
-        <div class="hidden lg:flex flex-1 relative overflow-hidden bg-[#0d276b] items-center justify-center text-center px-12">
+        <div id="login-hero-pane" class="hidden lg:flex flex-1 relative overflow-hidden bg-[#0d276b] items-center justify-center text-center px-12">
             
             <!-- Organic Curve Divider on the left side of this pane -->
-            <div class="absolute inset-y-0 left-0 w-24 xl:w-32 z-20 pointer-events-none fill-white">
+            <div class="absolute inset-y-0 left-0 w-24 xl:w-32 z-20 pointer-events-none fill-white login-curve-enter">
                 <svg class="h-full w-full" preserveAspectRatio="none" viewBox="0 0 100 1000">
                     <path d="M0,0 L100,0 C30,300 0,650 100,1000 L0,1000 Z" />
                 </svg>
@@ -137,19 +140,23 @@
             <div class="absolute inset-0 bg-gradient-to-br from-[#123b88] via-[#0d276b] to-[#081842] z-0"></div>
 
             <!-- Decorative Glow Rings (Top Right) -->
-            <div class="absolute -top-20 -right-20 w-96 h-96 rounded-full border border-blue-400/15 pointer-events-none"></div>
-            <div class="absolute -top-36 -right-36 w-[520px] h-[520px] rounded-full border border-blue-400/10 pointer-events-none"></div>
+            <div id="login-rings-wrapper" class="absolute inset-0 pointer-events-none transition-transform duration-300 ease-out">
+                <div class="absolute -top-20 -right-20 w-96 h-96 rounded-full border border-blue-400/15 animate-login-ring"></div>
+                <div class="absolute -top-36 -right-36 w-[520px] h-[520px] rounded-full border border-blue-400/10 animate-login-ring"></div>
+            </div>
 
             <!-- Floating Subtle Star/Dot Glows -->
             <div class="absolute top-1/4 right-1/3 w-1.5 h-1.5 rounded-full bg-blue-300 shadow-[0_0_8px_2px_rgba(147,197,253,0.8)] animate-pulse"></div>
-            <div class="absolute top-1/2 left-1/4 w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_10px_2px_rgba(255,255,255,0.9)] animate-pulse" style="animation-delay: 1.5s;"></div>
-            <div class="absolute bottom-1/4 right-1/4 w-2 h-2 rounded-full bg-cyan-300 shadow-[0_0_12px_3px_rgba(103,232,249,0.9)] animate-pulse" style="animation-delay: 0.8s;"></div>
+            <div class="absolute top-1/2 left-1/4 w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_10px_2px_rgba(255,255,255,0.9)] animate-pulse login-star-delay-2"></div>
+            <div class="absolute bottom-1/4 right-1/4 w-2 h-2 rounded-full bg-cyan-300 shadow-[0_0_12px_3px_rgba(103,232,249,0.9)] animate-pulse login-star-delay-1"></div>
 
             <!-- Glowing Blue Orb (Bottom Left of Right Side) -->
-            <div class="absolute bottom-28 left-16 w-24 h-24 rounded-full bg-gradient-to-tr from-blue-600 via-blue-500 to-cyan-400 shadow-[0_0_50px_20px_rgba(37,99,235,0.55)] pointer-events-none animate-float"></div>
+            <div id="login-orb-wrapper" class="absolute bottom-28 left-16 pointer-events-none transition-transform duration-300 ease-out login-orb-enter">
+                <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-blue-600 via-blue-500 to-cyan-400 shadow-[0_0_50px_20px_rgba(37,99,235,0.55)] animate-float"></div>
+            </div>
 
             <!-- Content Area -->
-            <div class="relative z-10 max-w-lg mx-auto py-12">
+            <div class="relative z-10 max-w-lg mx-auto py-12 login-hero-content">
                 <h1 class="text-4xl xl:text-5xl font-extrabold text-white tracking-tight leading-[1.2]">
                     Portal Manajemen<br>Jaringan
                 </h1>
