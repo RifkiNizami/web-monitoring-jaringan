@@ -53,15 +53,6 @@ class AuthController extends Controller
             return redirect()->intended(route('dashboard'));
         }
 
-        // Demo fallback helper: if email is admin@gmail.com and password matches or demo
-        $user = User::where('email', $credentials['email'])->first();
-        if ($user && Hash::check($credentials['password'], $user->password)) {
-            RateLimiter::clear($throttleKey);
-            Auth::login($user, $remember);
-            $request->session()->regenerate();
-            return redirect()->intended(route('dashboard'));
-        }
-
         // Hit rate limiter jika percobaan login gagal
         RateLimiter::hit($throttleKey, 60);
 

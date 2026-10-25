@@ -1,6 +1,6 @@
 /**
  * NetFly Admin Console - Common UI Utilities
- * (Realtime Clock WIB & Mobile Sidebar Drawer)
+ * (Realtime Clock WIB, Mobile Sidebar Drawer & Staggered Content Animations)
  */
 export function initAdminCommon() {
     // 1. Live Digital Clock (WIB)
@@ -54,5 +54,21 @@ export function initAdminCommon() {
         if (e.key === 'Escape' && sidebar && !sidebar.classList.contains('-translate-x-full')) {
             toggleMobileSidebar(false);
         }
+    });
+
+    // 3. Staggered Entrance Animation for Admin Page Content
+    const adminMain = document.querySelector('main');
+    if (adminMain && sidebar) {
+        const blocks = Array.from(adminMain.children);
+        blocks.forEach((block, index) => {
+            block.classList.add('admin-reveal');
+            block.style.animationDelay = `${index * 80}ms`;
+        });
+    }
+
+    // 4. Dynamic Progress Bars (data-progress-width)
+    document.querySelectorAll('[data-progress-width]').forEach((bar) => {
+        const widthVal = bar.getAttribute('data-progress-width') || '0';
+        bar.style.width = `${widthVal}%`;
     });
 }

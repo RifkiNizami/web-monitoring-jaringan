@@ -13,6 +13,15 @@ import { initAdminMonitoring } from './admin/monitoring';
 
 document.addEventListener('DOMContentLoaded', () => {
     /* ==========================================
+       0. Fast-Path untuk Halaman Login
+       (Tidak mengeksekusi observer/script halaman lain)
+    ========================================== */
+    if (document.getElementById('login-page')) {
+        initAdminLogin();
+        return;
+    }
+
+    /* ==========================================
        1. Mobile Navbar Toggle (Landing Page)
     ========================================== */
     const drawerBtn = document.getElementById('mobile-drawer-btn') || document.getElementById('menu-btn');
@@ -83,10 +92,9 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ==========================================
        3. Scroll Reveal Animation (Intersection Observer)
     ========================================== */
-    const revealElements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const revealElements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale');
 
-    if ('IntersectionObserver' in window && !prefersReducedMotion) {
+    if ('IntersectionObserver' in window) {
         const revealObserver = new IntersectionObserver((entries, observer) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -96,8 +104,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }, {
             root: null,
-            threshold: 0.1,
-            rootMargin: '0px 0px -20px 0px'
+            threshold: 0.08,
+            rootMargin: '0px 0px -30px 0px'
         });
 
         revealElements.forEach(el => revealObserver.observe(el));
@@ -135,7 +143,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initClientsCarousel();
     initWorkflowScrollytelling();
     initAdminCommon();
-    initAdminLogin();
     initAdminReports();
     initAdminTickets();
     initAdminDevices();

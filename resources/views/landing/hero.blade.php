@@ -36,7 +36,7 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-8 border-t border-slate-200/80 max-w-3xl mx-auto text-center">
 
-                <div class="animate-hero-card-1 p-1.5 rounded-2xl bg-slate-100/80 border border-slate-200/80">
+                <div class="animate-hero-card-1 hover-lift p-1.5 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80">
                     <div class="rounded-xl bg-white p-4 shadow-2xs space-y-1">
                         <span class="text-slate-500 block text-xs font-medium">Jaminan Uptime</span>
                         <span class="text-slate-900 font-extrabold text-lg sm:text-xl block">SLA 99.5%</span>
@@ -44,7 +44,7 @@
                     </div>
                 </div>
 
-                <div class="animate-hero-card-2 p-1.5 rounded-2xl bg-slate-100/80 border border-slate-200/80">
+                <div class="animate-hero-card-2 hover-lift p-1.5 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80">
                     <div class="rounded-xl bg-white p-4 shadow-2xs space-y-1">
                         <span class="text-slate-500 block text-xs font-medium">Interkoneksi Peering</span>
                         <span class="text-slate-900 font-extrabold text-lg sm:text-xl block">10 Gbps</span>
@@ -52,7 +52,7 @@
                     </div>
                 </div>
 
-                <div class="animate-hero-card-3 p-1.5 rounded-2xl bg-slate-100/80 border border-slate-200/80">
+                <div class="animate-hero-card-3 hover-lift p-1.5 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80">
                     <div class="rounded-xl bg-white p-4 shadow-2xs space-y-1">
                         <span class="text-slate-500 block text-xs font-medium">Benchmark MTTR</span>
                         <span class="text-slate-900 font-extrabold text-lg sm:text-xl block">&lt; 27 Menit</span>

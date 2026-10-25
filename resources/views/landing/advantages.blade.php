@@ -12,7 +12,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-            <div class="reveal delay-100 p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs">
+            <div class="reveal delay-100 hover-lift p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs">
                 <div class="rounded-xl bg-white p-6 space-y-4 h-full flex flex-col justify-between shadow-2xs">
                     <div class="space-y-3">
                         <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200/80 flex items-center justify-center text-netfly-blue">
@@ -31,7 +31,7 @@
                 </div>
             </div>
 
-            <div class="reveal delay-200 p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs">
+            <div class="reveal delay-200 hover-lift p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs">
                 <div class="rounded-xl bg-white p-6 space-y-4 h-full flex flex-col justify-between shadow-2xs">
                     <div class="space-y-3">
                         <div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-700">
@@ -50,7 +50,7 @@
                 </div>
             </div>
 
-            <div class="reveal delay-300 p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs">
+            <div class="reveal delay-300 hover-lift p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs">
                 <div class="rounded-xl bg-white p-6 space-y-4 h-full flex flex-col justify-between shadow-2xs">
                     <div class="space-y-3">
                         <div class="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/80 flex items-center justify-center text-amber-700">
@@ -69,7 +69,7 @@
                 </div>
             </div>
 
-            <div class="reveal delay-100 p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs">
+            <div class="reveal delay-100 hover-lift p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs">
                 <div class="rounded-xl bg-white p-6 space-y-4 h-full flex flex-col justify-between shadow-2xs">
                     <div class="space-y-3">
                         <div class="w-10 h-10 rounded-xl bg-purple-50 border border-purple-200/80 flex items-center justify-center text-purple-700">
@@ -88,7 +88,7 @@
                 </div>
             </div>
 
-            <div class="reveal delay-200 p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs">
+            <div class="reveal delay-200 hover-lift p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs">
                 <div class="rounded-xl bg-white p-6 space-y-4 h-full flex flex-col justify-between shadow-2xs">
                     <div class="space-y-3">
                         <div class="w-10 h-10 rounded-xl bg-slate-100 border border-slate-300/80 flex items-center justify-center text-slate-700">
@@ -107,7 +107,7 @@
                 </div>
             </div>
 
-            <div class="reveal delay-300 p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs">
+            <div class="reveal delay-300 hover-lift p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs">
                 <div class="rounded-xl bg-white p-6 space-y-4 h-full flex flex-col justify-between shadow-2xs">
                     <div class="space-y-3">
                         <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200/80 flex items-center justify-center text-netfly-blue">

@@ -17,13 +17,13 @@
 </head>
 <body class="h-full bg-slate-50 font-sans text-slate-800 antialiased selection:bg-blue-600 selection:text-white">
 
-    <div class="min-h-screen flex w-full">
+    <div class="h-screen flex w-full overflow-hidden">
         
         <!-- SIDEBAR (Include Partial) -->
         @include('partials.sidebar')
 
         <!-- MAIN CONTENT AREA -->
-        <div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+        <div class="flex-1 flex flex-col min-w-0 h-full overflow-y-auto">
             
             <!-- TOP NAVBAR / HEADER -->
             <header class="bg-white border-b border-slate-200/80 px-6 py-3.5 flex items-center justify-between sticky top-0 z-30">
@@ -37,7 +37,7 @@
 
                     <!-- Breadcrumb -->
                     <div class="flex items-center gap-2 text-xs font-semibold text-slate-400">
-                        <span class="tracking-wide">OVERVIEW</span>
+                        <span class="tracking-wide uppercase">MONITORING & KENDALI</span>
                         <span>›</span>
                         <span class="text-slate-800 font-bold">Monitoring & Alert</span>
                     </div>
@@ -63,15 +63,17 @@
                     </div>
 
                     <!-- Notification Bell -->
-                    <button class="relative p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">
+                    <button class="relative p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer" aria-label="Notifikasi">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                         </svg>
-                        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white"></span>
+                        <span class="absolute top-1 right-1 w-3.5 h-3.5 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-white">
+                            3
+                        </span>
                     </button>
 
                     <!-- Clock (Live WIB) -->
-                    <div class="hidden md:flex items-center gap-1.5 text-xs font-mono text-slate-600 bg-slate-100/80 px-2.5 py-1 rounded-md border border-slate-200/60">
+                    <div class="hidden sm:flex items-center gap-1.5 text-xs font-mono text-slate-600 bg-slate-100/80 px-2.5 py-1 rounded-md border border-slate-200/60">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                         <span id="liveClock">--:--:-- WIB</span>
                     </div>
@@ -182,7 +184,7 @@
                             </span>
                         </div>
                         <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                            <div class="bg-emerald-500 h-2 rounded-full transition-all duration-500" style="width: {{ $summary['cpu']['average_load'] }}%"></div>
+                            <div class="bg-emerald-500 h-2 rounded-full transition-all duration-500" data-progress-width="{{ $summary['cpu']['average_load'] }}"></div>
                         </div>
                         <div class="flex items-center justify-between text-xs pt-0.5">
                             <span class="text-slate-500 text-[11px]">Rata-rata Packet Loss:</span>
@@ -420,7 +422,7 @@
                                             <td class="py-4 px-5 align-middle whitespace-nowrap">
                                                 <div class="flex items-center gap-2">
                                                     <div class="w-12 bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                                                        <div class="{{ $device['cpu_load'] > 70 ? 'bg-rose-500' : 'bg-emerald-500' }} h-1.5 rounded-full" style="width: {{ $device['cpu_load'] }}%"></div>
+                                                        <div class="{{ $device['cpu_load'] > 70 ? 'bg-rose-500' : 'bg-emerald-500' }} h-1.5 rounded-full" data-progress-width="{{ $device['cpu_load'] }}"></div>
                                                     </div>
                                                     <span class="font-bold text-slate-800 font-mono text-xs">{{ $device['cpu_load'] }}%</span>
                                                 </div>
@@ -430,7 +432,7 @@
                                             <td class="py-4 px-5 align-middle whitespace-nowrap">
                                                 <div class="flex items-center gap-2">
                                                     <div class="w-12 bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                                                        <div class="{{ $device['ram_load'] > 75 ? 'bg-rose-500' : 'bg-indigo-500' }} h-1.5 rounded-full" style="width: {{ $device['ram_load'] }}%"></div>
+                                                        <div class="{{ $device['ram_load'] > 75 ? 'bg-rose-500' : 'bg-indigo-500' }} h-1.5 rounded-full" data-progress-width="{{ $device['ram_load'] }}"></div>
                                                     </div>
                                                     <span class="font-bold text-slate-800 font-mono text-xs">{{ $device['ram_load'] }}%</span>
                                                 </div>

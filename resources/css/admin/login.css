@@ -1,0 +1,103 @@
+/* ==========================================================================
+   NetFly Admin Login Page Styles & Animations
+   (Lighthouse FCP/LCP/SI Optimized + 60fps GPU translate3d Motion)
+   ========================================================================== */
+
+@layer utilities {
+    @keyframes loginFadeDownFast {
+        0% {
+            opacity: 0.85;
+            transform: translate3d(0, -14px, 0) scale(0.96);
+        }
+        100% {
+            opacity: 1;
+            transform: translate3d(0, 0, 0) scale(1);
+        }
+    }
+
+    @keyframes loginFadeUpFast {
+        0% {
+            opacity: 0.75;
+            transform: translate3d(0, 14px, 0);
+        }
+        100% {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+    @keyframes loginSlideRightFast {
+        0% {
+            opacity: 0.9;
+            transform: translate3d(18px, 0, 0);
+        }
+        100% {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+    @keyframes loginCurveFast {
+        0% {
+            transform: translate3d(-20px, 0, 0) scaleX(0.9);
+        }
+        100% {
+            transform: translate3d(0, 0, 0) scaleX(1);
+        }
+    }
+
+    @keyframes loginOrbFast {
+        0% {
+            opacity: 0.8;
+            transform: scale3d(0.75, 0.75, 1);
+        }
+        100% {
+            opacity: 1;
+            transform: scale3d(1, 1, 1);
+        }
+    }
+
+    @keyframes loginShake {
+        0%, 100% { transform: translate3d(0, 0, 0); }
+        20% { transform: translate3d(-5px, 0, 0); }
+        40% { transform: translate3d(5px, 0, 0); }
+        60% { transform: translate3d(-3px, 0, 0); }
+        80% { transform: translate3d(3px, 0, 0); }
+    }
+
+    .login-logo-item {
+        will-change: transform;
+        animation: loginFadeDownFast 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .login-item {
+        will-change: transform;
+        animation: loginFadeUpFast 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .login-delay-1 { animation-delay: 0.03s; }
+    .login-delay-2 { animation-delay: 0.06s; }
+    .login-delay-3 { animation-delay: 0.09s; }
+    .login-delay-4 { animation-delay: 0.12s; }
+    .login-delay-5 { animation-delay: 0.15s; }
+
+    .login-curve-enter {
+        transform-origin: left center;
+        will-change: transform;
+        animation: loginCurveFast 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .login-hero-content {
+        will-change: transform;
+        animation: loginSlideRightFast 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .login-orb-enter {
+        will-change: transform;
+        animation: loginOrbFast 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .login-error-shake {
+        animation: loginShake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    }
+}

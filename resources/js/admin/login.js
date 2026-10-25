@@ -1,8 +1,10 @@
 /**
- * NetFly Admin - Login Page Entrance Animation & Interactivity
+ * NetFly Admin - Login Page Interactivity (Optimized 60fps, Zero Layout Thrashing)
  */
 export function initAdminLogin() {
     const loginPage = document.getElementById('login-page');
+    if (!loginPage) return;
+
     const toggleBtn = document.getElementById('togglePassword');
     const passwordInput = document.getElementById('password');
     const eyeIcon = document.getElementById('eyeIcon');
@@ -15,21 +17,7 @@ export function initAdminLogin() {
     const orbWrapper = document.getElementById('login-orb-wrapper');
     const ringsWrapper = document.getElementById('login-rings-wrapper');
 
-    // 1. Trigger Staggered Entrance Animation on Page Load
-    if (loginPage) {
-        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        if (prefersReducedMotion) {
-            loginPage.classList.add('is-loaded');
-        } else {
-            window.requestAnimationFrame(() => {
-                window.setTimeout(() => {
-                    loginPage.classList.add('is-loaded');
-                }, 40);
-            });
-        }
-    }
-
-    // 2. Toggle Password Visibility
+    // 1. Toggle Password Visibility
     if (toggleBtn && passwordInput) {
         toggleBtn.addEventListener('click', function () {
             const isPassword = passwordInput.getAttribute('type') === 'password';
@@ -39,7 +27,7 @@ export function initAdminLogin() {
         });
     }
 
-    // 3. Form Submit Loading State
+    // 2. Form Submit Loading State
     if (loginForm && submitBtn) {
         loginForm.addEventListener('submit', function () {
             submitBtn.disabled = true;
@@ -49,31 +37,48 @@ export function initAdminLogin() {
         });
     }
 
-    // 4. Interactive Subtle Parallax on Right Visual Panel
+    // 3. Throttled rAF Parallax on Right Visual Panel (Cached Bounds to Avoid Reflow)
     if (heroPane && (orbWrapper || ringsWrapper)) {
-        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        if (!prefersReducedMotion) {
-            heroPane.addEventListener('mousemove', (e) => {
-                const rect = heroPane.getBoundingClientRect();
-                const relX = (e.clientX - rect.left) / rect.width - 0.5;
-                const relY = (e.clientY - rect.top) / rect.height - 0.5;
+        let cachedRect = null;
+        let rafId = null;
+        let targetX = 0;
+        let targetY = 0;
 
-                if (orbWrapper) {
-                    orbWrapper.style.transform = `translate3d(${relX * -24}px, ${relY * -24}px, 0)`;
-                }
-                if (ringsWrapper) {
-                    ringsWrapper.style.transform = `translate3d(${relX * 16}px, ${relY * 16}px, 0)`;
-                }
-            });
+        const updateCachedRect = () => {
+            cachedRect = heroPane.getBoundingClientRect();
+        };
 
-            heroPane.addEventListener('mouseleave', () => {
-                if (orbWrapper) {
-                    orbWrapper.style.transform = 'translate3d(0, 0, 0)';
-                }
-                if (ringsWrapper) {
-                    ringsWrapper.style.transform = 'translate3d(0, 0, 0)';
-                }
-            });
-        }
+        const renderParallax = () => {
+            if (orbWrapper) {
+                orbWrapper.style.transform = `translate3d(${targetX * -18}px, ${targetY * -18}px, 0)`;
+            }
+            if (ringsWrapper) {
+                ringsWrapper.style.transform = `translate3d(${targetX * 12}px, ${targetY * 12}px, 0)`;
+            }
+            rafId = null;
+        };
+
+        heroPane.addEventListener('mouseenter', updateCachedRect, { passive: true });
+        window.addEventListener('resize', () => { cachedRect = null; }, { passive: true });
+
+        heroPane.addEventListener('mousemove', (e) => {
+            if (!cachedRect) updateCachedRect();
+            if (!cachedRect || cachedRect.width === 0) return;
+
+            targetX = (e.clientX - cachedRect.left) / cachedRect.width - 0.5;
+            targetY = (e.clientY - cachedRect.top) / cachedRect.height - 0.5;
+
+            if (!rafId) {
+                rafId = window.requestAnimationFrame(renderParallax);
+            }
+        }, { passive: true });
+
+        heroPane.addEventListener('mouseleave', () => {
+            targetX = 0;
+            targetY = 0;
+            if (!rafId) {
+                rafId = window.requestAnimationFrame(renderParallax);
+            }
+        }, { passive: true });
     }
 }

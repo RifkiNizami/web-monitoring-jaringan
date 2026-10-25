@@ -13,7 +13,7 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-            <div class="reveal delay-100 p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs">
+            <div class="reveal delay-100 hover-lift p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs">
                 <div class="rounded-xl bg-white p-6 space-y-4 h-full flex flex-col justify-between shadow-2xs">
                     <div class="space-y-3">
                         <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200/80 flex items-center justify-center text-netfly-blue">
@@ -34,7 +34,7 @@
                 </div>
             </div>
 
-            <div class="reveal delay-200 p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs">
+            <div class="reveal delay-200 hover-lift p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs">
                 <div class="rounded-xl bg-white p-6 space-y-4 h-full flex flex-col justify-between shadow-2xs">
                     <div class="space-y-3">
                         <div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-700">
@@ -55,7 +55,7 @@
                 </div>
             </div>
 
-            <div class="reveal delay-300 p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs">
+            <div class="reveal delay-300 hover-lift p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs">
                 <div class="rounded-xl bg-white p-6 space-y-4 h-full flex flex-col justify-between shadow-2xs">
                     <div class="space-y-3">
                         <div class="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/80 flex items-center justify-center text-amber-700">
@@ -78,7 +78,7 @@
 
         </div>
 
-        <div class="p-2 sm:p-2.5 rounded-3xl bg-slate-100/90 border border-slate-200/90 shadow-xs reveal delay-200">
+        <div class="p-2 sm:p-2.5 rounded-3xl bg-slate-100/90 border border-slate-200/90 shadow-xs reveal delay-150">
             <div class="rounded-2xl bg-white border border-slate-200/70 p-6 sm:p-8 space-y-6">
 
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
@@ -91,14 +91,14 @@
                         </p>
                     </div>
                     <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold self-start sm:self-center">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                         Tim Siaga 24 Jam
                     </span>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
 
-                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/70 space-y-1.5">
+                    <div class="reveal delay-100 hover-lift p-4 rounded-xl bg-slate-50 border border-slate-200/70 hover:border-blue-300/80 space-y-1.5">
                         <span class="text-netfly-blue font-extrabold uppercase tracking-wider block">01. Peringatan Dini</span>
                         <h4 class="font-bold text-slate-900 text-sm">Deteksi Titik Masalah</h4>
                         <p class="text-slate-600 leading-relaxed">
@@ -106,7 +106,7 @@
                         </p>
                     </div>
 
-                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/70 space-y-1.5">
+                    <div class="reveal delay-200 hover-lift p-4 rounded-xl bg-slate-50 border border-slate-200/70 hover:border-blue-300/80 space-y-1.5">
                         <span class="text-netfly-blue font-extrabold uppercase tracking-wider block">02. Pemeriksaan Awal</span>
                         <h4 class="font-bold text-slate-900 text-sm">Isolasi & Pengalihan Rute</h4>
                         <p class="text-slate-600 leading-relaxed">
@@ -114,7 +114,7 @@
                         </p>
                     </div>
 
-                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/70 space-y-1.5">
+                    <div class="reveal delay-300 hover-lift p-4 rounded-xl bg-slate-50 border border-slate-200/70 hover:border-blue-300/80 space-y-1.5">
                         <span class="text-netfly-blue font-extrabold uppercase tracking-wider block">03. Penanganan Fisik</span>
                         <h4 class="font-bold text-slate-900 text-sm">Kunjungan Tim Lapangan</h4>
                         <p class="text-slate-600 leading-relaxed">
@@ -122,7 +122,7 @@
                         </p>
                     </div>
 
-                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/70 space-y-1.5">
+                    <div class="reveal delay-400 hover-lift p-4 rounded-xl bg-slate-50 border border-slate-200/70 hover:border-emerald-300/80 space-y-1.5">
                         <span class="text-emerald-700 font-extrabold uppercase tracking-wider block">04. Evaluasi Terbuka</span>
                         <h4 class="font-bold text-slate-900 text-sm">Rekap Laporan Berkala</h4>
                         <p class="text-slate-600 leading-relaxed">

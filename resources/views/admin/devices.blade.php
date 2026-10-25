@@ -15,13 +15,13 @@
 </head>
 <body class="h-full bg-slate-50 font-sans text-slate-800 antialiased">
 
-    <div class="min-h-screen flex w-full">
+    <div class="h-screen flex w-full overflow-hidden">
         
         <!-- SIDEBAR (Include Partial) -->
         @include('partials.sidebar')
 
         <!-- MAIN CONTENT AREA -->
-        <div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+        <div class="flex-1 flex flex-col min-w-0 h-full overflow-y-auto">
             
             <!-- TOP NAVBAR / HEADER -->
             <header class="bg-white border-b border-slate-200/80 px-6 py-3.5 flex items-center justify-between sticky top-0 z-30">
@@ -35,7 +35,7 @@
 
                     <!-- Breadcrumb -->
                     <div class="flex items-center gap-2 text-xs font-semibold text-slate-400">
-                        <span class="tracking-wide uppercase">OVERVIEW</span>
+                        <span class="tracking-wide uppercase">MONITORING & KENDALI</span>
                         <span>›</span>
                         <span class="text-slate-800 font-bold">Network Devices</span>
                     </div>
@@ -61,18 +61,19 @@
                     </div>
 
                     <!-- Notification Bell -->
-                    <button class="relative p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">
+                    <button class="relative p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer" aria-label="Notifikasi">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                         </svg>
-                        <span class="absolute top-1 right-1 w-3.5 h-3.5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-white">
+                        <span class="absolute top-1 right-1 w-3.5 h-3.5 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-white">
                             3
                         </span>
                     </button>
 
                     <!-- Realtime Digital Clock -->
-                    <div class="text-xs font-semibold text-slate-700 bg-slate-100/80 px-2.5 py-1 rounded-md border border-slate-200/60 font-mono tracking-tight" id="liveClock">
-                        11.38.57 WIB
+                    <div class="hidden sm:flex items-center gap-1.5 text-xs font-mono text-slate-600 bg-slate-100/80 px-2.5 py-1 rounded-md border border-slate-200/60">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span id="liveClock">--:--:-- WIB</span>
                     </div>
                 </div>
             </header>

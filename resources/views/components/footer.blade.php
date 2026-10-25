@@ -3,7 +3,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
 
-            <div class="lg:col-span-2 space-y-4">
+            <div class="reveal lg:col-span-2 space-y-4">
                 <div class="flex items-center gap-3">
                     <img src="{{ asset('assets/images/netfly-logo.png') }}"
                         alt="NetFly - PT Netmedia Fiberoptik Lancarmulya" class="h-9 w-auto object-contain">
@@ -18,7 +18,7 @@
                 </div>
             </div>
 
-            <div class="space-y-3">
+            <div class="reveal delay-100 space-y-3">
                 <h4 class="text-slate-900 text-xs font-bold uppercase tracking-wider">Layanan</h4>
                 <ul class="space-y-2 text-xs text-slate-600">
                     <li><a href="#layanan" class="hover:text-slate-900 transition-colors">Dedicated Fiber Optic 1:1</a>
@@ -34,7 +34,7 @@
                 </ul>
             </div>
 
-            <div class="space-y-3">
+            <div class="reveal delay-200 space-y-3">
                 <h4 class="text-slate-900 text-xs font-bold uppercase tracking-wider">Lokasi Kantor</h4>
                 <ul class="space-y-2 text-xs text-slate-600">
                     <li><strong class="text-slate-900">Jakarta:</strong> Gedung Sarana Jaya, Jl. Tebet Barat IV No. 20
@@ -44,7 +44,7 @@
                 </ul>
             </div>
 
-            <div class="space-y-3">
+            <div class="reveal delay-300 space-y-3">
                 <h4 class="text-slate-900 text-xs font-bold uppercase tracking-wider">Kontak & Dukungan</h4>
                 <ul class="space-y-2 text-xs text-slate-600">
                     <li><a href="https://wa.me/6281358439094" target="_blank"
@@ -58,7 +58,7 @@
 
         </div>
 
-        <div class="pt-8 border-t border-slate-200/80 text-center text-xs text-slate-500">
+        <div class="reveal delay-400 pt-8 border-t border-slate-200/80 text-center text-xs text-slate-500">
             &copy; 2026 PT. Netmedia Fiberoptik Lancarmulya (NetFly). Hak Cipta Dilindungi Undang-Undang.
         </div>
 

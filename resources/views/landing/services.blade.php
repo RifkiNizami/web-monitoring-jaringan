@@ -14,7 +14,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
             <div
-                class="reveal delay-100 p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs group">
+                class="reveal delay-100 hover-lift p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs group">
                 <div class="rounded-xl bg-white p-6 space-y-4 h-full flex flex-col justify-between shadow-2xs">
                     <div class="space-y-3">
                         <div class="flex items-center justify-between text-xs text-slate-500">
@@ -46,7 +46,7 @@
             </div>
 
             <div
-                class="reveal delay-200 p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs group">
+                class="reveal delay-200 hover-lift p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs group">
                 <div class="rounded-xl bg-white p-6 space-y-4 h-full flex flex-col justify-between shadow-2xs">
                     <div class="space-y-3">
                         <div class="flex items-center justify-between text-xs text-slate-500">
@@ -78,7 +78,7 @@
             </div>
 
             <div
-                class="reveal delay-300 p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs group">
+                class="reveal delay-300 hover-lift p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs group">
                 <div class="rounded-xl bg-white p-6 space-y-4 h-full flex flex-col justify-between shadow-2xs">
                     <div class="space-y-3">
                         <div class="flex items-center justify-between text-xs text-slate-500">
@@ -110,7 +110,7 @@
             </div>
 
             <div
-                class="reveal delay-100 p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs group">
+                class="reveal delay-100 hover-lift p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs group">
                 <div class="rounded-xl bg-white p-6 space-y-4 h-full flex flex-col justify-between shadow-2xs">
                     <div class="space-y-3">
                         <div class="flex items-center justify-between text-xs text-slate-500">
@@ -139,7 +139,7 @@
             </div>
 
             <div
-                class="reveal delay-200 p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs group">
+                class="reveal delay-200 hover-lift p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs group">
                 <div class="rounded-xl bg-white p-6 space-y-4 h-full flex flex-col justify-between shadow-2xs">
                     <div class="space-y-3">
                         <div class="flex items-center justify-between text-xs text-slate-500">
@@ -171,7 +171,7 @@
             </div>
 
             <div
-                class="reveal delay-300 p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs group">
+                class="reveal delay-300 hover-lift p-2 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80 transition-all duration-300 shadow-xs group">
                 <div class="rounded-xl bg-white p-6 space-y-4 h-full flex flex-col justify-between shadow-2xs">
                     <div class="space-y-3">
                         <div class="flex items-center justify-between text-xs text-slate-500">

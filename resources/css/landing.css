@@ -1,0 +1,251 @@
+/* ==========================================================================
+   NetFly Landing Page Styles & Animations
+   (Hero Entrance, Scroll Reveal, Shrinking Header, Clients Carousel)
+   ========================================================================== */
+
+@layer utilities {
+    /* Animasi Floating Card */
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-15px); }
+    }
+    .animate-float {
+        animation: float 6s ease-in-out infinite;
+    }
+
+    /* Keyframes untuk Scroll Reveal (Semua Konten Landing Page) */
+    @keyframes revealFadeUp {
+        0% {
+            opacity: 0;
+            transform: translateY(36px) scale(0.98);
+            filter: blur(4px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0);
+        }
+    }
+
+    @keyframes revealFadeLeft {
+        0% {
+            opacity: 0;
+            transform: translateX(-36px);
+            filter: blur(4px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateX(0);
+            filter: blur(0);
+        }
+    }
+
+    @keyframes revealFadeRight {
+        0% {
+            opacity: 0;
+            transform: translateX(36px);
+            filter: blur(4px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateX(0);
+            filter: blur(0);
+        }
+    }
+
+    @keyframes revealZoomIn {
+        0% {
+            opacity: 0;
+            transform: scale(0.92);
+            filter: blur(4px);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1);
+            filter: blur(0);
+        }
+    }
+
+    /* Base class untuk Scroll Reveal (Intersection Observer) */
+    .reveal,
+    .reveal-left,
+    .reveal-right,
+    .reveal-scale {
+        opacity: 0;
+        will-change: opacity, transform, filter;
+    }
+
+    /* Class yang ditambahkan oleh JS saat elemen masuk viewport */
+    .reveal.is-visible {
+        animation: revealFadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .reveal-left.is-visible {
+        animation: revealFadeLeft 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .reveal-right.is-visible {
+        animation: revealFadeRight 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .reveal-scale.is-visible {
+        animation: revealZoomIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Utility untuk delay animasi pada grid & konten bertahap */
+    .delay-75.is-visible  { animation-delay: 75ms; }
+    .delay-100.is-visible { animation-delay: 100ms; }
+    .delay-150.is-visible { animation-delay: 150ms; }
+    .delay-200.is-visible { animation-delay: 200ms; }
+    .delay-250.is-visible { animation-delay: 250ms; }
+    .delay-300.is-visible { animation-delay: 300ms; }
+    .delay-400.is-visible { animation-delay: 400ms; }
+    .delay-500.is-visible { animation-delay: 500ms; }
+    .delay-600.is-visible { animation-delay: 600ms; }
+
+    /* Hover Micro-Interaction untuk Kartu Konten */
+    .hover-lift {
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .hover-lift:hover {
+        transform: translateY(-5px);
+    }
+
+    /* Custom Spring Transition & Grid Background */
+    .ease-spring {
+        transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .bg-tech-grid-light {
+        background-image:
+            linear-gradient(to right, rgba(203, 213, 225, 0.75) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(203, 213, 225, 0.75) 1px, transparent 1px);
+        background-size: 36px 36px;
+    }
+
+    /* Hero Staggered Entrance Animations (On Load / Refresh) */
+    @keyframes heroFadeDown {
+        0% {
+            opacity: 0;
+            transform: translateY(-18px) scale(0.96);
+            filter: blur(4px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0);
+        }
+    }
+
+    @keyframes heroFadeUp {
+        0% {
+            opacity: 0;
+            transform: translateY(28px);
+            filter: blur(4px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+            filter: blur(0);
+        }
+    }
+
+    .animate-hero-badge {
+        animation: heroFadeDown 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .animate-hero-title {
+        animation: heroFadeUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both;
+    }
+
+    .animate-hero-desc {
+        animation: heroFadeUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.25s both;
+    }
+
+    .animate-hero-cta {
+        animation: heroFadeUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.38s both;
+    }
+
+    .animate-hero-card-1 {
+        animation: heroFadeUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
+    }
+
+    .animate-hero-card-2 {
+        animation: heroFadeUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.62s both;
+    }
+
+    .animate-hero-card-3 {
+        animation: heroFadeUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.74s both;
+    }
+
+    /* Shrinking Header (Landing Page Scroll) */
+    #header-wrapper.is-shrunk {
+        padding-top: 0.5rem;
+    }
+
+    #header-wrapper.is-shrunk #main-header {
+        max-width: 68rem;
+        background-color: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-color: rgba(203, 213, 225, 0.95);
+        box-shadow: 0 12px 32px -6px rgba(15, 23, 42, 0.10), 0 4px 12px -2px rgba(0, 102, 204, 0.06);
+        border-radius: 1rem;
+    }
+
+    @media (min-width: 1024px) {
+        #header-wrapper.is-shrunk #main-header {
+            border-radius: 9999px;
+        }
+    }
+
+    #header-wrapper.is-shrunk #header-container {
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+    }
+
+    #header-wrapper.is-shrunk #header-inner {
+        height: 3.35rem;
+    }
+
+    #header-wrapper.is-shrunk #header-logo {
+        height: 1.85rem;
+    }
+
+    #header-wrapper.is-shrunk #header-nav {
+        gap: 0.125rem;
+        font-size: 0.8125rem;
+    }
+
+    #header-wrapper.is-shrunk #header-nav a {
+        padding: 0.25rem 0.75rem;
+    }
+
+    #header-wrapper.is-shrunk #header-badge {
+        padding: 0.25rem 0.625rem;
+        font-size: 0.65rem;
+    }
+
+    #header-wrapper.is-shrunk #header-cta {
+        padding: 0.25rem 0.25rem 0.25rem 0.875rem;
+        font-size: 0.725rem;
+    }
+
+    #header-wrapper.is-shrunk #header-cta-icon {
+        width: 1.35rem;
+        height: 1.35rem;
+        margin-left: 0.5rem;
+    }
+
+    /* Clients Carousel Active Card & Smooth Drag */
+    .client-slide.is-active-slide {
+        border-color: rgba(0, 102, 204, 0.65);
+        background-color: rgba(239, 246, 255, 0.85);
+        box-shadow: 0 8px 20px -6px rgba(0, 102, 204, 0.14);
+    }
+
+    #clients-carousel.is-dragging {
+        scroll-behavior: auto;
+        scroll-snap-type: none;
+    }
+}

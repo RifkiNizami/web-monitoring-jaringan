@@ -3,29 +3,31 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
 
-            <div class="lg:col-span-7 space-y-6 reveal">
-                <h2 class="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-                    PT. Netmedia Fiberoptik Lancarmulya
-                </h2>
+            <div class="lg:col-span-7 space-y-6">
+                <div class="reveal-left space-y-4">
+                    <h2 class="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+                        PT. Netmedia Fiberoptik Lancarmulya
+                    </h2>
 
-                <div class="space-y-4 text-sm sm:text-base text-slate-600 leading-relaxed">
-                    <p>
-                        <strong>NetFly</strong> (PT. Netmedia Fiberoptik Lancarmulya) adalah penyedia jasa layanan
-                        komunikasi internet dan <em>Information Technology Solution</em> berlisensi nasional yang
-                        berkomitmen menghadirkan kualitas terbaik bagi sektor korporat, ritel, dan residensial di
-                        Indonesia.
-                    </p>
-                    <p>
-                        Dengan infrastruktur yang menghubungkan gedung perkantoran di Jakarta serta kawasan industri di
-                        Surabaya dan Sidoarjo, NetFly menyediakan solusi satu atap (<em>One Stop Solution</em>) mulai dari
-                        konektivitas serat optik, radio broadband, interkoneksi VPN privat, hingga sistem monitoring
-                        terpadu.
-                    </p>
+                    <div class="space-y-4 text-sm sm:text-base text-slate-600 leading-relaxed">
+                        <p>
+                            <strong>NetFly</strong> (PT. Netmedia Fiberoptik Lancarmulya) adalah penyedia jasa layanan
+                            komunikasi internet dan <em>Information Technology Solution</em> berlisensi nasional yang
+                            berkomitmen menghadirkan kualitas terbaik bagi sektor korporat, ritel, dan residensial di
+                            Indonesia.
+                        </p>
+                        <p>
+                            Dengan infrastruktur yang menghubungkan gedung perkantoran di Jakarta serta kawasan industri di
+                            Surabaya dan Sidoarjo, NetFly menyediakan solusi satu atap (<em>One Stop Solution</em>) mulai dari
+                            konektivitas serat optik, radio broadband, interkoneksi VPN privat, hingga sistem monitoring
+                            terpadu.
+                        </p>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 text-xs">
 
-                    <div class="p-1.5 rounded-2xl bg-slate-100/80 border border-slate-200/80">
+                    <div class="reveal delay-150 hover-lift p-1.5 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80">
                         <div class="rounded-xl bg-white p-5 space-y-2 shadow-2xs h-full">
                             <span class="text-netfly-blue font-bold text-xs uppercase tracking-wider block">Visi
                                 NetFly</span>
@@ -36,7 +38,7 @@
                         </div>
                     </div>
 
-                    <div class="p-1.5 rounded-2xl bg-slate-100/80 border border-slate-200/80">
+                    <div class="reveal delay-250 hover-lift p-1.5 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-emerald-300/80">
                         <div class="rounded-xl bg-white p-5 space-y-2 shadow-2xs h-full">
                             <span class="text-emerald-700 font-bold text-xs uppercase tracking-wider block">Misi
                                 NetFly</span>
@@ -51,8 +53,8 @@
                 </div>
             </div>
 
-            <div class="lg:col-span-5 text-xs reveal delay-100">
-                <div class="p-2 sm:p-2.5 rounded-3xl bg-slate-100/90 border border-slate-200/90 shadow-sm">
+            <div class="lg:col-span-5 text-xs reveal-right delay-200">
+                <div class="hover-lift p-2 sm:p-2.5 rounded-3xl bg-slate-100/90 border border-slate-200/90 shadow-sm">
                     <div class="rounded-[1.125rem] bg-white border border-slate-200/70 p-6 sm:p-7 space-y-5 shadow-xs">
 
                         <div

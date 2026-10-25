@@ -20,6 +20,8 @@ yarn-error.log
 /.idea
 /.nova
 /.zed
+/.vscode
+_ide_helper.php
 
 # PRD & Dokumen Perencanaan
 prd.md

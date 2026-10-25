@@ -1,0 +1,11 @@
+/* ==========================================================================
+   NetFly Admin Dashboard & Console Styles & Animations
+   (Staggered Main Content Entrance, Card Hover Transitions)
+   ========================================================================== */
+
+@layer utilities {
+    .admin-reveal {
+        opacity: 0;
+        animation: revealFadeUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+}

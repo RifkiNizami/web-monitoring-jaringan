@@ -1,0 +1,15 @@
+@import "tailwindcss" source(none);
+@source "../../views/admin/login.blade.php";
+@import "./login.css";
+
+@theme {
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+}
+
+@layer base {
+    html {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
