@@ -117,19 +117,19 @@
                                 <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                 </svg>
-                                <span>CUSTOMER AKTIF</span>
+                                <span>{{ $metrics['customer_active']['title'] }}</span>
                             </div>
                             <span class="px-2 py-0.5 text-[10px] font-medium bg-slate-100 text-slate-600 rounded-full border border-slate-200/60">
-                                Terverifikasi
+                                {{ $metrics['customer_active']['badge'] }}
                             </span>
                         </div>
                         <div class="flex items-baseline gap-2 mb-4">
-                            <span class="text-2xl font-black text-slate-900 tracking-tight">1, 248</span>
-                            <span class="text-xs font-medium text-emerald-600">+12 bln ini</span>
+                            <span class="text-2xl font-black text-slate-900 tracking-tight">{{ $metrics['customer_active']['value'] }}</span>
+                            <span class="text-xs font-medium text-emerald-600">{{ $metrics['customer_active']['subvalue'] }}</span>
                         </div>
                         <div class="pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-                            <span>Corporate & Retail</span>
-                            <span class="text-slate-600 font-semibold">99.4% Aktif</span>
+                            <span>{{ $metrics['customer_active']['footer_left'] }}</span>
+                            <span class="text-slate-600 font-semibold">{{ $metrics['customer_active']['footer_right'] }}</span>
                         </div>
                     </div>
 
@@ -140,19 +140,19 @@
                                 <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                                 </svg>
-                                <span>PROJECT AKTIF</span>
+                                <span>{{ $metrics['project_active']['title'] }}</span>
                             </div>
                             <span class="px-2 py-0.5 text-[10px] font-medium bg-slate-100 text-slate-600 rounded-full border border-slate-200/60">
-                                On Track
+                                {{ $metrics['project_active']['badge'] }}
                             </span>
                         </div>
                         <div class="flex items-baseline gap-2 mb-4">
-                            <span class="text-2xl font-black text-slate-900 tracking-tight">42</span>
-                            <span class="text-xs font-medium text-slate-500">Instalasi Baru</span>
+                            <span class="text-2xl font-black text-slate-900 tracking-tight">{{ $metrics['project_active']['value'] }}</span>
+                            <span class="text-xs font-medium text-slate-500">{{ $metrics['project_active']['subvalue'] }}</span>
                         </div>
                         <div class="pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-                            <span>Target Selesai</span>
-                            <span class="text-slate-600 font-semibold">5 Minggu Ini</span>
+                            <span>{{ $metrics['project_active']['footer_left'] }}</span>
+                            <span class="text-slate-600 font-semibold">{{ $metrics['project_active']['footer_right'] }}</span>
                         </div>
                     </div>
 
@@ -163,20 +163,20 @@
                                 <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
                                 </svg>
-                                <span>PERANGKAT ONLINE</span>
+                                <span>{{ $metrics['device_online']['title'] }}</span>
                             </div>
                             <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium bg-emerald-50 text-emerald-600 rounded-full border border-emerald-200/60">
                                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                Online
+                                {{ $metrics['device_online']['badge'] }}
                             </span>
                         </div>
                         <div class="flex items-baseline gap-2 mb-4">
-                            <span class="text-2xl font-black text-slate-900 tracking-tight">8, 432</span>
-                            <span class="text-xs font-medium text-slate-400">/ 8,444 unit</span>
+                            <span class="text-2xl font-black text-slate-900 tracking-tight">{{ $metrics['device_online']['value'] }}</span>
+                            <span class="text-xs font-medium text-slate-400">{{ $metrics['device_online']['subvalue'] }}</span>
                         </div>
                         <div class="pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-                            <span>Ketersediaan Fisik</span>
-                            <span class="text-emerald-600 font-semibold">99.86% Sehat</span>
+                            <span>{{ $metrics['device_online']['footer_left'] }}</span>
+                            <span class="text-emerald-600 font-semibold">{{ $metrics['device_online']['footer_right'] }}</span>
                         </div>
                     </div>
 
@@ -187,20 +187,20 @@
                                 <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                 </svg>
-                                <span>PERANGKAT OFFLINE</span>
+                                <span>{{ $metrics['device_offline']['title'] }}</span>
                             </div>
                             <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium bg-rose-50 text-rose-600 rounded-full border border-rose-200/60">
                                 <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                                Offline
+                                {{ $metrics['device_offline']['badge'] }}
                             </span>
                         </div>
                         <div class="flex items-baseline gap-2 mb-4">
-                            <span class="text-2xl font-black text-rose-600 tracking-tight">12</span>
-                            <span class="text-xs font-medium text-slate-400">Unit Padam</span>
+                            <span class="text-2xl font-black text-rose-600 tracking-tight">{{ $metrics['device_offline']['value'] }}</span>
+                            <span class="text-xs font-medium text-slate-400">{{ $metrics['device_offline']['subvalue'] }}</span>
                         </div>
                         <div class="pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-                            <span>Status Tindakan</span>
-                            <span class="text-rose-600 font-semibold">Investigasi Aktif</span>
+                            <span>{{ $metrics['device_offline']['footer_left'] }}</span>
+                            <span class="text-rose-600 font-semibold">{{ $metrics['device_offline']['footer_right'] }}</span>
                         </div>
                     </div>
 
@@ -222,13 +222,13 @@
                                         Grafik Ketersediaan Jaringan (Uptime SLA)
                                     </h3>
                                     <p class="text-xs text-slate-400 mt-0.5">
-                                        Statistik ketersediaan transmisi backbone dan link pelanggan (30 Hari Terakhir)
+                                        Statistik ketersediaan transmisi backbone dan link pelanggan ({{ $uptimeStats['date_start'] }} - {{ $uptimeStats['date_end'] }})
                                     </p>
                                 </div>
                                 <div>
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200/60 rounded-md">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
-                                        Rata-rata: 99.82%
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold {{ $uptimeStats['is_sla_met'] ? 'text-blue-700 bg-blue-50 border-blue-200/60' : 'text-amber-700 bg-amber-50 border-amber-200/60' }} border rounded-md">
+                                        <span class="w-1.5 h-1.5 rounded-full {{ $uptimeStats['is_sla_met'] ? 'bg-blue-600' : 'bg-amber-600' }}"></span>
+                                        Rata-rata: {{ $uptimeStats['average'] }}%
                                     </span>
                                 </div>
                             </div>
@@ -237,88 +237,215 @@
                             <div class="grid grid-cols-3 gap-3 p-3 bg-slate-50/80 rounded-lg border border-slate-100 text-center mb-6">
                                 <div>
                                     <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-tight">UPTIME TERTINGGI</div>
-                                    <div class="text-sm font-bold text-slate-800 mt-0.5">100.0%</div>
+                                    <div class="text-sm font-bold text-slate-800 mt-0.5">{{ $uptimeStats['highest'] }}</div>
                                 </div>
                                 <div class="border-x border-slate-200/60">
                                     <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-tight">TITIK TERENDAH</div>
-                                    <div class="text-sm font-bold text-slate-800 mt-0.5">99.50%</div>
+                                    <div class="text-sm font-bold text-slate-800 mt-0.5">{{ $uptimeStats['lowest'] }}</div>
                                 </div>
                                 <div>
                                     <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-tight">STATUS SLA BULANAN</div>
-                                    <div class="text-sm font-bold text-emerald-600 mt-0.5">Tercapai (99.5%)</div>
+                                    <div class="text-sm font-bold {{ $uptimeStats['is_sla_met'] ? 'text-emerald-600' : 'text-rose-600' }} mt-0.5">
+                                        {{ $uptimeStats['is_sla_met'] ? 'Tercapai (' . $uptimeStats['sla_target'] . ')' : 'Deviasi (< ' . $uptimeStats['sla_target'] . ')' }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- SVG Line Chart (Matching image spline & labels) -->
-                        <div class="w-full relative pt-2">
-                            <div class="flex">
-                                <!-- Y Axis Labels -->
-                                <div class="flex flex-col justify-between text-[10px] font-mono text-slate-400 pr-3 pb-6 text-right h-44 select-none shrink-0">
-                                    <span>100.1%</span>
-                                    <span>100.0%</span>
-                                    <span>99.8%</span>
-                                    <span>99.6%</span>
-                                    <span>99.4%</span>
-                                    <span>99.2%</span>
+                        <!-- SVG Line Chart (Dinamis dari Database, Proporsional & Anti-Gepeng) -->
+                        <div class="w-full relative mt-2 pt-2">
+                            <!-- Chart Canvas Container -->
+                            <div class="w-full h-64 sm:h-72 lg:h-80 relative">
+                                <svg class="w-full h-full overflow-visible" viewBox="0 0 760 240" preserveAspectRatio="none">
+                                    <defs>
+                                        <!-- Gradient Fill for Area -->
+                                        <linearGradient id="slaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                            <stop offset="0%" stop-color="#2563eb" stop-opacity="0.30" />
+                                            <stop offset="60%" stop-color="#3b82f6" stop-opacity="0.08" />
+                                            <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.0" />
+                                        </linearGradient>
+
+                                        <!-- Shadow for Main Spline -->
+                                        <filter id="lineGlow" x="-20%" y="-20%" width="140%" height="140%">
+                                            <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#2563eb" flood-opacity="0.25" />
+                                        </filter>
+                                    </defs>
+
+                                    <!-- Grid Lines & Y-Axis Labels -->
+                                    @foreach ($uptimeStats['y_ticks'] as $tick)
+                                        <line 
+                                            x1="{{ $uptimeStats['plot_left'] }}" 
+                                            y1="{{ $tick['y'] }}" 
+                                            x2="{{ $uptimeStats['plot_right'] }}" 
+                                            y2="{{ $tick['y'] }}" 
+                                            stroke="#e2e8f0" 
+                                            stroke-width="1" 
+                                            stroke-dasharray="{{ $loop->last ? 'none' : '4,4' }}" 
+                                        />
+                                        <text 
+                                            x="{{ $uptimeStats['plot_left'] - 8 }}" 
+                                            y="{{ $tick['y'] + 3.5 }}" 
+                                            text-anchor="end" 
+                                            fill="#94a3b8" 
+                                            font-size="10" 
+                                            font-weight="500" 
+                                            font-family="ui-monospace, SFMono-Regular, monospace"
+                                        >{{ $tick['label'] }}</text>
+                                    @endforeach
+
+                                    <!-- SLA Target Threshold Line (99.50%) -->
+                                    <line 
+                                        x1="{{ $uptimeStats['plot_left'] }}" 
+                                        y1="{{ $uptimeStats['sla_target_y'] }}" 
+                                        x2="{{ $uptimeStats['plot_right'] }}" 
+                                        y2="{{ $uptimeStats['sla_target_y'] }}" 
+                                        stroke="#f59e0b" 
+                                        stroke-width="1.5" 
+                                        stroke-dasharray="4,4" 
+                                        opacity="0.85" 
+                                    />
+                                    <text 
+                                        x="{{ $uptimeStats['plot_right'] }}" 
+                                        y="{{ max(14, $uptimeStats['sla_target_y'] - 6) }}" 
+                                        text-anchor="end" 
+                                        fill="#d97706" 
+                                        font-size="9" 
+                                        font-weight="700" 
+                                        font-family="ui-monospace, SFMono-Regular, monospace"
+                                    >Batas SLA Target: {{ $uptimeStats['sla_target'] }}</text>
+
+                                    <!-- Area Gradient Fill -->
+                                    <path 
+                                        d="{{ $uptimeStats['area_path'] }}" 
+                                        fill="url(#slaGradient)" 
+                                    />
+
+                                    <!-- Spline Curve Line -->
+                                    <path 
+                                        d="{{ $uptimeStats['stroke_path'] }}" 
+                                        fill="none" 
+                                        stroke="#2563eb" 
+                                        stroke-width="2.5" 
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        filter="url(#lineGlow)"
+                                    />
+
+                                    <!-- Interactive Points with Smooth Hover Tooltips (Stably Locked to Curve) -->
+                                    @foreach ($uptimeStats['all_points'] as $pt)
+                                        <g class="cursor-pointer group">
+                                            <!-- Invisible Wide Hit Area for Smooth Interaction -->
+                                            <circle 
+                                                cx="{{ $pt['x'] }}" 
+                                                cy="{{ $pt['y'] }}" 
+                                                r="12" 
+                                                fill="transparent" 
+                                            />
+
+                                            <!-- Outer Halo on Hover (Never Detaches) -->
+                                            <circle 
+                                                cx="{{ $pt['x'] }}" 
+                                                cy="{{ $pt['y'] }}" 
+                                                r="8" 
+                                                fill="#3b82f6" 
+                                                fill-opacity="0.22" 
+                                                class="opacity-0 group-hover:opacity-100 transition-opacity duration-150" 
+                                            />
+
+                                            <!-- Dot (Milestone or Incident Point) -->
+                                            @if ($pt['is_milestone'] || $pt['uptime'] < 99.7)
+                                                <circle 
+                                                    cx="{{ $pt['x'] }}" 
+                                                    cy="{{ $pt['y'] }}" 
+                                                    r="4" 
+                                                    fill="#ffffff" 
+                                                    stroke="{{ $pt['uptime'] < 99.7 ? '#ef4444' : '#2563eb' }}" 
+                                                    stroke-width="2.5" 
+                                                    class="transition-colors group-hover:fill-blue-100" 
+                                                />
+                                            @else
+                                                <circle 
+                                                    cx="{{ $pt['x'] }}" 
+                                                    cy="{{ $pt['y'] }}" 
+                                                    r="2.5" 
+                                                    fill="#2563eb" 
+                                                    class="opacity-0 group-hover:opacity-100 transition-opacity duration-150" 
+                                                />
+                                            @endif
+
+                                            <!-- Tooltip Popover (Floating cleanly ABOVE the peak) -->
+                                            <g class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none">
+                                                @php
+                                                    $tooltipX = max(68, min(692, $pt['x']));
+                                                    $tooltipY = max(6, $pt['y'] - 38);
+                                                @endphp
+                                                <rect 
+                                                    x="{{ $tooltipX - 58 }}" 
+                                                    y="{{ $tooltipY }}" 
+                                                    width="116" 
+                                                    height="32" 
+                                                    rx="6" 
+                                                    fill="#0f172a" 
+                                                    fill-opacity="0.95" 
+                                                />
+                                                <text 
+                                                    x="{{ $tooltipX }}" 
+                                                    y="{{ $tooltipY + 13 }}" 
+                                                    text-anchor="middle" 
+                                                    fill="#ffffff" 
+                                                    font-size="9.5" 
+                                                    font-weight="700" 
+                                                    font-family="system-ui, -apple-system, sans-serif"
+                                                >{{ $pt['uptime'] }}% • {{ $pt['date'] }}</text>
+                                                <text 
+                                                    x="{{ $tooltipX }}" 
+                                                    y="{{ $tooltipY + 24 }}" 
+                                                    text-anchor="middle" 
+                                                    fill="{{ $pt['downtime'] > 0 ? '#fca5a5' : '#86efac' }}" 
+                                                    font-size="8.5" 
+                                                    font-weight="600" 
+                                                    font-family="system-ui, -apple-system, sans-serif"
+                                                >{{ $pt['downtime'] > 0 ? $pt['downtime'] . 'm Padam (' . $pt['status'] . ')' : '100% Normal Operasional' }}</text>
+                                            </g>
+
+                                            <!-- Native Browser Title Accessibility -->
+                                            <title>{{ $pt['full_date'] }}&#10;Uptime: {{ $pt['uptime'] }}%&#10;Downtime: {{ $pt['downtime'] }} Menit&#10;Status: {{ $pt['status'] }}</title>
+                                        </g>
+                                    @endforeach
+
+                                    <!-- X-Axis Milestone Date Labels -->
+                                    @foreach ($uptimeStats['sample_points'] as $pt)
+                                        <text 
+                                            x="{{ $pt['x'] }}" 
+                                            y="228" 
+                                            text-anchor="middle" 
+                                            fill="#94a3b8" 
+                                            font-size="10" 
+                                            font-weight="500" 
+                                            font-family="ui-monospace, SFMono-Regular, monospace"
+                                        >{{ $pt['date'] }}</text>
+                                    @endforeach
+                                </svg>
+                            </div>
+
+                            <!-- Legend Footer Subrow -->
+                            <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-[11px] text-slate-500">
+                                <div class="flex items-center gap-4">
+                                    <span class="inline-flex items-center gap-1.5">
+                                        <span class="w-3.5 h-1 bg-blue-600 rounded-full inline-block"></span>
+                                        <span>Realisasi Uptime Harian</span>
+                                    </span>
+                                    <span class="inline-flex items-center gap-1.5">
+                                        <span class="w-3.5 h-0.5 border-t-2 border-dashed border-amber-500 inline-block"></span>
+                                        <span>Target Kontrak ({{ $uptimeStats['sla_target'] }})</span>
+                                    </span>
+                                    <span class="inline-flex items-center gap-1.5">
+                                        <span class="w-2 h-2 rounded-full border-2 border-blue-600 bg-white inline-block"></span>
+                                        <span>Milestone Telemetri</span>
+                                    </span>
                                 </div>
-
-                                <!-- Chart Area -->
-                                <div class="flex-1 relative pb-6 h-44">
-                                    <!-- Horizontal Grid Lines -->
-                                    <div class="absolute inset-x-0 top-0 h-full flex flex-col justify-between pointer-events-none pb-6">
-                                        <div class="border-b border-dashed border-slate-200/70 w-full"></div>
-                                        <div class="border-b border-dashed border-slate-200/70 w-full"></div>
-                                        <div class="border-b border-dashed border-slate-200/70 w-full"></div>
-                                        <div class="border-b border-dashed border-slate-200/70 w-full"></div>
-                                        <div class="border-b border-dashed border-slate-200/70 w-full"></div>
-                                        <div class="border-b border-slate-200 w-full"></div>
-                                    </div>
-
-                                    <!-- Spline Path SVG -->
-                                    <svg class="w-full h-[calc(100%-1.5rem)] overflow-visible" viewBox="0 0 600 150" preserveAspectRatio="none">
-                                        <defs>
-                                            <linearGradient id="slaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                                <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.25" />
-                                                <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.0" />
-                                            </linearGradient>
-                                        </defs>
-
-                                        <!-- Area Fill -->
-                                        <path 
-                                            d="M 10,48 C 60,52 80,56 120,53 C 160,50 170,44 210,45 C 240,46 270,95 310,95 C 350,95 380,50 420,50 C 460,50 480,44 520,44 C 550,44 570,54 590,56 L 590,150 L 10,150 Z" 
-                                            fill="url(#slaGradient)" 
-                                        />
-
-                                        <!-- Stroke Line -->
-                                        <path 
-                                            d="M 10,48 C 60,52 80,56 120,53 C 160,50 170,44 210,45 C 240,46 270,95 310,95 C 350,95 380,50 420,50 C 460,50 480,44 520,44 C 550,44 570,54 590,56" 
-                                            fill="none" 
-                                            stroke="#2563eb" 
-                                            stroke-width="2.5" 
-                                            stroke-linecap="round"
-                                        />
-
-                                        <!-- Interactive Points -->
-                                        <circle cx="10" cy="48" r="4" fill="#ffffff" stroke="#2563eb" stroke-width="2" />
-                                        <circle cx="120" cy="53" r="3.5" fill="#ffffff" stroke="#2563eb" stroke-width="2" />
-                                        <circle cx="210" cy="45" r="4" fill="#ffffff" stroke="#2563eb" stroke-width="2" />
-                                        <circle cx="310" cy="95" r="4" fill="#ffffff" stroke="#2563eb" stroke-width="2" />
-                                        <circle cx="420" cy="50" r="4" fill="#ffffff" stroke="#2563eb" stroke-width="2" />
-                                        <circle cx="520" cy="44" r="4" fill="#ffffff" stroke="#2563eb" stroke-width="2" />
-                                        <circle cx="590" cy="56" r="3.5" fill="#ffffff" stroke="#2563eb" stroke-width="2" />
-                                    </svg>
-
-                                    <!-- X Axis Labels -->
-                                    <div class="absolute bottom-0 inset-x-0 flex justify-between text-[10px] font-mono text-slate-400 select-none">
-                                        <span>01 Okt</span>
-                                        <span>05 Okt</span>
-                                        <span>10 Okt</span>
-                                        <span>15 Okt</span>
-                                        <span>20 Okt</span>
-                                        <span>25 Okt</span>
-                                        <span>30 Okt</span>
-                                    </div>
+                                <div class="text-[10px] font-mono text-slate-400">
+                                    Sampel 30 Hari Aktif
                                 </div>
                             </div>
                         </div>
@@ -342,58 +469,47 @@
                                 Notifikasi insiden perangkat dan anomali jaringan saat ini:
                             </p>
 
-                            <!-- Alerts List -->
+                            <!-- Alerts List (Dinamis) -->
                             <div class="space-y-3">
-                                
-                                <!-- Alert 1 -->
-                                <div class="p-3 rounded-lg border border-rose-100 bg-rose-50/40 hover:bg-rose-50/70 transition-colors">
-                                    <div class="flex items-center justify-between mb-1">
-                                        <span class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded bg-rose-100 text-rose-700 tracking-wide">
-                                            PADAM
-                                        </span>
-                                        <span class="text-[10px] font-mono text-slate-400">10:42:32 WIB</span>
+                                @forelse ($alerts as $alert)
+                                    @php
+                                        $bgClass = match ($alert['badge_type']) {
+                                            'danger' => 'border-rose-100 bg-rose-50/40 hover:bg-rose-50/70',
+                                            'warning' => 'border-amber-100 bg-amber-50/40 hover:bg-amber-50/70',
+                                            default => 'border-indigo-100 bg-indigo-50/40 hover:bg-indigo-50/70',
+                                        };
+                                        $badgeClass = match ($alert['badge_type']) {
+                                            'danger' => 'bg-rose-100 text-rose-700',
+                                            'warning' => 'bg-amber-100 text-amber-800',
+                                            default => 'bg-indigo-100 text-indigo-700',
+                                        };
+                                    @endphp
+                                    <div class="p-3 rounded-lg border {{ $bgClass }} transition-colors">
+                                        <div class="flex items-center justify-between mb-1">
+                                            <span class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded {{ $badgeClass }} tracking-wide">
+                                                {{ $alert['badge'] }}
+                                            </span>
+                                            <span class="text-[10px] font-mono text-slate-400">{{ $alert['time'] }}</span>
+                                        </div>
+                                        <div class="text-xs font-bold text-slate-900 mt-1">
+                                            {{ $alert['title'] }}
+                                        </div>
+                                        <p class="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                                            {{ $alert['desc'] }}
+                                        </p>
                                     </div>
-                                    <div class="text-xs font-bold text-slate-900 mt-1">
-                                        Switch Agg-Bks_04 Terputus
+                                @empty
+                                    <div class="p-4 text-center text-xs text-slate-400 bg-slate-50 rounded-lg">
+                                        Tidak ada anomali atau insiden aktif saat ini.
                                     </div>
-                                    <p class="text-[11px] text-slate-500 mt-0.5 leading-snug">
-                                        Koneksi padam di POP Bekasi. Indikasi kehilangan catu daya listrik AC.
-                                    </p>
-                                </div>
-
-                                <!-- Alert 2 -->
-                                <div class="p-3 rounded-lg border border-amber-100 bg-amber-50/40 hover:bg-amber-50/70 transition-colors">
-                                    <div class="flex items-center justify-between mb-1">
-                                        <span class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded bg-amber-100 text-amber-800 tracking-wide">
-                                            BEBAN TINGGI
-                                        </span>
-                                        <span class="text-[10px] font-mono text-slate-400">10:45:00 WIB</span>
-                                    </div>
-                                    <div class="text-xs font-bold text-slate-900 mt-1">
-                                        Router Core-East_01 CPU 92%
-                                    </div>
-                                    <p class="text-[11px] text-slate-500 mt-0.5 leading-snug">
-                                        Utilisasi CPU melebihi ambang batas aman selama lebih dari 5 menit.
-                                    </p>
-                                </div>
-
-                                <!-- Alert 3 -->
-                                <div class="p-3 rounded-lg border border-indigo-100 bg-indigo-50/40 hover:bg-indigo-50/70 transition-colors">
-                                    <div class="flex items-center justify-between mb-1">
-                                        <span class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded bg-indigo-100 text-indigo-700 tracking-wide">
-                                            ANOMALI
-                                        </span>
-                                        <span class="text-[10px] font-mono text-slate-400">09:32:45 WIB</span>
-                                    </div>
-                                    <div class="text-xs font-bold text-slate-900 mt-1">
-                                        Backbone JKT-SBY Latensi Naik
-                                    </div>
-                                    <p class="text-[11px] text-slate-500 mt-0.5 leading-snug">
-                                        RTT terdeteksi 120ms (Batas Normal transmisi: ≤15ms).
-                                    </p>
-                                </div>
-
+                                @endforelse
                             </div>
+                        </div>
+
+                        <div class="pt-3 border-t border-slate-100 mt-4">
+                            <a href="{{ route('monitoring.index') }}" class="w-full block text-center py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors">
+                                Buka NOC Monitoring Center &rarr;
+                            </a>
                         </div>
                     </div>
 
@@ -409,7 +525,7 @@
                                     Widget Antrean Tiket
                                 </h3>
                                 <span class="px-2 py-0.5 text-[10px] font-semibold text-slate-600 bg-slate-100 rounded-full border border-slate-200">
-                                    3 Membutuhkan Penanganan
+                                    {{ count($tickets) }} Membutuhkan Penanganan
                                 </span>
                             </div>
                             <p class="text-xs text-slate-400 mt-0.5">
@@ -417,14 +533,14 @@
                             </p>
                         </div>
                         <div>
-                            <a href="#semua-tiket" class="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 transition-colors">
+                            <a href="{{ route('tickets.index') }}" class="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 transition-colors">
                                 <span>Lihat Semua Tiket</span>
-                                <span>›</span>
+                                <span>&rsaquo;</span>
                             </a>
                         </div>
                     </div>
 
-                    <!-- Table Data -->
+                    <!-- Table Data (Dinamis) -->
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
@@ -439,112 +555,47 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100 text-xs text-slate-700">
-                                
-                                <!-- Row 1 -->
-                                <tr class="hover:bg-slate-50/80 transition-colors">
-                                    <td class="py-3.5 px-5 font-mono text-[11px] font-semibold text-slate-800">
-                                        <span class="px-2 py-0.5 bg-slate-100 border border-slate-200/70 rounded">
-                                            INC-2026-1023
-                                        </span>
-                                    </td>
-                                    <td class="py-3.5 px-5">
-                                        <div class="font-bold text-slate-900">PT. XYZ Teknologi</div>
-                                        <div class="text-[11px] text-slate-400">Dedicated Fiber 1Gbps</div>
-                                    </td>
-                                    <td class="py-3.5 px-5 text-slate-600 font-medium">
-                                        Link Down (Kabel Putus / FO Cut)
-                                    </td>
-                                    <td class="py-3.5 px-5">
-                                        <span class="inline-block px-2 py-0.5 text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-200 rounded">
-                                            P1 - Critical
-                                        </span>
-                                    </td>
-                                    <td class="py-3.5 px-5">
-                                        <span class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-700">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                                            Menunggu Dispatch
-                                        </span>
-                                    </td>
-                                    <td class="py-3.5 px-5 font-mono text-slate-600">
-                                        45m 12s
-                                    </td>
-                                    <td class="py-3.5 px-5 text-right">
-                                        <button class="px-3 py-1 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-md shadow-2xs transition-colors cursor-pointer">
-                                            Tangani
-                                        </button>
-                                    </td>
-                                </tr>
-
-                                <!-- Row 2 -->
-                                <tr class="hover:bg-slate-50/80 transition-colors">
-                                    <td class="py-3.5 px-5 font-mono text-[11px] font-semibold text-slate-800">
-                                        <span class="px-2 py-0.5 bg-slate-100 border border-slate-200/70 rounded">
-                                            INC-2026-1024
-                                        </span>
-                                    </td>
-                                    <td class="py-3.5 px-5">
-                                        <div class="font-bold text-slate-900">Dinas Pendidikan Kota</div>
-                                        <div class="text-[11px] text-slate-400">Project Smart City Jaringan FO</div>
-                                    </td>
-                                    <td class="py-3.5 px-5 text-slate-600 font-medium">
-                                        Packet Loss Tinggi (>15%)
-                                    </td>
-                                    <td class="py-3.5 px-5">
-                                        <span class="inline-block px-2 py-0.5 text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded">
-                                            P2 - High
-                                        </span>
-                                    </td>
-                                    <td class="py-3.5 px-5">
-                                        <span class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-700">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                                            Dianalisis NOC
-                                        </span>
-                                    </td>
-                                    <td class="py-3.5 px-5 font-mono text-slate-600">
-                                        12m 05s
-                                    </td>
-                                    <td class="py-3.5 px-5 text-right">
-                                        <button class="px-3 py-1 border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-medium rounded-md transition-colors cursor-pointer">
-                                            Detail
-                                        </button>
-                                    </td>
-                                </tr>
-
-                                <!-- Row 3 -->
-                                <tr class="hover:bg-slate-50/80 transition-colors">
-                                    <td class="py-3.5 px-5 font-mono text-[11px] font-semibold text-slate-800">
-                                        <span class="px-2 py-0.5 bg-slate-100 border border-slate-200/70 rounded">
-                                            REQ-2026-0882
-                                        </span>
-                                    </td>
-                                    <td class="py-3.5 px-5">
-                                        <div class="font-bold text-slate-900">RS Medika Center</div>
-                                        <div class="text-[11px] text-slate-400">Dedicated Internet Broadband</div>
-                                    </td>
-                                    <td class="py-3.5 px-5 text-slate-600 font-medium">
-                                        Permintaan Bandwidth On-Demand (+50M)
-                                    </td>
-                                    <td class="py-3.5 px-5">
-                                        <span class="inline-block px-2 py-0.5 text-[10px] font-bold text-slate-700 bg-slate-100 border border-slate-200 rounded">
-                                            P3 - Medium
-                                        </span>
-                                    </td>
-                                    <td class="py-3.5 px-5">
-                                        <span class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-700">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                                            Menunggu Persetujuan
-                                        </span>
-                                    </td>
-                                    <td class="py-3.5 px-5 font-mono text-slate-600">
-                                        2j 15m
-                                    </td>
-                                    <td class="py-3.5 px-5 text-right">
-                                        <button class="px-3 py-1 border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-medium rounded-md transition-colors cursor-pointer">
-                                            Proses
-                                        </button>
-                                    </td>
-                                </tr>
-
+                                @forelse ($tickets as $ticket)
+                                    <tr class="hover:bg-slate-50/80 transition-colors">
+                                        <td class="py-3.5 px-5 font-mono text-[11px] font-semibold text-slate-800">
+                                            <span class="px-2 py-0.5 bg-slate-100 border border-slate-200/70 rounded">
+                                                {{ $ticket['id'] }}
+                                            </span>
+                                        </td>
+                                        <td class="py-3.5 px-5">
+                                            <div class="font-bold text-slate-900">{{ $ticket['customer'] }}</div>
+                                            <div class="text-[11px] text-slate-400">{{ $ticket['package'] }}</div>
+                                        </td>
+                                        <td class="py-3.5 px-5 text-slate-600 font-medium">
+                                            {{ $ticket['issue'] }}
+                                        </td>
+                                        <td class="py-3.5 px-5">
+                                            <span class="inline-block px-2 py-0.5 text-[10px] font-bold {{ $ticket['priority_type'] === 'critical' ? 'text-rose-700 bg-rose-50 border border-rose-200' : ($ticket['priority_type'] === 'high' ? 'text-amber-800 bg-amber-50 border border-amber-200' : 'text-slate-700 bg-slate-100 border border-slate-200') }} rounded">
+                                                {{ $ticket['priority'] }}
+                                            </span>
+                                        </td>
+                                        <td class="py-3.5 px-5">
+                                            <span class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-700">
+                                                <span class="w-1.5 h-1.5 rounded-full {{ $ticket['status_color'] === 'emerald' ? 'bg-emerald-500' : ($ticket['status_color'] === 'amber' ? 'bg-amber-500' : ($ticket['status_color'] === 'blue' ? 'bg-blue-500' : 'bg-slate-400')) }}"></span>
+                                                {{ $ticket['status'] }}
+                                            </span>
+                                        </td>
+                                        <td class="py-3.5 px-5 font-mono text-slate-600">
+                                            {{ $ticket['duration'] }}
+                                        </td>
+                                        <td class="py-3.5 px-5 text-right">
+                                            <a href="{{ route('tickets.index') }}" class="inline-block px-3 py-1 {{ $ticket['action_type'] === 'primary' ? 'bg-slate-900 hover:bg-slate-800 text-white' : 'border border-slate-300 hover:bg-slate-50 text-slate-700' }} text-xs font-semibold rounded-md shadow-2xs transition-colors cursor-pointer">
+                                                {{ $ticket['action_label'] }}
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="7" class="py-6 text-center text-xs text-slate-400">
+                                            Tidak ada antrean tiket aktif saat ini.
+                                        </td>
+                                    </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>

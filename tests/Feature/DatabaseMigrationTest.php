@@ -39,6 +39,10 @@ class DatabaseMigrationTest extends TestCase
         $this->assertDatabaseHas('users', [
             'email' => 'admin@netfly.id',
         ]);
+
+        $this->assertDatabaseHas('network_sla_metrics', [
+            'status' => 'Normal',
+        ]);
     }
 
     public function test_customer_model_relationships(): void
