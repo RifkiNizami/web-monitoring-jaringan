@@ -81,6 +81,6 @@ class LandingPageController extends Controller
             'Data monitoring dan laporan terstruktur secara otomatis.'
         ];
 
-        return view('landing.index', compact('stats', 'features', 'steps', 'benefits'));
+        return view('landingpage.index', compact('stats', 'features', 'steps', 'benefits'));
     }
 }
