@@ -50,23 +50,6 @@
 
                 <!-- Right Header Tools -->
                 <div class="flex items-center gap-4">
-                    <!-- Search Bar -->
-                    <div class="relative hidden sm:block">
-                        <div
-                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </div>
-                        <input type="text" placeholder="Go to..."
-                            class="pl-8 pr-12 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-blue-500 w-44 lg:w-56 transition-all">
-                        <span class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
-                            <kbd
-                                class="px-1.5 py-0.5 text-[10px] font-mono text-slate-400 bg-white border border-slate-200 rounded shadow-2xs">⌘K</kbd>
-                        </span>
-                    </div>
-
                     <!-- Notification Bell -->
                     <button
                         class="relative p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"

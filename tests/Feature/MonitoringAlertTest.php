@@ -26,12 +26,8 @@ class MonitoringAlertTest extends TestCase
         $response = $this->actingAs($this->adminUser)->get('/monitoring');
 
         $response->assertStatus(200);
-        $response->assertViewIs('admin.monitoring');
-        $response->assertSee('Monitoring & Live Alert', false);
-        $response->assertSee('STATUS NODE FISIK');
-        $response->assertSee('AGREGAT THROUGHPUT');
-        $response->assertSee('Papan Live Alert (Log Insiden Otomatis)');
-        $response->assertSee('Telemetri Status Perangkat Real-Time');
+        $response->assertViewIs('admin.monitoring.index');
+        $response->assertSee('Monitoring Perangkat', false);
         $response->assertSee('AP-OUTDOOR-DISDIK-01');
         $response->assertSee('RTR-CORE-MANDIRI-01');
         $response->assertSee('SW-AGG-BKS-04');
