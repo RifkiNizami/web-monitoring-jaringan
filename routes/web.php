@@ -9,6 +9,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\CustomerProjectController;
 use App\Http\Controllers\MonitoringController;
+use App\Http\Controllers\TeknisiController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -47,8 +48,18 @@ Route::middleware('auth')->group(function () {
     Route::match(['post', 'put'], '/accounts/{id}/reset-password', [AccountController::class, 'resetPassword'])->name('accounts.reset-password');
     Route::delete('/accounts/{id}', [AccountController::class, 'destroy'])->name('accounts.destroy');
 
+    // Database & Manajemen Teknisi Lapangan
+    Route::get('/teknisi', [TeknisiController::class, 'index'])->name('teknisi.index');
+    Route::post('/teknisi', [TeknisiController::class, 'store'])->name('teknisi.store');
+    Route::match(['post', 'put'], '/teknisi/{id}', [TeknisiController::class, 'update'])->name('teknisi.update');
+    Route::delete('/teknisi/{id}', [TeknisiController::class, 'destroy'])->name('teknisi.destroy');
+    Route::get('/teknisi/{id}/whatsapp', [TeknisiController::class, 'redirectToWhatsapp'])->name('teknisi.whatsapp');
+
     // Layanan Pelanggan & Penanganan Insiden (Antrean Tiket Komplain)
     Route::get('/tickets', [TicketController::class, 'index'])->name('tickets.index');
+    Route::post('/tickets', [TicketController::class, 'store'])->name('tickets.store');
+    Route::match(['post', 'put'], '/tickets/{id}', [TicketController::class, 'update'])->name('tickets.update');
+    Route::delete('/tickets/{id}', [TicketController::class, 'destroy'])->name('tickets.destroy');
 
     // Inventaris Perangkat Jaringan (Network Devices Management)
     Route::get('/devices', [DeviceController::class, 'index'])->name('devices.index');

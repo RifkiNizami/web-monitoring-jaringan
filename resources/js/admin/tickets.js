@@ -6,8 +6,6 @@ export function initAdminTickets() {
     const prioritySelect = document.getElementById('prioritySelect');
     const rows = document.querySelectorAll('.ticket-row');
 
-    if (!rows.length && !searchInput && !prioritySelect) return;
-
     function filterRows() {
         const term = (searchInput ? searchInput.value : '').toLowerCase().trim();
         const priority = (prioritySelect ? prioritySelect.value : 'all').toLowerCase();
@@ -35,13 +33,65 @@ export function initAdminTickets() {
         prioritySelect.addEventListener('change', filterRows);
     }
 
-    // Delete action button
-    document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', function () {
+    // Sinkronisasi nilai dropdown ke hidden input form update tiket
+    document.querySelectorAll('.ticket-row').forEach(row => {
+        const techSelect = row.querySelector('.technician-select');
+        const statusSelect = row.querySelector('.status-select');
+        const hiddenTech = row.querySelector('.row-assigned-tech');
+        const hiddenStatus = row.querySelector('.row-status');
+
+        if (techSelect && hiddenTech) {
+            techSelect.addEventListener('change', () => {
+                hiddenTech.value = techSelect.value;
+            });
+        }
+
+        if (statusSelect && hiddenStatus) {
+            statusSelect.addEventListener('change', () => {
+                hiddenStatus.value = statusSelect.value;
+            });
+        }
+    });
+
+    // Submit form update tiket ke database ketika tombol Update ditekan
+    document.querySelectorAll('.form-update-ticket').forEach(form => {
+        form.addEventListener('submit', function (e) {
+            const row = this.closest('tr');
+            if (row) {
+                const techSelect = row.querySelector('.technician-select');
+                const statusSelect = row.querySelector('.status-select');
+                const hiddenTech = form.querySelector('.row-assigned-tech');
+                const hiddenStatus = form.querySelector('.row-status');
+
+                if (techSelect && hiddenTech) {
+                    hiddenTech.value = techSelect.value;
+                }
+                if (statusSelect && hiddenStatus) {
+                    hiddenStatus.value = statusSelect.value;
+                }
+            }
+
+            const btn = form.querySelector('button[type="submit"]');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `
+                    <svg class="animate-spin w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                    </svg>
+                    <span>Menyimpan...</span>
+                `;
+            }
+        });
+    });
+
+    // Delete ticket form confirmation
+    document.querySelectorAll('.delete-ticket-form').forEach(form => {
+        form.addEventListener('submit', function (e) {
             const row = this.closest('tr');
             const ticketId = row ? row.getAttribute('data-id') : '';
-            if (confirm(`Apakah Anda yakin ingin menghapus antrean tiket ${ticketId}?`)) {
-                if (row) row.remove();
+            if (!confirm(`Apakah Anda yakin ingin membatalkan/menghapus tiket ${ticketId}?`)) {
+                e.preventDefault();
             }
         });
     });
@@ -67,7 +117,6 @@ export function initAdminTickets() {
     const createModal = document.getElementById('createTicketModal');
     const closeCreate = document.getElementById('closeCreateModal');
     const cancelCreate = document.getElementById('cancelCreateModal');
-    const formTicket = document.getElementById('formNewTicket');
 
     if (btnCreate && createModal) {
         btnCreate.addEventListener('click', () => createModal.classList.remove('hidden'));
@@ -78,12 +127,27 @@ export function initAdminTickets() {
     if (cancelCreate && createModal) {
         cancelCreate.addEventListener('click', () => createModal.classList.add('hidden'));
     }
-    if (formTicket && createModal) {
-        formTicket.addEventListener('submit', function (e) {
-            e.preventDefault();
-            alert('Tiket komplain baru berhasil ditambahkan ke antrean.');
-            createModal.classList.add('hidden');
-            formTicket.reset();
-        });
-    }
 }
+
+function showToastNotification(message) {
+    let alertBox = document.getElementById('floatingToastAlert');
+    if (!alertBox) {
+        alertBox = document.createElement('div');
+        alertBox.id = 'floatingToastAlert';
+        alertBox.className = 'fixed bottom-6 right-6 z-50 p-4 bg-emerald-600 text-white rounded-xl shadow-xl flex items-center gap-3 text-xs font-semibold animate-in fade-in slide-in-from-bottom-5 duration-200';
+        document.body.appendChild(alertBox);
+    }
+    alertBox.innerHTML = `
+        <svg class="w-4 h-4 text-white shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+        </svg>
+        <span>${message}</span>
+        <button type="button" class="ml-2 text-white/80 hover:text-white font-bold cursor-pointer" onclick="this.parentElement.remove()">✕</button>
+    `;
+    setTimeout(() => {
+        if (alertBox && alertBox.parentElement) {
+            alertBox.remove();
+        }
+    }, 4500);
+}
+
