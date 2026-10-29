@@ -55,6 +55,9 @@ Route::middleware('auth')->group(function () {
 
     // Telemetri Jaringan & Live Alert (NOC Monitoring)
     Route::get('/monitoring', [MonitoringController::class, 'index'])->name('monitoring.index');
+    Route::post('/monitoring/settings', [MonitoringController::class, 'saveSettings'])->name('monitoring.settings.save');
+    Route::get('/monitoring/{id}', [MonitoringController::class, 'show'])->name('monitoring.show');
+    Route::get('/api/monitoring/{id}/telemetry', [MonitoringController::class, 'telemetryStream'])->name('monitoring.telemetry');
     Route::post('/monitoring/alerts/{id}/resolve', [MonitoringController::class, 'resolveAlert'])->name('monitoring.alerts.resolve');
     Route::post('/monitoring/devices/{id}/ping', [MonitoringController::class, 'pollDevice'])->name('monitoring.devices.ping');
 
