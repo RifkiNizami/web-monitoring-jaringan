@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             TicketSeeder::class,
             MonitoringAlertSeeder::class,
             NetworkSlaMetricSeeder::class,
+            TeknisiSeeder::class,
         ]);
 
         // 2. Admin users
