@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             MonitoringAlertSeeder::class,
             NetworkSlaMetricSeeder::class,
             TeknisiSeeder::class,
+            LandingClientSeeder::class,
         ]);
 
         // 2. Admin users
@@ -48,6 +49,24 @@ class DatabaseSeeder extends Seeder
                 'phone' => '0812-3456-7890',
             ]
         );
+
+        // 3. Admin Konten (Peran Pengelola Konten Landing Page & Pengumuman)
+        User::firstOrCreate(
+            ['email' => 'konten@netfly.id'],
+            [
+                'name' => 'Admin Konten',
+                'username' => 'adminkonten',
+                'password' => Hash::make('password123'),
+                'role' => 'admin_konten',
+                'is_active' => true,
+                'phone' => '0812-9900-1122',
+            ]
+        );
+
+        // Seed Announcements setelah user admin konten terbuat
+        $this->call([
+            AnnouncementSeeder::class,
+        ]);
 
         // Akun Perwakilan Customer B2B
         $customerSeeders = [
