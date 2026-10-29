@@ -57,6 +57,9 @@ Route::middleware('auth')->group(function () {
 
     // Layanan Pelanggan & Penanganan Insiden (Antrean Tiket Komplain)
     Route::get('/tickets', [TicketController::class, 'index'])->name('tickets.index');
+    Route::post('/tickets', [TicketController::class, 'store'])->name('tickets.store');
+    Route::match(['post', 'put'], '/tickets/{id}', [TicketController::class, 'update'])->name('tickets.update');
+    Route::delete('/tickets/{id}', [TicketController::class, 'destroy'])->name('tickets.destroy');
 
     // Inventaris Perangkat Jaringan (Network Devices Management)
     Route::get('/devices', [DeviceController::class, 'index'])->name('devices.index');
