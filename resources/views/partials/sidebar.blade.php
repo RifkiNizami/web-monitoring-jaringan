@@ -125,6 +125,18 @@
                         <span>Account Management</span>
                     </div>
                 </a>
+
+                <!-- Teknisi -->
+                @php $isTeknisiActive = request()->routeIs('teknisi.*'); @endphp
+                <a href="{{ route('teknisi.index') }}"
+                    class="flex items-center justify-between px-3.5 py-2 text-xs rounded-lg transition-all duration-150 group border-l-4 {{ $isTeknisiActive ? 'bg-blue-50/90 text-netfly-blue font-semibold border-netfly-blue shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium border-transparent' }}">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-4 h-4 shrink-0 {{ $isTeknisiActive ? 'text-netfly-blue' : 'text-slate-400 group-hover:text-slate-600' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                        </svg>
+                        <span>Teknisi</span>
+                    </div>
+                </a>
             </nav>
         </div>
 
