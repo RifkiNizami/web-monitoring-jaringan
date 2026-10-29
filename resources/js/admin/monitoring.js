@@ -1,13 +1,14 @@
 /**
  * NetFly - Admin Telemetry Monitoring & Live Alert Module
+ * (Halaman daftar perangkat: /monitoring)
  */
 
 export function initAdminMonitoring() {
-    const tableBody = document.getElementById('telemetryTableBody');
+    const deviceGrid = document.getElementById('deviceGrid');
     const alertContainer = document.getElementById('alertContainer');
 
-    // Only run if on the monitoring & alert page
-    if (!tableBody && !alertContainer) return;
+    // Only run if on the monitoring device list page
+    if (!deviceGrid && !alertContainer) return;
 
     const getCsrfToken = () =>
         document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
@@ -77,46 +78,106 @@ export function initAdminMonitoring() {
     }
 
     // -----------------------------------------------------------------
-    // 1. Telemetry Table Filters (Status & Jenis Unit)
+    // 1. Device Filters (Tab Status, Pencarian & Jenis Unit)
     // -----------------------------------------------------------------
-    const filterStatus = document.getElementById('filterStatus');
+    const filterTabs = document.querySelectorAll('.filter-tab');
+    const searchInput = document.getElementById('deviceSearch');
     const filterUnit = document.getElementById('filterUnit');
+    const emptyState = document.getElementById('emptyDeviceState');
+    let activeStatus = 'all';
 
-    function applyTelemetryFilters() {
-        const selectedStatus = filterStatus ? filterStatus.value : 'all';
+    const TAB_ACTIVE = ['bg-white', 'text-slate-900', 'shadow-sm'];
+    const TAB_IDLE = ['text-slate-500', 'hover:text-slate-800'];
+
+    function applyDeviceFilters() {
+        const keyword = (searchInput?.value || '').trim().toLowerCase();
         const selectedUnit = filterUnit ? filterUnit.value : 'all';
-        const rows = document.querySelectorAll('.telemetry-row');
+        let visibleCount = 0;
 
-        rows.forEach(row => {
-            const rowStatus = row.getAttribute('data-status');
-            const rowUnit = row.getAttribute('data-unit-type');
+        document.querySelectorAll('.telemetry-row').forEach(card => {
+            const haystack = [card.dataset.hostname, card.dataset.ip, card.dataset.customer]
+                .join(' ')
+                .toLowerCase();
 
-            const matchStatus = selectedStatus === 'all' || rowStatus === selectedStatus;
-            const matchUnit = selectedUnit === 'all' || rowUnit === selectedUnit;
+            const matchStatus = activeStatus === 'all' || card.dataset.status === activeStatus;
+            const matchUnit = selectedUnit === 'all' || card.dataset.unitType === selectedUnit;
+            const matchKeyword = keyword === '' || haystack.includes(keyword);
+            const isVisible = matchStatus && matchUnit && matchKeyword;
 
-            if (matchStatus && matchUnit) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
+            card.classList.toggle('hidden', !isVisible);
+            if (isVisible) visibleCount++;
+        });
+
+        if (emptyState) emptyState.classList.toggle('hidden', visibleCount > 0);
+    }
+
+    filterTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            activeStatus = tab.dataset.filter || 'all';
+
+            filterTabs.forEach(t => {
+                const isActive = t === tab;
+                t.classList.remove(...(isActive ? TAB_IDLE : TAB_ACTIVE));
+                t.classList.add(...(isActive ? TAB_ACTIVE : TAB_IDLE));
+                t.setAttribute('aria-selected', String(isActive));
+            });
+
+            applyDeviceFilters();
+        });
+    });
+
+    if (searchInput) searchInput.addEventListener('input', applyDeviceFilters);
+    if (filterUnit) filterUnit.addEventListener('change', applyDeviceFilters);
+
+    // -----------------------------------------------------------------
+    // 2. Menu Aksi Kartu Perangkat (⋯)
+    // -----------------------------------------------------------------
+    function closeAllCardMenus(except = null) {
+        document.querySelectorAll('.card-menu').forEach(menu => {
+            if (menu === except) return;
+            menu.classList.add('hidden');
+            menu.closest('.telemetry-row')?.classList.remove('z-30');
+            menu.previousElementSibling?.setAttribute('aria-expanded', 'false');
         });
     }
 
-    if (filterStatus) filterStatus.addEventListener('change', applyTelemetryFilters);
-    if (filterUnit) filterUnit.addEventListener('change', applyTelemetryFilters);
+    document.querySelectorAll('.btn-card-menu').forEach(btn => {
+        btn.addEventListener('click', e => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const menu = btn.nextElementSibling;
+            if (!menu) return;
+
+            const willOpen = menu.classList.contains('hidden');
+            closeAllCardMenus(menu);
+
+            menu.classList.toggle('hidden', !willOpen);
+            // Naikkan kartu agar dropdown tidak tertutup kartu di bawahnya
+            btn.closest('.telemetry-row')?.classList.toggle('z-30', willOpen);
+            btn.setAttribute('aria-expanded', String(willOpen));
+        });
+    });
+
+    document.addEventListener('click', e => {
+        if (!e.target.closest('.card-menu') && !e.target.closest('.btn-card-menu')) {
+            closeAllCardMenus();
+        }
+    });
 
     // -----------------------------------------------------------------
-    // 2. Alert Resolution (Tandai Selesai)
+    // 3. Alert Resolution (Tandai Selesai)
     // -----------------------------------------------------------------
-    const alertButtons = document.querySelectorAll('.btn-resolve-alert');
-    let unresolvedCount = 2; // initial matching mockup
+    const unresolvedCountEl = document.getElementById('unresolvedCountText');
+    let unresolvedCount = parseInt(unresolvedCountEl?.textContent || '0', 10) || 0;
 
-    alertButtons.forEach(btn => {
+    document.querySelectorAll('.btn-resolve-alert').forEach(btn => {
         btn.addEventListener('click', function (e) {
             e.preventDefault();
             const alertId = this.getAttribute('data-alert-id');
-            const alertType = this.getAttribute('data-alert-type') || 'Insiden';
+            const alertType = this.getAttribute('data-alert-type') || 'Peringatan';
             const actionContainer = document.getElementById(`alert-action-container-${alertId}`);
+            const alertItem = document.getElementById(`alert-item-${alertId}`);
 
             // Visual loading state
             this.disabled = true;
@@ -134,33 +195,31 @@ export function initAdminMonitoring() {
                 .then(res => res.json())
                 .catch(() => ({ success: true }))
                 .finally(() => {
-                    // Update Action container to "✓ Resolved" badge
                     if (actionContainer) {
                         actionContainer.innerHTML = `
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-400 text-xs font-semibold cursor-default">
+                            <span class="inline-flex items-center gap-1 text-[11px] font-medium text-slate-400">
                                 <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                 </svg>
-                                Resolved
+                                Selesai
                             </span>
                         `;
                     }
+                    if (alertItem) alertItem.classList.add('opacity-60');
 
-                    // Decrement unresolved counters
                     unresolvedCount = Math.max(0, unresolvedCount - 1);
-                    const countEl = document.getElementById('unresolvedCountText');
-                    if (countEl) countEl.textContent = unresolvedCount;
+                    if (unresolvedCountEl) unresolvedCountEl.textContent = unresolvedCount;
 
                     const cardIncidentCount = document.getElementById('cardIncidentCount');
                     if (cardIncidentCount) cardIncidentCount.textContent = unresolvedCount;
 
-                    window.showToast(`Insiden '${alertType}' berhasil diselesaikan!`, 'success');
+                    window.showToast(`Peringatan '${alertType}' berhasil diselesaikan!`, 'success');
                 });
         });
     });
 
     // -----------------------------------------------------------------
-    // 3. Polling Ping Diagnostic Modal & Actions
+    // 4. Polling Ping Diagnostic Modal & Actions
     // -----------------------------------------------------------------
     const pingModal = document.getElementById('pingDiagnosticModal');
     const modalHostname = document.getElementById('modalPingHostname');
@@ -195,9 +254,10 @@ export function initAdminMonitoring() {
     }
 
     document.addEventListener('keydown', e => {
-        if (e.key === 'Escape' && pingModal && !pingModal.classList.contains('hidden')) {
-            closePingModal();
-        }
+        if (e.key !== 'Escape') return;
+        if (pingModal && !pingModal.classList.contains('hidden')) closePingModal();
+        if (settingModal && !settingModal.classList.contains('hidden')) closeSettingModal();
+        closeAllCardMenus();
     });
 
     function executePollingPing(deviceId, hostname, ip, triggerBtn = null) {
@@ -205,6 +265,7 @@ export function initAdminMonitoring() {
         currentActiveHostname = hostname;
         currentActiveIp = ip;
 
+        const originalHtml = triggerBtn ? triggerBtn.innerHTML : '';
         if (triggerBtn) {
             triggerBtn.disabled = true;
             triggerBtn.innerHTML = `
@@ -230,11 +291,11 @@ export function initAdminMonitoring() {
                 renderPingResults(data, hostname, ip);
                 if (pingModal) pingModal.classList.remove('hidden');
 
-                // Visual row flash
-                const row = document.getElementById(`row-device-${deviceId}`);
-                if (row) {
-                    row.classList.add('bg-blue-50/60');
-                    setTimeout(() => row.classList.remove('bg-blue-50/60'), 1500);
+                // Visual card flash
+                const card = document.getElementById(`row-device-${deviceId}`);
+                if (card) {
+                    card.classList.add('ring-2', 'ring-blue-200');
+                    setTimeout(() => card.classList.remove('ring-2', 'ring-blue-200'), 1500);
                 }
 
                 window.showToast(`Hasil polling ICMP untuk ${hostname}: ${data.rtt_avg || 12} ms`, 'success');
@@ -260,12 +321,7 @@ export function initAdminMonitoring() {
             .finally(() => {
                 if (triggerBtn) {
                     triggerBtn.disabled = false;
-                    triggerBtn.innerHTML = `
-                        <svg class="w-3.5 h-3.5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                        <span>Polling Ping</span>
-                    `;
+                    triggerBtn.innerHTML = originalHtml;
                 }
             });
     }
@@ -292,13 +348,15 @@ export function initAdminMonitoring() {
         if (rawSnmp) rawSnmp.textContent = data.snmp_status || 'SNMPv2-MIB::sysUpTime.0 = OK';
     }
 
-    // Attach click listener to table Poller buttons
+    // Attach click listener to "Tes ping" menu buttons
     document.querySelectorAll('.btn-polling-ping').forEach(btn => {
-        btn.addEventListener('click', function () {
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
             const deviceId = this.getAttribute('data-device-id');
             const hostname = this.getAttribute('data-device-hostname');
             const ip = this.getAttribute('data-device-ip');
             executePollingPing(deviceId, hostname, ip, this);
+            setTimeout(() => closeAllCardMenus(), 300);
         });
     });
 
@@ -324,20 +382,97 @@ export function initAdminMonitoring() {
     }
 
     // -----------------------------------------------------------------
-    // 4. Global Poller Trigger (Header Badge)
+    // 5. Modal Setting IP & Kredensial API MikroTik
+    // -----------------------------------------------------------------
+    const settingModal = document.getElementById('settingIpModal');
+    const formSetting = document.getElementById('formSettingIp');
+
+    function closeSettingModal() {
+        if (settingModal) settingModal.classList.add('hidden');
+    }
+
+    document.querySelectorAll('.btn-setting-ip').forEach(btn => {
+        btn.addEventListener('click', e => {
+            e.stopPropagation();
+            closeAllCardMenus();
+            if (!settingModal) return;
+
+            document.getElementById('settingDeviceId').value = btn.dataset.deviceId;
+            document.getElementById('settingHostname').value = btn.dataset.deviceHostname;
+            document.getElementById('settingIpAddress').value = btn.dataset.deviceIp;
+            settingModal.classList.remove('hidden');
+            document.getElementById('settingIpAddress')?.focus();
+        });
+    });
+
+    document.querySelectorAll('.close-setting-modal').forEach(btn => {
+        btn.addEventListener('click', closeSettingModal);
+    });
+
+    if (settingModal) {
+        settingModal.addEventListener('click', e => {
+            if (e.target === settingModal) closeSettingModal();
+        });
+    }
+
+    if (formSetting) {
+        formSetting.addEventListener('submit', async e => {
+            e.preventDefault();
+            const submitBtn = formSetting.querySelector('button[type="submit"]');
+            const originalLabel = submitBtn ? submitBtn.textContent : '';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Menyimpan...';
+            }
+
+            try {
+                const res = await fetch('/monitoring/settings', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': getCsrfToken(),
+                        Accept: 'application/json',
+                    },
+                    body: new FormData(formSetting),
+                });
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    window.showToast(data.message || 'Konfigurasi koneksi tersimpan.', 'success');
+                    closeSettingModal();
+                } else {
+                    window.showToast(data.message || 'Periksa kembali isian form.', 'error');
+                }
+            } catch (err) {
+                window.showToast('Gagal menyimpan konfigurasi koneksi.', 'error');
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalLabel;
+                }
+            }
+        });
+    }
+
+    // -----------------------------------------------------------------
+    // 6. Global Poller Trigger (Sinkronisasi Semua)
     // -----------------------------------------------------------------
     const btnPollAllNodes = document.getElementById('btnPollAllNodes');
     const pollerStatusText = document.getElementById('pollerStatusText');
 
     if (btnPollAllNodes) {
+        const idleLabel = pollerStatusText ? pollerStatusText.textContent : '';
+
         btnPollAllNodes.addEventListener('click', () => {
-            if (pollerStatusText) pollerStatusText.textContent = 'Melakukan SNMP Poll...';
-            btnPollAllNodes.classList.add('bg-blue-50', 'text-blue-700', 'border-blue-200');
+            btnPollAllNodes.disabled = true;
+            if (pollerStatusText) pollerStatusText.textContent = 'Menyinkronkan...';
+            btnPollAllNodes.querySelector('svg')?.classList.add('animate-spin');
 
             setTimeout(() => {
-                if (pollerStatusText) pollerStatusText.textContent = 'SNMP / ICMP Poller Aktif (30s)';
-                btnPollAllNodes.classList.remove('bg-blue-50', 'text-blue-700', 'border-blue-200');
-                window.showToast('Semua node jaringan (3 unit) berhasil disinkronisasi telemetri.', 'success');
+                const total = document.querySelectorAll('.telemetry-row').length;
+                btnPollAllNodes.disabled = false;
+                if (pollerStatusText) pollerStatusText.textContent = idleLabel;
+                btnPollAllNodes.querySelector('svg')?.classList.remove('animate-spin');
+                window.showToast(`Telemetri ${total} perangkat berhasil disinkronisasi.`, 'success');
             }, 800);
         });
     }

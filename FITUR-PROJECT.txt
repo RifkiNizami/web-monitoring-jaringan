@@ -1,0 +1,40 @@
+================================================================================
+                    RINGKASAN FITUR SISTEM NETFLY (NOC PORTAL)
+================================================================================
+
+1. LANDING PAGE PUBLIK (Sisi Pengunjung / Klien)
+   - Hero Section       : Pengenalan produk portal jaringan NetFly & CTA.
+   - Layanan & Solusi   : Showcase paket (Dedicated Fiber, Smart City, Cloud).
+   - Profil Mitra       : Tampilan logo klien korporat B2B yang bekerja sama.
+   - Workflow & Alur    : Penjelasan cara penanganan insiden & monitoring.
+   - Kontak & Lokasi    : Informasi narahubung dan alamat operasional.
+
+2. DASHBOARD ADMIN MONITORING (Sisi Operasional NOC)
+   - Ringkasan Metrik   : Total Customer, Project, Perangkat Online/Offline.
+   - Peringatan Insiden : Live Alert darurat padam, overload, & tombol Resolve.
+   - Inventaris Device  : Manajemen Router, Switch, AP (IP, Rack, Uptime, Status)
+                          hanya untuk pendataan aset perangkat.
+   - Monitoring List    : Katalog list/tabel perangkat yang terhubung beserta status
+                          kilat (Online/Warning/Offline) & tombol "Pantau Live".
+   - Halaman Khusus     : Halaman detail telemetri per perangkat (/monitoring/{id})
+     Telemetri Live       berperforma tinggi:
+                          * Indikator Real-time CPU Load & RAM Gauge.
+                          * Grafik Real-time Throughput Bandwidth (Download/Upload).
+                          * Status Port / Interface Link (Up/Down & Speed).
+                          * Sensor Suhu Hardware & Tegangan PSU.
+                          * Latensi RTT (Ping ms) & Packet Loss.
+                          * Diagnostic Poller manual & Log insiden perangkat.
+   - Tiket Gangguan     : Antrean penanganan insiden klien (P1-P4).
+   - Laporan SLA        : Audit ketersediaan jaringan & fitur Export PDF.
+   - Akun Klien B2B     : Pembuatan akun login klien untuk akses Web & Android.
+
+3. ADMIN KONTEN / CMS (Kebutuhan Pengelola Website)
+   - Kelola Layanan     : Tambah, edit, dan atur paket layanan di Landing Page.
+   - Kelola Mitra B2B   : Upload dan update logo klien/partner di Landing Page.
+   - Kelola Banner/Teks : Update judul Hero, pengumuman, dan kontak kantor.
+
+--------------------------------------------------------------------------------
+RENCANA INTEGRASI TEKNIS:
+- MikroTik RouterOS API : Tarik data fisik via port 8728 / REST API.
+- REST API Mobile       : Endpoint JSON (Laravel Sanctum) untuk aplikasi Android.
+================================================================================

@@ -74,6 +74,12 @@ Route::middleware('auth')->group(function () {
         Route::match(['post', 'put'], '/accounts/{id}/reset-password', [AccountController::class, 'resetPassword'])->name('accounts.reset-password');
         Route::delete('/accounts/{id}', [AccountController::class, 'destroy'])->name('accounts.destroy');
 
+        // Layanan Pelanggan & Penanganan Insiden (Antrean Tiket Komplain)
+        Route::get('/tickets', [TicketController::class, 'index'])->name('tickets.index');
+        Route::post('/tickets', [TicketController::class, 'store'])->name('tickets.store');
+        Route::match(['post', 'put'], '/tickets/{id}', [TicketController::class, 'update'])->name('tickets.update');
+        Route::delete('/tickets/{id}', [TicketController::class, 'destroy'])->name('tickets.destroy');
+
         // Database & Manajemen Teknisi Lapangan
         Route::get('/teknisi', [TeknisiController::class, 'index'])->name('teknisi.index');
         Route::post('/teknisi', [TeknisiController::class, 'store'])->name('teknisi.store');
@@ -81,14 +87,14 @@ Route::middleware('auth')->group(function () {
         Route::delete('/teknisi/{id}', [TeknisiController::class, 'destroy'])->name('teknisi.destroy');
         Route::get('/teknisi/{id}/whatsapp', [TeknisiController::class, 'redirectToWhatsapp'])->name('teknisi.whatsapp');
 
-        // Layanan Pelanggan & Penanganan Insiden (Antrean Tiket Komplain)
-        Route::get('/tickets', [TicketController::class, 'index'])->name('tickets.index');
-
         // Inventaris Perangkat Jaringan (Network Devices Management)
         Route::get('/devices', [DeviceController::class, 'index'])->name('devices.index');
 
         // Telemetri Jaringan & Live Alert (NOC Monitoring)
         Route::get('/monitoring', [MonitoringController::class, 'index'])->name('monitoring.index');
+        Route::post('/monitoring/settings', [MonitoringController::class, 'saveSettings'])->name('monitoring.settings.save');
+        Route::get('/monitoring/{id}', [MonitoringController::class, 'show'])->name('monitoring.show');
+        Route::get('/api/monitoring/{id}/telemetry', [MonitoringController::class, 'telemetryStream'])->name('monitoring.telemetry');
         Route::post('/monitoring/alerts/{id}/resolve', [MonitoringController::class, 'resolveAlert'])->name('monitoring.alerts.resolve');
         Route::post('/monitoring/devices/{id}/ping', [MonitoringController::class, 'pollDevice'])->name('monitoring.devices.ping');
 

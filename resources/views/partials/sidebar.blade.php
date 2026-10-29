@@ -133,7 +133,7 @@
                             <svg class="w-4 h-4 shrink-0 {{ $isMonitoringActive ? 'text-netfly-blue' : 'text-slate-400 group-hover:text-slate-600' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
-                            <span>Monitoring & Alert</span>
+                            <span>Monitoring</span>
                         </div>
                         <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-rose-50 text-rose-600 border border-rose-200">
                             <span class="w-1.5 h-1.5 mr-1 rounded-full bg-rose-500 animate-pulse"></span>
@@ -184,7 +184,7 @@
                             <svg class="w-4 h-4 shrink-0 {{ $isCustomersActive ? 'text-netfly-blue' : 'text-slate-400 group-hover:text-slate-600' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                             </svg>
-                            <span>Customer & Project</span>
+                            <span>Customer Management</span>
                         </div>
                     </a>
 

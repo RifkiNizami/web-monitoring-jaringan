@@ -11,6 +11,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="h-full bg-slate-50 font-sans text-slate-800 antialiased">
@@ -43,23 +45,6 @@
 
                 <!-- Right Header Tools -->
                 <div class="flex items-center gap-4">
-                    <!-- Search Bar -->
-                    <div class="relative hidden sm:block">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </div>
-                        <input 
-                            type="text" 
-                            placeholder="Go to..." 
-                            class="pl-8 pr-12 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-blue-500 w-44 lg:w-56 transition-all"
-                        >
-                        <span class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
-                            <kbd class="px-1.5 py-0.5 text-[10px] font-mono text-slate-400 bg-white border border-slate-200 rounded shadow-2xs">⌘K</kbd>
-                        </span>
-                    </div>
-
                     <!-- Notification Bell -->
                     <button class="relative p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer" aria-label="Notifikasi">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -81,6 +66,35 @@
             <!-- MAIN BODY PADDING -->
             <main class="p-6 lg:p-8 space-y-6">
                 
+                <!-- NOTIFICATION ALERT (IF FLASH SESSION MESSAGE) -->
+                @if (session('success'))
+                    <div id="flashSuccessAlert" class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between text-xs text-emerald-800 animate-in fade-in duration-200 shadow-2xs">
+                        <div class="flex items-center gap-2.5">
+                            <span class="p-1 rounded-full bg-emerald-200 text-emerald-800">
+                                <svg class="w-4 h-4 text-emerald-700 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </span>
+                            <span class="font-medium">{{ session('success') }}</span>
+                        </div>
+                        <button type="button" onclick="document.getElementById('flashSuccessAlert').remove()" class="text-emerald-600 hover:text-emerald-900 font-bold p-1 cursor-pointer">✕</button>
+                    </div>
+                @endif
+
+                @if (session('error'))
+                    <div id="flashErrorAlert" class="p-4 bg-rose-50 border border-rose-200 rounded-xl flex items-center justify-between text-xs text-rose-800 animate-in fade-in duration-200 shadow-2xs">
+                        <div class="flex items-center gap-2.5">
+                            <span class="p-1 rounded-full bg-rose-200 text-rose-800">
+                                <svg class="w-4 h-4 text-rose-700 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </span>
+                            <span class="font-medium">{{ session('error') }}</span>
+                        </div>
+                        <button type="button" onclick="document.getElementById('flashErrorAlert').remove()" class="text-rose-600 hover:text-rose-900 font-bold p-1 cursor-pointer">✕</button>
+                    </div>
+                @endif
+
                 <!-- HEADER SECTION: CATEGORY, TITLE, & ACTION BUTTONS -->
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
@@ -315,12 +329,18 @@
                                             <div>
                                                 <div class="relative">
                                                     <select 
-                                                        class="w-full appearance-none pl-3 pr-8 py-1.5 text-xs rounded-lg border {{ $ticket['is_tech_warning'] ? 'border-amber-300 bg-amber-50/20' : 'border-slate-200 bg-white' }} text-slate-700 focus:outline-none focus:border-blue-500 shadow-2xs cursor-pointer transition-colors"
+                                                        class="technician-select w-full appearance-none pl-3 pr-8 py-1.5 text-xs rounded-lg border {{ $ticket['is_tech_warning'] ? 'border-amber-300 bg-amber-50/20' : 'border-slate-200 bg-white' }} text-slate-700 focus:outline-none focus:border-blue-500 shadow-2xs cursor-pointer transition-colors"
                                                     >
                                                         <option value="">-- Belum Ditunjuk --</option>
                                                         @foreach ($technicians as $tech)
-                                                            <option value="{{ $tech }}" {{ $ticket['assigned_technician'] === $tech ? 'selected' : '' }}>
-                                                                {{ $tech }}
+                                                            @php
+                                                                $techName = is_object($tech) ? $tech->nama : (is_array($tech) ? $tech['nama'] : $tech);
+                                                                $techSpec = is_object($tech) ? ($tech->spesialisasi ?? null) : (is_array($tech) ? ($tech['spesialisasi'] ?? null) : null);
+                                                                $isSelected = ($ticket['assigned_technician'] === $techName) || 
+                                                                              ($ticket['assigned_technician'] && str_starts_with($ticket['assigned_technician'], $techName));
+                                                            @endphp
+                                                            <option value="{{ $techName }}" {{ $isSelected ? 'selected' : '' }}>
+                                                                {{ $techName }}{{ !empty($techSpec) ? ' (' . $techSpec . ')' : '' }}
                                                             </option>
                                                         @endforeach
                                                     </select>
@@ -353,7 +373,7 @@
                                                         };
                                                     @endphp
                                                     <select 
-                                                        class="w-full appearance-none pl-3 pr-8 py-1.5 text-xs font-semibold rounded-lg border {{ $statusStyle }} shadow-2xs focus:outline-none cursor-pointer transition-all"
+                                                        class="status-select w-full appearance-none pl-3 pr-8 py-1.5 text-xs font-semibold rounded-lg border {{ $statusStyle }} shadow-2xs focus:outline-none cursor-pointer transition-all"
                                                     >
                                                         @foreach ($statusOptions as $opt)
                                                             <option value="{{ $opt }}" {{ $ticket['status'] === $opt ? 'selected' : '' }}>
@@ -394,15 +414,40 @@
 
                                         <!-- 7. AKSI -->
                                         <td class="py-4 px-5 align-top text-center">
-                                            <button 
-                                                type="button" 
-                                                title="Hapus / Batalkan Tiket"
-                                                class="delete-btn inline-flex items-center justify-center w-7 h-7 rounded-lg border border-rose-200/90 text-rose-500 hover:text-rose-600 hover:bg-rose-50 active:scale-95 transition-all cursor-pointer"
-                                            >
-                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
-                                            </button>
+                                            <div class="flex items-center justify-center gap-1.5">
+                                                <!-- Form Update Tiket (Per Row) -->
+                                                <form method="POST" action="{{ route('tickets.update', $ticket['id']) }}" class="inline form-update-ticket">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    <input type="hidden" name="assigned_technician" class="row-assigned-tech" value="{{ $ticket['assigned_technician'] ?? '' }}">
+                                                    <input type="hidden" name="status" class="row-status" value="{{ $ticket['status'] }}">
+                                                    <button 
+                                                        type="submit" 
+                                                        title="Verifikasi dan Simpan Update ke Database"
+                                                        class="btn-row-update inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-semibold shadow-2xs active:scale-95 transition-all cursor-pointer"
+                                                    >
+                                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5 13l4 4L19 7" />
+                                                        </svg>
+                                                        <span>Update</span>
+                                                    </button>
+                                                </form>
+
+                                                <!-- Form Hapus Tiket -->
+                                                <form method="POST" action="{{ route('tickets.destroy', $ticket['id']) }}" class="inline delete-ticket-form">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button 
+                                                        type="submit" 
+                                                        title="Hapus / Batalkan Tiket"
+                                                        class="delete-btn inline-flex items-center justify-center w-7 h-7 rounded-lg border border-rose-200/90 text-rose-500 hover:text-rose-600 hover:bg-rose-50 active:scale-95 transition-all cursor-pointer"
+                                                    >
+                                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </button>
+                                                </form>
+                                            </div>
                                         </td>
 
                                     </tr>
@@ -446,25 +491,26 @@
                 </button>
             </div>
 
-            <form id="formNewTicket" class="p-6 space-y-4">
+            <form id="formNewTicket" method="POST" action="{{ route('tickets.store') }}" class="p-6 space-y-4">
+                @csrf
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Klien / Perusahaan</label>
-                    <input type="text" required placeholder="Contoh: PT. Mitra Sejahtera Mandiri" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:bg-white focus:border-blue-500">
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Klien / Perusahaan <span class="text-rose-500">*</span></label>
+                    <input type="text" name="client_name" required placeholder="Contoh: PT. Mitra Sejahtera Mandiri" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:bg-white focus:border-blue-500">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Project / Layanan</label>
-                    <input type="text" required placeholder="Contoh: Dedicated Internet Broadband 100M" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:bg-white focus:border-blue-500">
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Project / Layanan <span class="text-rose-500">*</span></label>
+                    <input type="text" name="project_name" required placeholder="Contoh: Dedicated Internet Broadband 100M" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:bg-white focus:border-blue-500">
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Node / Host Perangkat</label>
-                        <input type="text" placeholder="AP-OUTDOOR-01" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:bg-white focus:border-blue-500 font-mono">
+                        <input type="text" name="node_code" placeholder="AP-OUTDOOR-01" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:bg-white focus:border-blue-500 font-mono">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Tingkat Prioritas</label>
-                        <select class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:bg-white focus:border-blue-500">
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Tingkat Prioritas <span class="text-rose-500">*</span></label>
+                        <select name="priority" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:bg-white focus:border-blue-500">
                             <option value="critical">P1 - CRITICAL</option>
                             <option value="high" selected>P2 - HIGH</option>
                             <option value="medium">P3 - MEDIUM</option>
@@ -473,13 +519,36 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Subjek / Masalah Singkat</label>
-                    <input type="text" required placeholder="Contoh: Fluktuasi RTT & Packet Loss Tinggi" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:bg-white focus:border-blue-500">
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Tunjuk Teknisi Lapangan (Opsional)</label>
+                    <div class="relative">
+                        <select name="assigned_technician" class="w-full appearance-none pl-3 pr-8 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:bg-white focus:border-blue-500 cursor-pointer">
+                            <option value="">-- Pilih Teknisi (Opsional) --</option>
+                            @foreach ($technicians as $tech)
+                                @php
+                                    $techName = is_object($tech) ? $tech->nama : (is_array($tech) ? $tech['nama'] : $tech);
+                                    $techSpec = is_object($tech) ? ($tech->spesialisasi ?? null) : (is_array($tech) ? ($tech['spesialisasi'] ?? null) : null);
+                                @endphp
+                                <option value="{{ $techName }}">
+                                    {{ $techName }}{{ !empty($techSpec) ? ' (' . $techSpec . ')' : '' }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-slate-400">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
+                    </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Keterangan Tambahan Masalah</label>
-                    <textarea rows="3" placeholder="Deskripsikan gejala awal kendala yang dialami pengguna..." class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:bg-white focus:border-blue-500"></textarea>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Subjek / Masalah Singkat <span class="text-rose-500">*</span></label>
+                    <input type="text" name="subject" required placeholder="Contoh: Fluktuasi RTT & Packet Loss Tinggi" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:bg-white focus:border-blue-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Keterangan Tambahan Masalah <span class="text-rose-500">*</span></label>
+                    <textarea name="description" required rows="3" placeholder="Deskripsikan gejala awal kendala yang dialami pengguna..." class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:bg-white focus:border-blue-500"></textarea>
                 </div>
 
                 <div class="pt-2 flex items-center justify-end gap-2.5">

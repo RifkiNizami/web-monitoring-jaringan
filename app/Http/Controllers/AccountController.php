@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
@@ -12,13 +11,14 @@ use Illuminate\View\View;
 class AccountController extends Controller
 {
     /**
-     * Master Data Customer B2B NetFly
+     * Master Data Customer Perusahaan (Korporat / B2B) NetFly
      */
-    protected function getCustomerList(): array
+    protected function getCorporateCustomerList(): array
     {
-        return [
+        $defaults = [
             [
                 'id' => 1,
+                'customer_type' => 'perusahaan',
                 'name' => 'PT. Bank Mandiri (Persero) Tbk',
                 'code' => 'MANDIRI',
                 'category' => 'Enterprise Banking',
@@ -31,6 +31,7 @@ class AccountController extends Controller
             ],
             [
                 'id' => 2,
+                'customer_type' => 'perusahaan',
                 'name' => 'PT. Shopee International Indonesia',
                 'code' => 'SHOPEE',
                 'category' => 'E-Commerce Tech Hub',
@@ -43,6 +44,7 @@ class AccountController extends Controller
             ],
             [
                 'id' => 3,
+                'customer_type' => 'perusahaan',
                 'name' => 'Dinas Pendidikan Provinsi DKI Jakarta',
                 'code' => 'DISDIK',
                 'category' => 'Pemerintahan & Pendidikan',
@@ -55,6 +57,7 @@ class AccountController extends Controller
             ],
             [
                 'id' => 4,
+                'customer_type' => 'perusahaan',
                 'name' => 'PT. XYZ Teknologi',
                 'code' => 'XYZ',
                 'category' => 'Software & Datacenter',
@@ -67,6 +70,7 @@ class AccountController extends Controller
             ],
             [
                 'id' => 5,
+                'customer_type' => 'perusahaan',
                 'name' => 'RS Medika Center',
                 'code' => 'MEDIKA',
                 'category' => 'Healthcare & Rumah Sakit',
@@ -79,6 +83,7 @@ class AccountController extends Controller
             ],
             [
                 'id' => 6,
+                'customer_type' => 'perusahaan',
                 'name' => 'PT. Astra Agro Lestari Tbk',
                 'code' => 'ASTRA',
                 'category' => 'Manufaktur & Agribisnis',
@@ -90,10 +95,116 @@ class AccountController extends Controller
                 'username_prefix' => 'astra_',
             ],
         ];
+
+        // Sinkronisasi dengan Customer Perusahaan yang ditambahkan dari menu Customer & Project
+        $sessionCorporate = session('nms_customers_perusahaan', []);
+        $existingNames = array_map('strtolower', array_column($defaults, 'name'));
+
+        foreach ($sessionCorporate as $sc) {
+            if (!in_array(strtolower($sc['name']), $existingNames, true)) {
+                $shortCode = strtoupper(preg_replace('/[^a-zA-Z0-9]/', '', explode(' ', str_replace(['PT.', 'PT', 'CV.'], '', $sc['name']))[0] ?? 'CORP'));
+                $shortCode = substr($shortCode ?: 'CORP', 0, 8);
+                $defaults[] = [
+                    'id' => (int) $sc['id'] + 50,
+                    'customer_type' => 'perusahaan',
+                    'name' => $sc['name'],
+                    'code' => $shortCode,
+                    'category' => 'Mitra Korporat',
+                    'package' => $sc['note'] ?: 'Dedicated Corporate Fiber',
+                    'address' => $sc['address'] ?? '-',
+                    'default_pic' => $sc['pic_name'] ?? 'PIC Perusahaan',
+                    'default_email' => $sc['email'] ?? '',
+                    'default_phone' => $sc['phone'] ?? '',
+                    'username_prefix' => strtolower($shortCode) . '_',
+                ];
+            }
+        }
+
+        return $defaults;
     }
 
     /**
-     * Default daftar akun perwakilan customer
+     * Master Data Customer Rumahan (Residensial / Home Fiber) NetFly
+     */
+    protected function getResidentialCustomerList(): array
+    {
+        $defaults = [
+            [
+                'id' => 101,
+                'customer_type' => 'rumahan',
+                'name' => 'Budi Santoso',
+                'code' => 'HOME-0001',
+                'category' => 'Customer Rumahan',
+                'package' => 'Paket Home Fiber 50 Mbps Unlimited',
+                'address' => 'Perumahan Griya Asri Blok C2 No. 14, Kel. Sukamaju, Kec. Cilodong, Depok',
+                'default_pic' => 'Budi Santoso',
+                'default_email' => 'budi.santoso@gmail.com',
+                'default_phone' => '0812-8450-1122',
+                'username_prefix' => 'home_',
+            ],
+            [
+                'id' => 102,
+                'customer_type' => 'rumahan',
+                'name' => 'Siti Aminah',
+                'code' => 'HOME-0002',
+                'category' => 'Customer Rumahan',
+                'package' => 'Paket Home Fiber Gamer 100 Mbps + Static IP',
+                'address' => 'Jl. Melati Indah IV No. 8, RT.04/RW.09, Bintaro, Tangerang Selatan',
+                'default_pic' => 'Siti Aminah',
+                'default_email' => 'sitiaminah.home@yahoo.com',
+                'default_phone' => '0813-9088-3344',
+                'username_prefix' => 'home_',
+            ],
+            [
+                'id' => 103,
+                'customer_type' => 'rumahan',
+                'name' => 'Hendra Kusuma',
+                'code' => 'HOME-0003',
+                'category' => 'Customer Rumahan',
+                'package' => 'FTTH Home Broadband 30 Mbps',
+                'address' => 'Cluster Harmoni Residence No. B12, Bekasi Barat',
+                'default_pic' => 'Hendra Kusuma',
+                'default_email' => 'hendra.kusuma88@gmail.com',
+                'default_phone' => '0857-2211-9090',
+                'username_prefix' => 'home_',
+            ],
+        ];
+
+        // Sinkronisasi dengan Customer Rumahan yang ditambahkan dari menu Customer & Project
+        $sessionResidential = session('nms_customers_rumahan', []);
+        $existingNames = array_map('strtolower', array_column($defaults, 'name'));
+
+        foreach ($sessionResidential as $sr) {
+            if (!in_array(strtolower($sr['name']), $existingNames, true)) {
+                $defaults[] = [
+                    'id' => (int) $sr['id'],
+                    'customer_type' => 'rumahan',
+                    'name' => $sr['name'],
+                    'code' => $sr['code'] ?? 'HOME',
+                    'category' => 'Customer Rumahan',
+                    'package' => $sr['note'] ?: 'Layanan Internet Rumahan NetFly',
+                    'address' => $sr['address'] ?? '-',
+                    'default_pic' => $sr['name'],
+                    'default_email' => $sr['email'] ?? '',
+                    'default_phone' => $sr['phone'] ?? '',
+                    'username_prefix' => 'home_',
+                ];
+            }
+        }
+
+        return $defaults;
+    }
+
+    /**
+     * Gabungan seluruh customer (Perusahaan & Rumahan)
+     */
+    protected function getCustomerList(): array
+    {
+        return array_merge($this->getCorporateCustomerList(), $this->getResidentialCustomerList());
+    }
+
+    /**
+     * Default daftar akun customer (Perusahaan & Rumahan)
      */
     protected function getDefaultAccounts(): array
     {
@@ -101,6 +212,7 @@ class AccountController extends Controller
             [
                 'id' => 101,
                 'customer_id' => 1,
+                'customer_type' => 'perusahaan',
                 'customer_name' => 'PT. Bank Mandiri (Persero) Tbk',
                 'customer_code' => 'MANDIRI',
                 'package' => 'MPLS Core Interconnect 10Gbps',
@@ -119,6 +231,7 @@ class AccountController extends Controller
             [
                 'id' => 102,
                 'customer_id' => 2,
+                'customer_type' => 'perusahaan',
                 'customer_name' => 'PT. Shopee International Indonesia',
                 'customer_code' => 'SHOPEE',
                 'package' => 'Dedicated Fiber 2Gbps + SCBD Peering',
@@ -135,8 +248,28 @@ class AccountController extends Controller
                 'must_change_password' => false,
             ],
             [
+                'id' => 106,
+                'customer_id' => 101,
+                'customer_type' => 'rumahan',
+                'customer_name' => 'Budi Santoso',
+                'customer_code' => 'RUMAHAN',
+                'package' => 'Paket Home Fiber 50 Mbps Unlimited',
+                'name' => 'Budi Santoso',
+                'username' => 'home_budi',
+                'email' => 'budi.santoso@gmail.com',
+                'phone' => '0812-8450-1122',
+                'role' => 'customer_residential',
+                'role_label' => 'Customer Rumahan',
+                'is_active' => true,
+                'last_login' => 'Hari ini, 11:10 WIB',
+                'last_login_ip' => '36.80.112.9',
+                'created_at' => '18 Jan 2026',
+                'must_change_password' => false,
+            ],
+            [
                 'id' => 103,
                 'customer_id' => 3,
+                'customer_type' => 'perusahaan',
                 'customer_name' => 'Dinas Pendidikan Provinsi DKI Jakarta',
                 'customer_code' => 'DISDIK',
                 'package' => 'Smart City Backbone Fiber 1Gbps',
@@ -155,6 +288,7 @@ class AccountController extends Controller
             [
                 'id' => 104,
                 'customer_id' => 4,
+                'customer_type' => 'perusahaan',
                 'customer_name' => 'PT. XYZ Teknologi',
                 'customer_code' => 'XYZ',
                 'package' => 'Dedicated Fiber 1Gbps',
@@ -173,6 +307,7 @@ class AccountController extends Controller
             [
                 'id' => 105,
                 'customer_id' => 5,
+                'customer_type' => 'perusahaan',
                 'customer_name' => 'RS Medika Center',
                 'customer_code' => 'MEDIKA',
                 'package' => 'Dedicated Internet Broadband 500Mbps',
@@ -226,18 +361,20 @@ class AccountController extends Controller
                     }
 
                     if (!$alreadyExists) {
+                        $custType = $matchedCustomer['customer_type'] ?? 'perusahaan';
                         $accounts[] = [
                             'id' => $dbUser->id,
                             'customer_id' => $dbUser->customer_id ?? 1,
+                            'customer_type' => $custType,
                             'customer_name' => $matchedCustomer['name'] ?? 'Mitra Customer Terdaftar',
-                            'customer_code' => $matchedCustomer['code'] ?? 'CUST',
+                            'customer_code' => $custType === 'rumahan' ? 'RUMAHAN' : ($matchedCustomer['code'] ?? 'CUST'),
                             'package' => $matchedCustomer['package'] ?? 'Dedicated Connection',
                             'name' => $dbUser->name,
                             'username' => $dbUser->username ?? ('user_' . $dbUser->id),
                             'email' => $dbUser->email,
                             'phone' => $dbUser->phone ?? '-',
                             'role' => $dbUser->role ?? 'customer_representative',
-                            'role_label' => 'PIC Perwakilan Customer',
+                            'role_label' => $custType === 'rumahan' ? 'Customer Rumahan' : 'PIC Perwakilan Customer',
                             'is_active' => (bool) $dbUser->is_active,
                             'last_login' => 'Belum pernah login',
                             'last_login_ip' => '-',
@@ -248,7 +385,6 @@ class AccountController extends Controller
                 }
             }
         } catch (\Throwable $e) {
-            // Log fallback without failing
             Log::info('Database query fallback in AccountController: ' . $e->getMessage());
         }
 
@@ -261,7 +397,9 @@ class AccountController extends Controller
      */
     public function index(Request $request): View
     {
-        $customers = $this->getCustomerList();
+        $corporateCustomers = $this->getCorporateCustomerList();
+        $residentialCustomers = $this->getResidentialCustomerList();
+        $customers = array_merge($corporateCustomers, $residentialCustomers);
         $accounts = $this->getActiveAccounts();
 
         // Hitung Summary Metrics
@@ -275,20 +413,30 @@ class AccountController extends Controller
             'active' => $activeAccounts,
             'inactive' => $inactiveAccounts,
             'customers_count' => $totalCustomers,
+            'corporate_count' => count($corporateCustomers),
+            'residential_count' => count($residentialCustomers),
         ];
 
-        return view('admin.accounts', compact('summary', 'customers', 'accounts'));
+        return view('admin.accounts', compact(
+            'summary',
+            'customers',
+            'corporateCustomers',
+            'residentialCustomers',
+            'accounts'
+        ));
     }
 
     /**
-     * 1. Form Buat Akun User Baru untuk Perwakilan Customer
-     * (Pilih Customer -> Buat Username -> Tetapkan Password awal)
+     * 1. Form Buat Akun User Baru untuk Perwakilan Customer (Perusahaan & Rumahan)
      */
     public function store(Request $request)
     {
+        $customerType = $request->input('customer_type', 'perusahaan');
+
         $validated = $request->validate([
+            'customer_type' => 'nullable|string|in:perusahaan,rumahan',
             'customer_id' => 'required|integer',
-            'name' => 'required|string|max:150',
+            'name' => $customerType === 'rumahan' ? 'nullable|string|max:150' : 'required|string|max:150',
             'username' => 'required|string|min:3|max:50|regex:/^[a-zA-Z0-9_.]+$/',
             'email' => 'required|email|max:150',
             'password' => 'required|string|min:6',
@@ -296,21 +444,26 @@ class AccountController extends Controller
             'is_active' => 'nullable|boolean',
             'must_change_password' => 'nullable|boolean',
         ], [
-            'customer_id.required' => 'Wajib memilih mitra Customer.',
+            'customer_id.required' => 'Wajib memilih Customer.',
             'name.required' => 'Nama lengkap perwakilan (PIC) wajib diisi.',
             'username.required' => 'Username akun wajib ditentukan.',
             'username.regex' => 'Username hanya boleh memuat huruf, angka, titik, atau garis bawah (_).',
-            'email.required' => 'Alamat email resmi PIC wajib diisi.',
+            'email.required' => 'Alamat email resmi wajib diisi.',
             'email.email' => 'Format alamat email tidak valid.',
             'password.required' => 'Password awal akun wajib ditetapkan.',
             'password.min' => 'Password awal minimal 6 karakter.',
         ]);
 
         $customers = collect($this->getCustomerList())->keyBy('id');
-        $selectedCustomer = $customers->get($validated['customer_id']);
-        $customerName = $selectedCustomer['name'] ?? 'Mitra Korporat';
-        $customerCode = $selectedCustomer['code'] ?? 'CUST';
-        $customerPackage = $selectedCustomer['package'] ?? 'Dedicated Link';
+        $selectedCustomer = $customers->get((int) $validated['customer_id']);
+
+        $resolvedType = $selectedCustomer['customer_type'] ?? $customerType;
+        $customerName = $selectedCustomer['name'] ?? ($resolvedType === 'rumahan' ? 'Customer Rumahan' : 'Mitra Korporat');
+        $customerCode = $resolvedType === 'rumahan' ? 'RUMAHAN' : ($selectedCustomer['code'] ?? 'CUST');
+        $customerPackage = $selectedCustomer['package'] ?? ($resolvedType === 'rumahan' ? 'Home Fiber Broadband' : 'Dedicated Link');
+
+        // Untuk customer rumahan tanpa PIC terpisah, gunakan nama customer langsung
+        $accountHolderName = !empty($validated['name']) ? $validated['name'] : $customerName;
 
         $isActive = $request->has('is_active') ? $request->boolean('is_active') : true;
         $mustChange = $request->has('must_change_password') ? $request->boolean('must_change_password') : true;
@@ -320,7 +473,7 @@ class AccountController extends Controller
         // Try persisting in Database if User model and table ready
         try {
             $user = User::create([
-                'name' => $validated['name'],
+                'name' => $accountHolderName,
                 'customer_id' => $validated['customer_id'],
                 'username' => $validated['username'],
                 'email' => $validated['email'],
@@ -337,15 +490,16 @@ class AccountController extends Controller
         $newAccount = [
             'id' => $newId,
             'customer_id' => (int) $validated['customer_id'],
+            'customer_type' => $resolvedType,
             'customer_name' => $customerName,
             'customer_code' => $customerCode,
             'package' => $customerPackage,
-            'name' => $validated['name'],
+            'name' => $accountHolderName,
             'username' => $validated['username'],
             'email' => $validated['email'],
             'phone' => $validated['phone'] ?? '-',
-            'role' => 'customer_representative',
-            'role_label' => 'PIC Perwakilan Customer',
+            'role' => $resolvedType === 'rumahan' ? 'customer_residential' : 'customer_representative',
+            'role_label' => $resolvedType === 'rumahan' ? 'Customer Rumahan' : 'PIC Perwakilan Customer',
             'is_active' => $isActive,
             'last_login' => 'Belum pernah login',
             'last_login_ip' => '-',
@@ -360,13 +514,13 @@ class AccountController extends Controller
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => "Akun perwakilan customer '{$customerName}' dengan username '{$validated['username']}' berhasil dibuat!",
+                'message' => "Akun customer '{$customerName}' dengan username '{$validated['username']}' berhasil dibuat!",
                 'account' => $newAccount,
                 'initial_password' => $validated['password'],
             ]);
         }
 
-        return redirect()->route('accounts.index')->with('success', "Akun perwakilan customer '{$customerName}' dengan username '{$validated['username']}' berhasil dibuat!");
+        return redirect()->route('accounts.index')->with('success', "Akun customer '{$customerName}' dengan username '{$validated['username']}' berhasil dibuat!");
     }
 
     /**

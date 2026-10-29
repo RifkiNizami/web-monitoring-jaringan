@@ -48,7 +48,7 @@ class AdminViewsTest extends TestCase
             '/accounts' => 'admin.accounts',
             '/devices' => 'admin.devices',
             '/tickets' => 'admin.tickets',
-            '/monitoring' => 'admin.monitoring',
+            '/monitoring' => 'admin.monitoring.index',
             '/reports' => 'admin.reports',
         ];
 

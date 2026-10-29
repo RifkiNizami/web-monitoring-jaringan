@@ -1,5 +1,4 @@
-<section
-    class="relative py-16 sm:py-24 lg:py-28 border-b border-slate-200/80 bg-tech-grid-light bg-slate-50/70">
+<section class="relative py-16 sm:py-24 lg:py-28 border-b border-slate-200/80 bg-tech-grid-light bg-slate-50/70">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 
         <div class="max-w-4xl mx-auto text-center space-y-6 sm:space-y-8">
@@ -9,16 +8,18 @@
                 Infrastruktur Jaringan Korporat & Monitoring 24/7
             </h1>
 
-            <p class="animate-hero-desc text-slate-600 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto font-normal">
+            <p
+                class="animate-hero-desc text-slate-600 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto font-normal">
                 NetFly menghadirkan layanan internet leased line 1:1, jaringan fiber optik antarcabang,
                 dan pemantauan status link secara real-time. Kecepatan simetris tanpa drop di jam kerja sibuk,
                 didukung garansi ketersediaan SLA 99.5% serta pendampingan langsung oleh tim NOC kami.
             </p>
 
-            <div class="animate-hero-cta flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3.5 pt-2">
+            <div
+                class="animate-hero-cta flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3.5 pt-2">
                 <a href="#kontak"
                     class="group inline-flex justify-center items-center pl-6 pr-2 py-2.5 bg-netfly-blue hover:bg-netfly-blue-dark text-white text-sm font-semibold tracking-wide rounded-full shadow-md hover:shadow-lg transition-all duration-300 active:scale-[0.98]">
-                    <span>Konsultasi & Audit Jaringan</span>
+                    <span>Konsultasi & Langganan jaringan kami</span>
                     <span
                         class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center ml-3 group-hover:translate-x-1 group-hover:bg-white/30 transition-transform">
                         <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -34,9 +35,11 @@
                 </a>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-8 border-t border-slate-200/80 max-w-3xl mx-auto text-center">
+            <div
+                class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-8 border-t border-slate-200/80 max-w-3xl mx-auto text-center">
 
-                <div class="animate-hero-card-1 hover-lift p-1.5 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80">
+                <div
+                    class="animate-hero-card-1 hover-lift p-1.5 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80">
                     <div class="rounded-xl bg-white p-4 shadow-2xs space-y-1">
                         <span class="text-slate-500 block text-xs font-medium">Jaminan Uptime</span>
                         <span class="text-slate-900 font-extrabold text-lg sm:text-xl block">SLA 99.5%</span>
@@ -44,7 +47,8 @@
                     </div>
                 </div>
 
-                <div class="animate-hero-card-2 hover-lift p-1.5 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80">
+                <div
+                    class="animate-hero-card-2 hover-lift p-1.5 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80">
                     <div class="rounded-xl bg-white p-4 shadow-2xs space-y-1">
                         <span class="text-slate-500 block text-xs font-medium">Interkoneksi Peering</span>
                         <span class="text-slate-900 font-extrabold text-lg sm:text-xl block">10 Gbps</span>
@@ -52,7 +56,8 @@
                     </div>
                 </div>
 
-                <div class="animate-hero-card-3 hover-lift p-1.5 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80">
+                <div
+                    class="animate-hero-card-3 hover-lift p-1.5 rounded-2xl bg-slate-100/80 border border-slate-200/80 hover:border-blue-300/80">
                     <div class="rounded-xl bg-white p-4 shadow-2xs space-y-1">
                         <span class="text-slate-500 block text-xs font-medium">Benchmark MTTR</span>
                         <span class="text-slate-900 font-extrabold text-lg sm:text-xl block">&lt; 27 Menit</span>

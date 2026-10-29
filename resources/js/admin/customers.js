@@ -1,5 +1,5 @@
 /**
- * NetFly Admin - Customer & Project Management Interactivity
+ * NetFly Admin - Customer Rumahan & Customer Perusahaan Management Interactivity
  */
 export function initAdminCustomers() {
     const tableContainer = document.getElementById('viewCustomerTable') || document.getElementById('viewProjectTable');
@@ -37,7 +37,8 @@ export function initAdminCustomers() {
     };
 
     // 2. Tab Switching
-    window.activeCurrentTab = window.activeCurrentTab || 'customer';
+    const viewProjInitial = document.getElementById('viewProjectTable');
+    window.activeCurrentTab = (viewProjInitial && !viewProjInitial.classList.contains('hidden')) ? 'project' : 'customer';
 
     window.switchTab = function (tab) {
         window.activeCurrentTab = tab;
@@ -101,7 +102,7 @@ export function initAdminCustomers() {
     if (statusFilter) statusFilter.addEventListener('change', filterCurrentTable);
 
     // ==========================================
-    // MODAL 1: TAMBAH CUSTOMER
+    // MODAL 1: TAMBAH CUSTOMER RUMAHAN
     // ==========================================
     const modalCreateCust = document.getElementById('modalCreateCustomer');
     const btnOpenCreateCust = document.getElementById('btnOpenCreateCustomer');
@@ -116,7 +117,7 @@ export function initAdminCustomers() {
     });
 
     // ==========================================
-    // MODAL 2: EDIT CUSTOMER
+    // MODAL 2: EDIT CUSTOMER RUMAHAN
     // ==========================================
     const modalEditCust = document.getElementById('modalEditCustomer');
     const formEditCust = document.getElementById('formEditCustomer');
@@ -132,7 +133,6 @@ export function initAdminCustomers() {
             btn.onclick = function () {
                 const id = this.getAttribute('data-id');
                 const name = this.getAttribute('data-name');
-                const pic = this.getAttribute('data-pic');
                 const phone = this.getAttribute('data-phone');
                 const email = this.getAttribute('data-email');
                 const address = this.getAttribute('data-address');
@@ -141,7 +141,6 @@ export function initAdminCustomers() {
 
                 const elId = document.getElementById('edit_cust_id');
                 const elName = document.getElementById('edit_cust_name');
-                const elPic = document.getElementById('edit_cust_pic');
                 const elPhone = document.getElementById('edit_cust_phone');
                 const elEmail = document.getElementById('edit_cust_email');
                 const elAddress = document.getElementById('edit_cust_address');
@@ -150,7 +149,6 @@ export function initAdminCustomers() {
 
                 if (elId) elId.value = id || '';
                 if (elName) elName.value = name || '';
-                if (elPic) elPic.value = pic || '';
                 if (elPhone) elPhone.value = phone || '';
                 if (elEmail) elEmail.value = email || '';
                 if (elAddress) elAddress.value = address || '';
@@ -174,7 +172,7 @@ export function initAdminCustomers() {
     }
 
     // ==========================================
-    // MODAL 3: TAMBAH PROJECT
+    // MODAL 3: TAMBAH CUSTOMER PERUSAHAAN
     // ==========================================
     const modalCreateProj = document.getElementById('modalCreateProject');
     const btnOpenCreateProj = document.getElementById('btnOpenCreateProject');
@@ -189,7 +187,7 @@ export function initAdminCustomers() {
     });
 
     // ==========================================
-    // MODAL 4: EDIT PROJECT
+    // MODAL 4: EDIT CUSTOMER PERUSAHAAN
     // ==========================================
     const modalEditProj = document.getElementById('modalEditProject');
     const formEditProj = document.getElementById('formEditProject');
@@ -204,34 +202,31 @@ export function initAdminCustomers() {
         document.querySelectorAll('.btn-edit-project').forEach(btn => {
             btn.onclick = function () {
                 const id = this.getAttribute('data-id');
-                const custId = this.getAttribute('data-customer-id');
                 const name = this.getAttribute('data-name');
-                const location = this.getAttribute('data-location');
-                const service = this.getAttribute('data-service');
-                const lat = this.getAttribute('data-lat');
-                const long = this.getAttribute('data-long');
+                const pic = this.getAttribute('data-pic');
+                const phone = this.getAttribute('data-phone');
+                const email = this.getAttribute('data-email');
+                const address = this.getAttribute('data-address');
+                const note = this.getAttribute('data-note');
                 const status = this.getAttribute('data-status');
-                const desc = this.getAttribute('data-desc');
 
                 const elId = document.getElementById('edit_proj_id');
-                const elCust = document.getElementById('edit_proj_customer_id');
                 const elName = document.getElementById('edit_proj_name');
-                const elLoc = document.getElementById('edit_proj_location');
-                const elSrv = document.getElementById('edit_proj_service');
-                const elLat = document.getElementById('edit_proj_lat');
-                const elLong = document.getElementById('edit_proj_long');
+                const elPic = document.getElementById('edit_proj_pic');
+                const elPhone = document.getElementById('edit_proj_phone');
+                const elEmail = document.getElementById('edit_proj_email');
+                const elAddr = document.getElementById('edit_proj_address');
+                const elNote = document.getElementById('edit_proj_note');
                 const elStat = document.getElementById('edit_proj_status');
-                const elDesc = document.getElementById('edit_proj_desc');
 
                 if (elId) elId.value = id || '';
-                if (elCust) elCust.value = custId || '';
                 if (elName) elName.value = name || '';
-                if (elLoc) elLoc.value = location || '';
-                if (elSrv) elSrv.value = service || '';
-                if (elLat) elLat.value = lat || '';
-                if (elLong) elLong.value = long || '';
+                if (elPic) elPic.value = pic || '';
+                if (elPhone) elPhone.value = phone || '';
+                if (elEmail) elEmail.value = email || '';
+                if (elAddr) elAddr.value = address || '';
+                if (elNote) elNote.value = note || '';
                 if (elStat) elStat.value = status || '';
-                if (elDesc) elDesc.value = desc || '';
 
                 if (formEditProj) formEditProj.action = `/projects/${id}`;
                 if (modalEditProj) modalEditProj.classList.remove('hidden');
@@ -250,7 +245,7 @@ export function initAdminCustomers() {
     }
 
     // ==========================================
-    // MODAL 5: HAPUS CUSTOMER
+    // MODAL 5: HAPUS CUSTOMER RUMAHAN
     // ==========================================
     const modalDeleteCust = document.getElementById('modalDeleteCustomer');
     let targetDeleteCustId = null;
@@ -278,19 +273,24 @@ export function initAdminCustomers() {
                 if (modalDeleteCust) modalDeleteCust.classList.add('hidden');
                 const row = document.getElementById(`row-customer-${targetDeleteCustId}`);
                 if (row) row.remove();
-                window.showToast(data.message || 'Mitra Customer berhasil dihapus.', 'success');
+                const custBadge = document.getElementById('badgeCustomerCount');
+                if (custBadge) {
+                    const current = parseInt(custBadge.textContent || '0', 10);
+                    if (current > 0) custBadge.textContent = String(current - 1);
+                }
+                window.showToast(data.message || 'Customer Rumahan berhasil dihapus.', 'success');
             })
             .catch(() => {
                 if (modalDeleteCust) modalDeleteCust.classList.add('hidden');
                 const row = document.getElementById(`row-customer-${targetDeleteCustId}`);
                 if (row) row.remove();
-                window.showToast('Mitra Customer berhasil dihapus.', 'success');
+                window.showToast('Customer Rumahan berhasil dihapus.', 'success');
             });
         });
     }
 
     // ==========================================
-    // MODAL 6: HAPUS PROJECT
+    // MODAL 6: HAPUS CUSTOMER PERUSAHAAN
     // ==========================================
     const modalDeleteProj = document.getElementById('modalDeleteProject');
     let targetDeleteProjId = null;
@@ -318,13 +318,18 @@ export function initAdminCustomers() {
                 if (modalDeleteProj) modalDeleteProj.classList.add('hidden');
                 const row = document.getElementById(`row-project-${targetDeleteProjId}`);
                 if (row) row.remove();
-                window.showToast(data.message || 'Project berhasil dihapus.', 'success');
+                const projBadge = document.getElementById('badgeProjectCount');
+                if (projBadge) {
+                    const current = parseInt(projBadge.textContent || '0', 10);
+                    if (current > 0) projBadge.textContent = String(current - 1);
+                }
+                window.showToast(data.message || 'Customer Perusahaan berhasil dihapus.', 'success');
             })
             .catch(() => {
                 if (modalDeleteProj) modalDeleteProj.classList.add('hidden');
                 const row = document.getElementById(`row-project-${targetDeleteProjId}`);
                 if (row) row.remove();
-                window.showToast('Project berhasil dihapus.', 'success');
+                window.showToast('Customer Perusahaan berhasil dihapus.', 'success');
             });
         });
     }
