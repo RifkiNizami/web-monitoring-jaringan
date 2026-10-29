@@ -224,6 +224,16 @@ export function initAdminAccounts() {
     // -----------------------------------------------------------------
     const createModal = document.getElementById('createAccountModal');
     const btnOpenCreate = document.getElementById('btnOpenCreateAccount');
+    const customerTypeInput = document.getElementById('create_customer_type');
+    const btnTypePerusahaan = document.getElementById('btnTypePerusahaan');
+    const btnTypeRumahan = document.getElementById('btnTypeRumahan');
+    const step1HeaderTitle = document.getElementById('step1HeaderTitle');
+    const labelSelectCustomer = document.getElementById('labelSelectCustomer');
+    const placeholderSelectCustomer = document.getElementById('placeholderSelectCustomer');
+    const gridPicAndEmail = document.getElementById('gridPicAndEmail');
+    const wrapperCreatePicName = document.getElementById('wrapperCreatePicName');
+    const labelCreateEmail = document.getElementById('labelCreateEmail');
+    const labelCreatePhone = document.getElementById('labelCreatePhone');
     const customerSelect = document.getElementById('create_customer_id');
     const picNameInput = document.getElementById('create_name');
     const emailInput = document.getElementById('create_email');
@@ -235,8 +245,88 @@ export function initAdminAccounts() {
     const togglePasswordBtn = document.getElementById('toggleCreatePassword');
     const validBadge = document.getElementById('usernameValidBadge');
 
+    function setCustomerTypeMode(type) {
+        if (customerTypeInput) customerTypeInput.value = type;
+
+        if (type === 'rumahan') {
+            if (btnTypeRumahan) {
+                btnTypeRumahan.className = 'customer-type-btn flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer bg-blue-600 text-white border-blue-600 shadow-xs';
+            }
+            if (btnTypePerusahaan) {
+                btnTypePerusahaan.className = 'customer-type-btn flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer bg-white text-slate-700 border-slate-200 hover:bg-slate-100';
+            }
+            if (step1HeaderTitle) step1HeaderTitle.textContent = 'Pilih Customer Rumahan & Kontak Pelanggan';
+            if (labelSelectCustomer) labelSelectCustomer.innerHTML = 'Pilih Customer Rumahan <span class="text-rose-500">*</span>';
+            if (placeholderSelectCustomer) placeholderSelectCustomer.textContent = '-- Pilih Customer Rumahan Terdaftar --';
+            if (wrapperCreatePicName) wrapperCreatePicName.classList.add('hidden');
+            if (picNameInput) {
+                picNameInput.removeAttribute('required');
+                picNameInput.value = '';
+            }
+            if (gridPicAndEmail) {
+                gridPicAndEmail.classList.remove('sm:grid-cols-2');
+                gridPicAndEmail.classList.add('sm:grid-cols-1');
+            }
+            if (labelCreateEmail) labelCreateEmail.innerHTML = 'Email Customer Rumahan <span class="text-rose-500">*</span>';
+            if (emailInput) emailInput.placeholder = 'Contoh: pelanggan@gmail.com';
+            if (labelCreatePhone) labelCreatePhone.textContent = 'No. Telepon / WhatsApp Customer';
+            if (usernameInput) usernameInput.placeholder = 'Contoh: home_budi atau rumah_siti';
+        } else {
+            if (btnTypePerusahaan) {
+                btnTypePerusahaan.className = 'customer-type-btn flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer bg-blue-600 text-white border-blue-600 shadow-xs';
+            }
+            if (btnTypeRumahan) {
+                btnTypeRumahan.className = 'customer-type-btn flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer bg-white text-slate-700 border-slate-200 hover:bg-slate-100';
+            }
+            if (step1HeaderTitle) step1HeaderTitle.textContent = 'Pilih Mitra Customer & Detail Perwakilan (PIC)';
+            if (labelSelectCustomer) labelSelectCustomer.innerHTML = 'Pilih Mitra Customer Korporat <span class="text-rose-500">*</span>';
+            if (placeholderSelectCustomer) placeholderSelectCustomer.textContent = '-- Pilih Perusahaan Customer Terdaftar --';
+            if (wrapperCreatePicName) wrapperCreatePicName.classList.remove('hidden');
+            if (picNameInput) {
+                picNameInput.setAttribute('required', 'required');
+                picNameInput.value = '';
+            }
+            if (gridPicAndEmail) {
+                gridPicAndEmail.classList.remove('sm:grid-cols-1');
+                gridPicAndEmail.classList.add('sm:grid-cols-2');
+            }
+            if (labelCreateEmail) labelCreateEmail.innerHTML = 'Email Resmi PIC Korporat <span class="text-rose-500">*</span>';
+            if (emailInput) emailInput.placeholder = 'Contoh: pic.noc@bankmandiri.co.id';
+            if (labelCreatePhone) labelCreatePhone.textContent = 'No. Telepon / WhatsApp PIC';
+            if (usernameInput) usernameInput.placeholder = 'Contoh: pic_mandiri atau noc_mandiri';
+        }
+
+        // Filter dropdown options according to type
+        if (customerSelect) {
+            customerSelect.value = '';
+            Array.from(customerSelect.options).forEach(opt => {
+                if (!opt.value) return;
+                const optType = opt.getAttribute('data-type') || 'perusahaan';
+                if (optType === type) {
+                    opt.classList.remove('hidden');
+                    opt.hidden = false;
+                } else {
+                    opt.classList.add('hidden');
+                    opt.hidden = true;
+                }
+            });
+        }
+        if (emailInput) emailInput.value = '';
+        if (phoneInput) phoneInput.value = '';
+        if (usernameInput) usernameInput.value = '';
+        if (validBadge) validBadge.classList.add('hidden');
+    }
+
+    if (btnTypePerusahaan) {
+        btnTypePerusahaan.addEventListener('click', () => setCustomerTypeMode('perusahaan'));
+    }
+    if (btnTypeRumahan) {
+        btnTypeRumahan.addEventListener('click', () => setCustomerTypeMode('rumahan'));
+    }
+
     if (btnOpenCreate && createModal) {
         btnOpenCreate.addEventListener('click', () => {
+            setCustomerTypeMode('perusahaan');
             createModal.classList.remove('hidden');
         });
     }
@@ -251,18 +341,23 @@ export function initAdminAccounts() {
         customerSelect.addEventListener('change', function () {
             const opt = this.options[this.selectedIndex];
             if (opt) {
-                const pic = opt.getAttribute('data-pic');
+                const custName = opt.getAttribute('data-name') || '';
+                const pic = opt.getAttribute('data-pic') || custName;
                 const email = opt.getAttribute('data-email');
                 const phone = opt.getAttribute('data-phone');
                 const prefix = opt.getAttribute('data-prefix') || 'user_';
+                const currentType = customerTypeInput ? customerTypeInput.value : 'perusahaan';
 
-                if (pic && picNameInput && !picNameInput.value) picNameInput.value = pic;
-                if (email && emailInput && !emailInput.value) emailInput.value = email;
-                if (phone && phoneInput && !phoneInput.value) phoneInput.value = phone;
+                if (picNameInput) {
+                    picNameInput.value = currentType === 'rumahan' ? custName : pic;
+                }
+                if (email && emailInput) emailInput.value = email;
+                if (phone && phoneInput) phoneInput.value = phone;
 
                 if (usernameInput) {
-                    const cleanPic = (pic || 'pic').toLowerCase().split(' ')[0].replace(/[^a-z0-9]/g, '');
-                    usernameInput.value = `${prefix}${cleanPic}`;
+                    const baseTarget = currentType === 'rumahan' ? custName : (pic || 'pic');
+                    const cleanName = baseTarget.toLowerCase().split(' ')[0].replace(/[^a-z0-9]/g, '');
+                    usernameInput.value = `${prefix}${cleanName}`;
                 }
                 if (validBadge) validBadge.classList.remove('hidden');
             }
@@ -334,12 +429,17 @@ export function initAdminAccounts() {
         tr.setAttribute('data-phone', acc.phone);
         tr.setAttribute('data-active', acc.is_active ? '1' : '0');
 
+        const isRumahan = acc.customer_type === 'rumahan' || acc.customer_code === 'RUMAHAN';
+        const badgeHtml = isRumahan
+            ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">RUMAHAN</span>`
+            : `<span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200">${acc.customer_code}</span>`;
+
         tr.innerHTML = `
             <td class="py-4 px-5 align-middle">
                 <div class="space-y-1">
                     <div class="flex items-center gap-1.5">
                         <span class="font-bold text-slate-900 text-xs">${acc.customer_name}</span>
-                        <span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200">${acc.customer_code}</span>
+                        ${badgeHtml}
                     </div>
                     <p class="text-[11px] text-slate-500 font-mono">${acc.package}</p>
                 </div>
@@ -414,14 +514,19 @@ export function initAdminAccounts() {
             }
 
             const customerId = customerSelect.value;
+            const currentType = customerTypeInput ? customerTypeInput.value : (opt.getAttribute('data-type') || 'perusahaan');
             const customerName = opt.getAttribute('data-name');
-            const customerCode = opt.getAttribute('data-code') || 'B2B';
-            const customerPkg = opt.getAttribute('data-package') || 'Dedicated Connection';
-            const picName = picNameInput ? picNameInput.value.trim() : '';
+            const customerCode = currentType === 'rumahan' ? 'RUMAHAN' : (opt.getAttribute('data-code') || 'B2B');
+            const customerPkg = opt.getAttribute('data-package') || (currentType === 'rumahan' ? 'Home Fiber Broadband' : 'Dedicated Connection');
+            const picName = (picNameInput && picNameInput.value.trim()) ? picNameInput.value.trim() : customerName;
             const email = emailInput ? emailInput.value.trim() : '';
             const phone = phoneInput ? phoneInput.value.trim() : '';
             const username = usernameInput ? usernameInput.value.trim() : '';
             const isActive = formCreate.querySelector('input[name="is_active"]')?.checked ?? true;
+
+            if (picNameInput && !picNameInput.value.trim()) {
+                picNameInput.value = customerName;
+            }
 
             const formData = new FormData(formCreate);
 
@@ -441,6 +546,7 @@ export function initAdminAccounts() {
                     appendNewAccountRow({
                         id: data.account ? data.account.id : Date.now(),
                         customer_id: customerId,
+                        customer_type: currentType,
                         customer_name: customerName,
                         customer_code: customerCode,
                         package: customerPkg,
@@ -455,12 +561,14 @@ export function initAdminAccounts() {
                     });
 
                     formCreate.reset();
+                    setCustomerTypeMode('perusahaan');
                 })
                 .catch(() => {
                     if (createModal) createModal.classList.add('hidden');
                     appendNewAccountRow({
                         id: Date.now(),
                         customer_id: customerId,
+                        customer_type: currentType,
                         customer_name: customerName,
                         customer_code: customerCode,
                         package: customerPkg,
@@ -475,6 +583,7 @@ export function initAdminAccounts() {
                     });
                     window.showToast(`Akun customer '${username}' berhasil diterbitkan!`, 'success');
                     formCreate.reset();
+                    setCustomerTypeMode('perusahaan');
                 });
         });
     }

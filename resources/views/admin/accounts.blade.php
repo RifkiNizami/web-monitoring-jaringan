@@ -185,7 +185,7 @@
                     <div class="bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-2xs">
                         <div class="flex items-center justify-between mb-2">
                             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
-                                MITRA TERHUBUNG
+                                MITRA & CUSTOMER TERHUBUNG
                             </p>
                             <span class="p-1 rounded bg-blue-50 text-blue-600">
                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -194,10 +194,10 @@
                             </span>
                         </div>
                         <p class="text-2xl font-black text-blue-600 tracking-tight">
-                            {{ $summary['customers_count'] ?? 6 }} <span class="text-xs font-semibold text-slate-500">Perusahaan</span>
+                            {{ $summary['customers_count'] ?? count($customers) }} <span class="text-xs font-semibold text-slate-500">Customer</span>
                         </p>
                         <p class="text-[11px] text-slate-500 mt-1">
-                            Enterprise, Gov, & Retail
+                            {{ $summary['corporate_count'] ?? 6 }} Perusahaan • {{ $summary['residential_count'] ?? 3 }} Rumahan
                         </p>
                     </div>
 
@@ -314,9 +314,15 @@
                                                     <span class="font-bold text-slate-900 text-xs">
                                                         {{ $account['customer_name'] }}
                                                     </span>
-                                                    <span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
-                                                        {{ $account['customer_code'] ?? 'B2B' }}
-                                                    </span>
+                                                    @if (($account['customer_type'] ?? 'perusahaan') === 'rumahan')
+                                                        <span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                            RUMAHAN
+                                                        </span>
+                                                    @else
+                                                        <span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
+                                                            {{ $account['customer_code'] ?? 'B2B' }}
+                                                        </span>
+                                                    @endif
                                                 </div>
                                                 <p class="text-[11px] text-slate-500 font-mono">
                                                     {{ $account['package'] ?? 'Dedicated Fiber Link' }}
@@ -563,19 +569,54 @@
                 <div class="p-6 space-y-5 max-h-[70vh] overflow-y-auto">
                     
                     <!-- ============================================== -->
-                    <!-- TAHAP 1: PILIH CUSTOMER & IDENTITAS PIC         -->
+                    <!-- TAHAP 1: PILIH CUSTOMER (PERUSAHAAN / RUMAHAN)  -->
                     <!-- ============================================== -->
                     <div class="space-y-3.5 bg-slate-50/70 p-4 rounded-xl border border-slate-200/70">
                         <div class="flex items-center gap-2">
                             <span class="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center">1</span>
-                            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider" id="step1HeaderTitle">
                                 Pilih Mitra Customer & Detail Perwakilan (PIC)
                             </h4>
                         </div>
 
+                        <!-- Pilihan Tipe Customer: Customer Perusahaan vs Customer Rumahan -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                                Kategori / Tipe Customer <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="hidden" name="customer_type" id="create_customer_type" value="perusahaan">
+                            <div class="grid grid-cols-2 gap-2.5">
+                                <!-- Tombol Tipe: Customer Perusahaan -->
+                                <button
+                                    type="button"
+                                    id="btnTypePerusahaan"
+                                    data-type="perusahaan"
+                                    class="customer-type-btn flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer bg-blue-600 text-white border-blue-600 shadow-xs"
+                                >
+                                    <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                    </svg>
+                                    <span>Customer Perusahaan</span>
+                                </button>
+
+                                <!-- Tombol Tipe: Customer Rumahan -->
+                                <button
+                                    type="button"
+                                    id="btnTypeRumahan"
+                                    data-type="rumahan"
+                                    class="customer-type-btn flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
+                                >
+                                    <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                    </svg>
+                                    <span>Customer Rumahan</span>
+                                </button>
+                            </div>
+                        </div>
+
                         <!-- 1. Dropdown Pilih Customer -->
                         <div>
-                            <label for="create_customer_id" class="block text-xs font-bold text-slate-700 mb-1">
+                            <label for="create_customer_id" class="block text-xs font-bold text-slate-700 mb-1" id="labelSelectCustomer">
                                 Pilih Mitra Customer Korporat <span class="text-rose-500">*</span>
                             </label>
                             <div class="relative">
@@ -585,10 +626,11 @@
                                     required
                                     class="w-full appearance-none pl-3 pr-8 py-2 text-xs font-medium bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-pointer shadow-2xs"
                                 >
-                                    <option value="" disabled selected>-- Pilih Perusahaan Customer Terdaftar --</option>
+                                    <option value="" disabled selected id="placeholderSelectCustomer">-- Pilih Perusahaan Customer Terdaftar --</option>
                                     @foreach ($customers as $c)
                                         <option 
                                             value="{{ $c['id'] }}"
+                                            data-type="{{ $c['customer_type'] ?? 'perusahaan' }}"
                                             data-name="{{ $c['name'] }}"
                                             data-code="{{ $c['code'] }}"
                                             data-package="{{ $c['package'] }}"
@@ -596,6 +638,7 @@
                                             data-email="{{ $c['default_email'] }}"
                                             data-phone="{{ $c['default_phone'] }}"
                                             data-prefix="{{ $c['username_prefix'] }}"
+                                            class="{{ ($c['customer_type'] ?? 'perusahaan') === 'rumahan' ? 'hidden' : '' }}"
                                         >
                                             {{ $c['name'] }} ({{ $c['code'] }}) — {{ $c['category'] }}
                                         </option>
@@ -607,15 +650,15 @@
                                     </svg>
                                 </div>
                             </div>
-                            <p class="text-[10px] text-slate-400 mt-1">
+                            <p class="text-[10px] text-slate-400 mt-1" id="helperSelectCustomer">
                                 Memilih customer akan otomatis mengisi saran username dan kontak resmi.
                             </p>
                         </div>
 
-                        <!-- Row: Nama PIC & Email -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                                <label for="create_name" class="block text-xs font-bold text-slate-700 mb-1">
+                        <!-- Row: Nama PIC (Hanya untuk Perusahaan) & Email -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="gridPicAndEmail">
+                            <div id="wrapperCreatePicName">
+                                <label for="create_name" class="block text-xs font-bold text-slate-700 mb-1" id="labelCreateName">
                                     Nama Lengkap PIC Perwakilan <span class="text-rose-500">*</span>
                                 </label>
                                 <input 
@@ -628,8 +671,8 @@
                                 >
                             </div>
 
-                            <div>
-                                <label for="create_email" class="block text-xs font-bold text-slate-700 mb-1">
+                            <div id="wrapperCreateEmail">
+                                <label for="create_email" class="block text-xs font-bold text-slate-700 mb-1" id="labelCreateEmail">
                                     Email Resmi PIC Korporat <span class="text-rose-500">*</span>
                                 </label>
                                 <input 
@@ -643,9 +686,9 @@
                             </div>
                         </div>
 
-                        <!-- No. Telepon / WhatsApp PIC -->
+                        <!-- No. Telepon / WhatsApp -->
                         <div>
-                            <label for="create_phone" class="block text-xs font-bold text-slate-700 mb-1">
+                            <label for="create_phone" class="block text-xs font-bold text-slate-700 mb-1" id="labelCreatePhone">
                                 No. Telepon / WhatsApp PIC
                             </label>
                             <input 
