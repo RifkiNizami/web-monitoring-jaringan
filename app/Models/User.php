@@ -59,4 +59,38 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Customer::class);
     }
+
+    /**
+     * Relationship with Announcements
+     */
+    public function announcements(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Announcement::class, 'created_by');
+    }
+
+    /**
+     * Relationship with Landing Clients
+     */
+    public function landingClients(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(LandingClient::class, 'created_by');
+    }
+
+    /**
+     * Role checking helpers
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isAdminKonten(): bool
+    {
+        return $this->role === 'admin_konten';
+    }
+
+    public function isCustomer(): bool
+    {
+        return $this->role === 'customer_representative';
+    }
 }

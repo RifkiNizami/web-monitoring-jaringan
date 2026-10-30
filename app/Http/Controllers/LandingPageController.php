@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LandingClient;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -9,6 +10,11 @@ class LandingPageController extends Controller
 {
     public function index(): View
     {
+        $clients = LandingClient::where('is_active', true)
+            ->orderBy('order', 'asc')
+            ->orderBy('id', 'desc')
+            ->get();
+
         $stats = [
             ['value' => '99.9%', 'label' => 'Network Visibility', 'desc' => 'Visibilitas total infrastruktur'],
             ['value' => '< 1s', 'label' => 'Real-Time Monitoring', 'desc' => 'Deteksi latency & downtime'],
@@ -81,6 +87,6 @@ class LandingPageController extends Controller
             'Data monitoring dan laporan terstruktur secara otomatis.'
         ];
 
-        return view('landingpage.index', compact('stats', 'features', 'steps', 'benefits'));
+        return view('landingpage.index', compact('stats', 'features', 'steps', 'benefits', 'clients'));
     }
 }
