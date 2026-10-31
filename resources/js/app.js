@@ -1,7 +1,6 @@
 import './bootstrap';
 
 import { initClientsCarousel } from './landing/clients';
-import { initWorkflowScrollytelling } from './landing/workflow';
 import { initAdminCommon } from './admin/common';
 import { initAdminLogin } from './admin/login';
 import { initAdminReports } from './admin/reports';
@@ -141,7 +140,6 @@ document.addEventListener('DOMContentLoaded', () => {
        5. Module Initializations
     ========================================== */
     initClientsCarousel();
-    initWorkflowScrollytelling();
     initAdminCommon();
     initAdminReports();
     initAdminTickets();

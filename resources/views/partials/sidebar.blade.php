@@ -67,8 +67,8 @@
                 </p>
                 <nav class="space-y-1">
                     <!-- Klien Landing Page (1 Menu Utama Konten Sesuai Permintaan) -->
-                    @php $isClientsActive = request()->routeIs('landing-clients.*'); @endphp
-                    <a href="{{ route('landing-clients.index') }}"
+                    @php $isClientsActive = request()->routeIs('klien.*') || request()->routeIs('landing-clients.*'); @endphp
+                    <a href="{{ route('klien.index') }}"
                         class="flex items-center justify-between px-3.5 py-2 text-xs rounded-lg transition-all duration-150 group border-l-4 {{ $isClientsActive ? 'bg-blue-50/90 text-netfly-blue font-semibold border-netfly-blue shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium border-transparent' }}">
                         <div class="flex items-center gap-3">
                             <svg class="w-4 h-4 shrink-0 {{ $isClientsActive ? 'text-netfly-blue' : 'text-slate-400 group-hover:text-slate-600' }}"
@@ -93,8 +93,8 @@
                 </p>
                 <nav class="space-y-1">
                     <!-- Kelola Pemberitahuan (Maintenance, dll) -->
-                    @php $isAnnouncementsActive = request()->routeIs('announcements.*'); @endphp
-                    <a href="{{ route('announcements.index') }}"
+                    @php $isAnnouncementsActive = request()->routeIs('pemberitahuan.*') || request()->routeIs('announcements.*'); @endphp
+                    <a href="{{ route('pemberitahuan.index') }}"
                         class="flex items-center justify-between px-3.5 py-2 text-xs rounded-lg transition-all duration-150 group border-l-4 {{ $isAnnouncementsActive ? 'bg-blue-50/90 text-netfly-blue font-semibold border-netfly-blue shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium border-transparent' }}">
                         <div class="flex items-center gap-3">
                             <svg class="w-4 h-4 shrink-0 {{ $isAnnouncementsActive ? 'text-netfly-blue' : 'text-slate-400 group-hover:text-slate-600' }}"
@@ -273,8 +273,8 @@
                     INFORMASI & BROADCAST
                 </p>
                 <nav class="space-y-1">
-                    @php $isAnnouncementsActive = request()->routeIs('announcements.*'); @endphp
-                    <a href="{{ route('announcements.index') }}"
+                    @php $isAnnouncementsActive = request()->routeIs('pemberitahuan.*') || request()->routeIs('announcements.*'); @endphp
+                    <a href="{{ route('pemberitahuan.index') }}"
                         class="flex items-center justify-between px-3.5 py-2 text-xs rounded-lg transition-all duration-150 group border-l-4 {{ $isAnnouncementsActive ? 'bg-blue-50/90 text-netfly-blue font-semibold border-netfly-blue shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium border-transparent' }}">
                         <div class="flex items-center gap-3">
                             <svg class="w-4 h-4 shrink-0 {{ $isAnnouncementsActive ? 'text-netfly-blue' : 'text-slate-400 group-hover:text-slate-600' }}"

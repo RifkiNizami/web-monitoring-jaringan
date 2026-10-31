@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Auth;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
@@ -48,12 +49,15 @@ class AuthController extends Controller
         $remember = $request->boolean('remember');
 
         if (Auth::attempt($credentials, $remember)) {
+            // Berhasil login: reset hitungan percobaan
             RateLimiter::clear($throttleKey);
+
             $request->session()->regenerate();
+
             return redirect()->intended(route('dashboard'));
         }
 
-        // Hit rate limiter jika percobaan login gagal
+        // Gagal login: tambah hitungan percobaan (decay 60 detik)
         RateLimiter::hit($throttleKey, 60);
 
         return back()->withErrors([
@@ -62,19 +66,20 @@ class AuthController extends Controller
     }
 
     /**
-     * Dapatkan throttle key untuk request login berdasarkan email & IP.
+     * Format throttle key berdasarkan IP dan email input.
      */
     protected function throttleKey(Request $request): string
     {
-        return Str::transliterate(Str::lower($request->input('email')) . '|' . $request->ip());
+        return Str::transliterate(Str::lower($request->input('email')).'|'.$request->ip());
     }
 
     /**
-     * Proses logout user.
+     * Proses logout user (Hanya via method POST untuk mencegah CSRF vulnerability).
      */
     public function logout(Request $request)
     {
         Auth::logout();
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

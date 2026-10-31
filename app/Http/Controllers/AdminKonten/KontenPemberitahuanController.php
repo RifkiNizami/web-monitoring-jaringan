@@ -1,13 +1,14 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\AdminKonten;
 
+use App\Http\Controllers\Controller;
 use App\Models\Announcement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
-class AnnouncementController extends Controller
+class KontenPemberitahuanController extends Controller
 {
     /**
      * Tampilkan daftar pemberitahuan / announcement.
@@ -46,7 +47,7 @@ class AnnouncementController extends Controller
 
         // Tampilan khusus sesuai peran pengguna
         if (Auth::user()->role === 'admin_konten') {
-            return view('admin.announcements', compact(
+            return view('admin-konten.konten_pemberitahuan', compact(
                 'announcements',
                 'totalCount',
                 'activeCount',
@@ -59,7 +60,7 @@ class AnnouncementController extends Controller
         }
 
         // Tampilan tinjau untuk Admin Biasa
-        return view('admin.announcements_view', compact(
+        return view('admin-konten.konten_pemberitahuan_tinjau', compact(
             'announcements',
             'totalCount',
             'activeCount',
@@ -103,7 +104,9 @@ class AnnouncementController extends Controller
             'created_by' => Auth::id(),
         ]);
 
-        return redirect()->route('announcements.index')
+        $redirectRoute = $request->routeIs('pemberitahuan.*') ? 'pemberitahuan.index' : 'announcements.index';
+
+        return redirect()->route($redirectRoute)
             ->with('success', 'Pemberitahuan baru berhasil dipublikasikan.');
     }
 
@@ -138,33 +141,39 @@ class AnnouncementController extends Controller
             'expires_at' => $request->expires_at,
         ]);
 
-        return redirect()->route('announcements.index')
+        $redirectRoute = $request->routeIs('pemberitahuan.*') ? 'pemberitahuan.index' : 'announcements.index';
+
+        return redirect()->route($redirectRoute)
             ->with('success', 'Pemberitahuan berhasil diperbarui.');
     }
 
     /**
      * Hapus pengumuman (khusus Admin Konten).
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $announcement = Announcement::findOrFail($id);
         $title = $announcement->title;
         $announcement->delete();
 
-        return redirect()->route('announcements.index')
+        $redirectRoute = $request->routeIs('pemberitahuan.*') ? 'pemberitahuan.index' : 'announcements.index';
+
+        return redirect()->route($redirectRoute)
             ->with('success', "Pemberitahuan '{$title}' telah dihapus.");
     }
 
     /**
      * Ubah status pengumuman (aktif/selesai).
      */
-    public function toggleStatus($id)
+    public function toggleStatus(Request $request, $id)
     {
         $announcement = Announcement::findOrFail($id);
         $announcement->status = ($announcement->status === 'aktif') ? 'selesai' : 'aktif';
         $announcement->save();
 
-        return redirect()->route('announcements.index')
+        $redirectRoute = $request->routeIs('pemberitahuan.*') ? 'pemberitahuan.index' : 'announcements.index';
+
+        return redirect()->route($redirectRoute)
             ->with('success', "Status pemberitahuan berhasil diubah menjadi '{$announcement->status}'.");
     }
 }

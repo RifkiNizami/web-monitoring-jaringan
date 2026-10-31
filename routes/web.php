@@ -1,17 +1,18 @@
 <?php
 
 use App\Http\Controllers\LandingPageController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\TicketController;
-use App\Http\Controllers\DeviceController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\AccountController;
-use App\Http\Controllers\CustomerProjectController;
-use App\Http\Controllers\MonitoringController;
-use App\Http\Controllers\TeknisiController;
-use App\Http\Controllers\LandingClientController;
-use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\TicketController;
+use App\Http\Controllers\Admin\DeviceController;
+use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\AccountController;
+use App\Http\Controllers\Admin\CustomerProjectController;
+use App\Http\Controllers\Admin\MonitoringController;
+use App\Http\Controllers\Admin\TeknisiController;
+use App\Http\Controllers\AdminKonten\KontenDashboardController;
+use App\Http\Controllers\AdminKonten\KontenKlienController;
+use App\Http\Controllers\AdminKonten\KontenPemberitahuanController;
 use Illuminate\Support\Facades\Route;
 
 // Landing page publik
@@ -36,19 +37,36 @@ Route::middleware('auth')->group(function () {
     // (Bisa diakses oleh admin_konten & admin)
     // ==========================================
     Route::middleware('role:admin,admin_konten')->group(function () {
+        // Dashboard Admin Konten
+        Route::get('/admin-konten', [KontenDashboardController::class, 'index'])->name('admin-konten.dashboard');
+
         // Kelola Klien Landing Page (CRUD)
-        Route::get('/landing-clients', [LandingClientController::class, 'index'])->name('landing-clients.index');
-        Route::post('/landing-clients', [LandingClientController::class, 'store'])->name('landing-clients.store');
-        Route::match(['post', 'put'], '/landing-clients/{id}', [LandingClientController::class, 'update'])->name('landing-clients.update');
-        Route::delete('/landing-clients/{id}', [LandingClientController::class, 'destroy'])->name('landing-clients.destroy');
-        Route::match(['post', 'put'], '/landing-clients/{id}/toggle-status', [LandingClientController::class, 'toggleStatus'])->name('landing-clients.toggle-status');
+        Route::get('/klien', [KontenKlienController::class, 'index'])->name('klien.index');
+        Route::post('/klien', [KontenKlienController::class, 'store'])->name('klien.store');
+        Route::match(['post', 'put'], '/klien/{id}', [KontenKlienController::class, 'update'])->name('klien.update');
+        Route::delete('/klien/{id}', [KontenKlienController::class, 'destroy'])->name('klien.destroy');
+        Route::match(['post', 'put'], '/klien/{id}/toggle-status', [KontenKlienController::class, 'toggleStatus'])->name('klien.toggle-status');
+
+        // Alias URL /landing-clients agar tautan & test kompatibel
+        Route::get('/landing-clients', [KontenKlienController::class, 'index'])->name('landing-clients.index');
+        Route::post('/landing-clients', [KontenKlienController::class, 'store'])->name('landing-clients.store');
+        Route::match(['post', 'put'], '/landing-clients/{id}', [KontenKlienController::class, 'update'])->name('landing-clients.update');
+        Route::delete('/landing-clients/{id}', [KontenKlienController::class, 'destroy'])->name('landing-clients.destroy');
+        Route::match(['post', 'put'], '/landing-clients/{id}/toggle-status', [KontenKlienController::class, 'toggleStatus'])->name('landing-clients.toggle-status');
 
         // Pemberitahuan / Announcements (Index: Admin Konten kelola, Admin Biasa tinjau)
-        Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
-        Route::post('/announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
-        Route::match(['post', 'put'], '/announcements/{id}', [AnnouncementController::class, 'update'])->name('announcements.update');
-        Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
-        Route::match(['post', 'put'], '/announcements/{id}/toggle-status', [AnnouncementController::class, 'toggleStatus'])->name('announcements.toggle-status');
+        Route::get('/pemberitahuan', [KontenPemberitahuanController::class, 'index'])->name('pemberitahuan.index');
+        Route::post('/pemberitahuan', [KontenPemberitahuanController::class, 'store'])->name('pemberitahuan.store');
+        Route::match(['post', 'put'], '/pemberitahuan/{id}', [KontenPemberitahuanController::class, 'update'])->name('pemberitahuan.update');
+        Route::delete('/pemberitahuan/{id}', [KontenPemberitahuanController::class, 'destroy'])->name('pemberitahuan.destroy');
+        Route::match(['post', 'put'], '/pemberitahuan/{id}/toggle-status', [KontenPemberitahuanController::class, 'toggleStatus'])->name('pemberitahuan.toggle-status');
+
+        // Alias URL /announcements agar tautan & test kompatibel
+        Route::get('/announcements', [KontenPemberitahuanController::class, 'index'])->name('announcements.index');
+        Route::post('/announcements', [KontenPemberitahuanController::class, 'store'])->name('announcements.store');
+        Route::match(['post', 'put'], '/announcements/{id}', [KontenPemberitahuanController::class, 'update'])->name('announcements.update');
+        Route::delete('/announcements/{id}', [KontenPemberitahuanController::class, 'destroy'])->name('announcements.destroy');
+        Route::match(['post', 'put'], '/announcements/{id}/toggle-status', [KontenPemberitahuanController::class, 'toggleStatus'])->name('announcements.toggle-status');
     });
 
     // ==========================================

@@ -6,17 +6,17 @@
 
     @include('landingpage.components.hero')
 
-    @include('landingpage.components.clients')
+    @include('landingpage.components.klien')
 
-    @include('landingpage.components.services')
+    @include('landingpage.components.layanan')
 
-    @include('landingpage.components.monitoring')
+    @include('landingpage.components.solusi')
 
-    @include('landingpage.components.advantages')
+    @include('landingpage.components.arsitektur')
 
-    @include('landingpage.components.about')
+    @include('landingpage.components.perusahaan')
 
-    @include('landingpage.components.cta')
+    @include('landingpage.components.kontak')
 
     @include('landingpage.partials.footer')
 

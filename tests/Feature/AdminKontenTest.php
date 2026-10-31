@@ -50,9 +50,15 @@ class AdminKontenTest extends TestCase
 
         $response = $this->actingAs($user)->get('/dashboard');
         $response->assertStatus(200);
+        $response->assertViewIs('admin-konten.konten_dashboard');
         $response->assertSee('Pusat Pengelolaan Konten');
         $response->assertSee('Dashboard Konten');
         $response->assertSee('Klien Landing Page');
+
+        // Test route langsung /admin-konten
+        $this->actingAs($user)->get('/admin-konten')
+            ->assertStatus(200)
+            ->assertViewIs('admin-konten.konten_dashboard');
     }
 
     public function test_admin_konten_cannot_access_noc_routes(): void
@@ -69,17 +75,24 @@ class AdminKontenTest extends TestCase
     {
         $user = $this->getAdminKonten();
 
-        $response = $this->actingAs($user)->get('/landing-clients');
+        // Route Bahasa Indonesia
+        $response = $this->actingAs($user)->get('/klien');
         $response->assertStatus(200);
+        $response->assertViewIs('admin-konten.konten_klien');
         $response->assertSee('Kelola Klien Landing Page');
         $response->assertSee('Tambah Klien Baru');
+
+        // Alias Route
+        $this->actingAs($user)->get('/landing-clients')
+            ->assertStatus(200)
+            ->assertViewIs('admin-konten.konten_klien');
     }
 
     public function test_admin_konten_can_create_and_delete_landing_client(): void
     {
         $user = $this->getAdminKonten();
 
-        $response = $this->actingAs($user)->post('/landing-clients', [
+        $response = $this->actingAs($user)->post('/klien', [
             'name' => 'PT Mitra Sejahtera Test',
             'category' => 'Fintech',
             'location' => 'Jakarta Pusat',
@@ -87,7 +100,7 @@ class AdminKontenTest extends TestCase
             'is_active' => '1',
         ]);
 
-        $response->assertRedirect('/landing-clients');
+        $response->assertRedirect('/klien');
         $response->assertSessionHas('success');
 
         $this->assertDatabaseHas('landing_clients', [
@@ -97,8 +110,8 @@ class AdminKontenTest extends TestCase
         ]);
 
         $client = LandingClient::where('name', 'PT Mitra Sejahtera Test')->first();
-        $this->actingAs($user)->delete("/landing-clients/{$client->id}")
-            ->assertRedirect('/landing-clients')
+        $this->actingAs($user)->delete("/klien/{$client->id}")
+            ->assertRedirect('/klien')
             ->assertSessionHas('success');
 
         $this->assertDatabaseMissing('landing_clients', [
@@ -110,7 +123,7 @@ class AdminKontenTest extends TestCase
     {
         $user = $this->getAdminKonten();
 
-        $response = $this->actingAs($user)->post('/announcements', [
+        $response = $this->actingAs($user)->post('/pemberitahuan', [
             'title' => 'Maintenance Rutin Core Node Jakarta',
             'category' => 'maintenance',
             'message' => 'Akan dilakukan perawatan berkala sistem power suplai.',
@@ -118,7 +131,7 @@ class AdminKontenTest extends TestCase
             'status' => 'aktif',
         ]);
 
-        $response->assertRedirect('/announcements');
+        $response->assertRedirect('/pemberitahuan');
         $response->assertSessionHas('success');
 
         $this->assertDatabaseHas('announcements', [
@@ -131,11 +144,34 @@ class AdminKontenTest extends TestCase
     {
         $admin = $this->getAdminBiasa();
 
-        $response = $this->actingAs($admin)->get('/announcements');
+        // Route Bahasa Indonesia
+        $response = $this->actingAs($admin)->get('/pemberitahuan');
         $response->assertStatus(200);
+        $response->assertViewIs('admin-konten.konten_pemberitahuan_tinjau');
         $response->assertSee('Pusat Pemberitahuan');
         $response->assertSee('Jadwal Pemeliharaan');
         $response->assertSee('Pemberitahuan');
+
+        // Alias Route
+        $this->actingAs($admin)->get('/announcements')
+            ->assertStatus(200)
+            ->assertViewIs('admin-konten.konten_pemberitahuan_tinjau');
+    }
+
+    public function test_admin_konten_can_view_announcements_crud(): void
+    {
+        $user = $this->getAdminKonten();
+
+        // Route Bahasa Indonesia
+        $response = $this->actingAs($user)->get('/pemberitahuan');
+        $response->assertStatus(200);
+        $response->assertViewIs('admin-konten.konten_pemberitahuan');
+        $response->assertSee('Kelola Pemberitahuan');
+
+        // Alias Route
+        $this->actingAs($user)->get('/announcements')
+            ->assertStatus(200)
+            ->assertViewIs('admin-konten.konten_pemberitahuan');
     }
 
     public function test_landing_page_renders_clients_from_database(): void
