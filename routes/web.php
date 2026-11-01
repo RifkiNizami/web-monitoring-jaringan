@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\CustomerProjectController;
 use App\Http\Controllers\Admin\MonitoringController;
+use App\Http\Controllers\Admin\MonitoringDeviceController;
 use App\Http\Controllers\Admin\TeknisiController;
 use App\Http\Controllers\AdminKonten\KontenDashboardController;
 use App\Http\Controllers\AdminKonten\KontenKlienController;
@@ -107,14 +108,24 @@ Route::middleware('auth')->group(function () {
 
         // Inventaris Perangkat Jaringan (Network Devices Management)
         Route::get('/devices', [DeviceController::class, 'index'])->name('devices.index');
+        Route::get('/devices/create', [DeviceController::class, 'create'])->name('devices.create');
+        Route::post('/devices', [DeviceController::class, 'store'])->name('devices.store');
+        Route::get('/devices/{id}/edit', [DeviceController::class, 'edit'])->name('devices.edit');
+        Route::match(['put', 'post'], '/devices/{id}', [DeviceController::class, 'update'])->name('devices.update');
+        Route::delete('/devices/{id}', [DeviceController::class, 'destroy'])->name('devices.destroy');
 
         // Telemetri Jaringan & Live Alert (NOC Monitoring)
         Route::get('/monitoring', [MonitoringController::class, 'index'])->name('monitoring.index');
+        Route::get('/monitoring/devices/create', [MonitoringDeviceController::class, 'create'])->name('monitoring.devices.create');
+        Route::post('/monitoring/devices', [MonitoringDeviceController::class, 'store'])->name('monitoring.devices.store');
+        Route::get('/monitoring/devices/{id}/edit', [MonitoringDeviceController::class, 'edit'])->name('monitoring.devices.edit');
+        Route::match(['put', 'post'], '/monitoring/devices/{id}', [MonitoringDeviceController::class, 'update'])->name('monitoring.devices.update');
+        Route::delete('/monitoring/devices/{id}', [MonitoringDeviceController::class, 'destroy'])->name('monitoring.devices.destroy');
         Route::get('/monitoring/devices/{id}', [MonitoringController::class, 'show'])->name('monitoring.show');
         Route::get('/monitoring/devices/{id}/telemetry', [MonitoringController::class, 'telemetryStream'])->name('monitoring.telemetry');
         Route::post('/monitoring/devices/{id}/ping', [MonitoringController::class, 'pollDevice'])->name('monitoring.devices.ping');
         Route::post('/monitoring/alerts/{id}/resolve', [MonitoringController::class, 'resolveAlert'])->name('monitoring.alerts.resolve');
-        Route::post('/monitoring/settings', [MonitoringController::class, 'saveSettings'])->name('monitoring.settings.save');
+        Route::post('/monitoring/settings', [MonitoringDeviceController::class, 'saveSettings'])->name('monitoring.settings.save');
 
         // Laporan Kinerja SLA & Audit (Executive Report Generator & PDF Export)
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
