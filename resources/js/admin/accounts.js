@@ -119,6 +119,139 @@ export function initAdminAccounts() {
     if (customerFilter) customerFilter.addEventListener('change', filterTable);
 
     // -----------------------------------------------------------------
+    // Overview Map: Kotak Peta Sebaran Lokasi Customer (Account Management)
+    // -----------------------------------------------------------------
+    let accountsOverviewMapInstance = null;
+    let accountsMarkersLayer = null;
+    const accountMarkerMap = {};
+
+    function createAccountPinIcon(type = 'perusahaan') {
+        if (typeof L === 'undefined') return null;
+        const bgColor = type === 'rumahan' ? '#059669' : '#2563eb';
+        const ringColor = type === 'rumahan' ? '#a7f3d0' : '#bfdbfe';
+        return L.divIcon({
+            className: 'custom-account-map-pin',
+            html: `<div style="width:28px;height:28px;border-radius:9999px;background:${bgColor};border:3px solid ${ringColor};box-shadow:0 4px 10px rgba(15,23,42,0.35);display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:800;">
+                <svg style="width:14px;height:14px" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </div>`,
+            iconSize: [28, 28],
+            iconAnchor: [14, 14],
+            popupAnchor: [0, -14],
+        });
+    }
+
+    function renderAccountsOverviewMap(fitAll = true) {
+        const mapEl = document.getElementById('accountsOverviewMap');
+        if (!mapEl || typeof L === 'undefined') return;
+
+        if (!accountsOverviewMapInstance) {
+            accountsOverviewMapInstance = L.map('accountsOverviewMap').setView([-6.24, 106.83], 11);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors',
+            }).addTo(accountsOverviewMapInstance);
+            accountsMarkersLayer = L.layerGroup().addTo(accountsOverviewMapInstance);
+        }
+
+        accountsMarkersLayer.clearLayers();
+        Object.keys(accountMarkerMap).forEach(k => delete accountMarkerMap[k]);
+
+        const bounds = [];
+        document.querySelectorAll('.account-row').forEach(row => {
+            const id = row.getAttribute('data-id');
+            const custName = row.getAttribute('data-customer-name') || '-';
+            const custType = row.getAttribute('data-customer-type') || 'perusahaan';
+            const picName = row.getAttribute('data-name') || '-';
+            const username = row.getAttribute('data-username') || '-';
+            const pkg = row.getAttribute('data-package') || '-';
+            const addr = row.getAttribute('data-address') || '-';
+            const isActive = row.getAttribute('data-active') === '1';
+            const lat = parseFloat(row.getAttribute('data-latitude'));
+            const lng = parseFloat(row.getAttribute('data-longitude'));
+
+            if (!isNaN(lat) && !isNaN(lng)) {
+                const badgeColor = custType === 'rumahan'
+                    ? 'background:#ecfdf5;color:#047857;border:1px solid #a7f3d0;'
+                    : 'background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;';
+                const badgeText = custType === 'rumahan' ? 'CUSTOMER RUMAHAN' : 'CUSTOMER PERUSAHAAN';
+                const statusBadge = isActive
+                    ? '<span style="color:#059669;font-weight:700;">● Aktif</span>'
+                    : '<span style="color:#e11d48;font-weight:700;">● Nonaktif</span>';
+
+                const popupHtml = `
+                    <div style="min-width:210px;font-family:'Plus Jakarta Sans',sans-serif;line-height:1.4;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:4px;">
+                            <span style="display:inline-block;padding:2px 6px;border-radius:4px;font-size:9px;font-weight:800;${badgeColor}">${badgeText}</span>
+                            <span style="font-size:10px;">${statusBadge}</span>
+                        </div>
+                        <div style="font-size:12px;font-weight:800;color:#0f172a;">${custName}</div>
+                        <div style="font-size:11px;color:#334155;margin-top:2px;">PIC: <b>${picName}</b> (<code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;">${username}</code>)</div>
+                        <div style="font-size:10px;color:#2563eb;font-weight:600;margin-top:2px;">${pkg}</div>
+                        <div style="font-size:10px;color:#64748b;margin-top:4px;">${addr}</div>
+                        <div style="font-size:10px;font-family:monospace;color:#475569;margin-top:4px;padding-top:4px;border-top:1px solid #e2e8f0;">
+                            Koordinat: ${lat.toFixed(6)}, ${lng.toFixed(6)}
+                        </div>
+                    </div>
+                `;
+
+                const marker = L.marker([lat, lng], {
+                    icon: createAccountPinIcon(custType),
+                }).bindPopup(popupHtml);
+
+                accountsMarkersLayer.addLayer(marker);
+                accountMarkerMap[`acc_${id}`] = marker;
+                bounds.push([lat, lng]);
+            }
+        });
+
+        setTimeout(() => {
+            accountsOverviewMapInstance.invalidateSize();
+            if (fitAll && bounds.length > 0) {
+                accountsOverviewMapInstance.fitBounds(bounds, { padding: [35, 35], maxZoom: 14 });
+            }
+        }, 150);
+    }
+
+    function bindFocusAccountMapButtons() {
+        document.querySelectorAll('.btn-focus-account-map').forEach(btn => {
+            btn.onclick = function () {
+                const lat = parseFloat(this.getAttribute('data-lat'));
+                const lng = parseFloat(this.getAttribute('data-lng'));
+                const name = this.getAttribute('data-name') || 'Customer';
+                if (isNaN(lat) || isNaN(lng) || !accountsOverviewMapInstance) return;
+
+                const mapCard = document.getElementById('accountsOverviewMap');
+                if (mapCard) {
+                    mapCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+
+                accountsOverviewMapInstance.flyTo([lat, lng], 16, { duration: 0.8 });
+
+                const row = this.closest('tr');
+                const id = row ? row.getAttribute('data-id') : null;
+                const marker = id ? accountMarkerMap[`acc_${id}`] : null;
+                if (marker) {
+                    setTimeout(() => marker.openPopup(), 450);
+                }
+
+                if (window.showToast) {
+                    window.showToast(`Menampilkan titik lokasi ${name} di peta`, 'success');
+                }
+            };
+        });
+    }
+
+    const btnResetAccountsOverviewMap = document.getElementById('btnResetAccountsOverviewMap');
+    if (btnResetAccountsOverviewMap) {
+        btnResetAccountsOverviewMap.addEventListener('click', () => {
+            renderAccountsOverviewMap(true);
+        });
+    }
+
+    renderAccountsOverviewMap(true);
+    bindFocusAccountMapButtons();
+
+    // -----------------------------------------------------------------
     // Metrics Recalculation
     // -----------------------------------------------------------------
     function recalculateMetrics() {
@@ -190,6 +323,7 @@ export function initAdminAccounts() {
                 }
 
                 recalculateMetrics();
+                renderAccountsOverviewMap(false);
 
                 // Asynchronous Backend Sync
                 fetch(`/accounts/${accountId}/toggle-status`, {
@@ -220,7 +354,7 @@ export function initAdminAccounts() {
     }
 
     // -----------------------------------------------------------------
-    // Create Account Modal Workflow
+    // Create Account Modal Workflow + Interactive Leaflet Map Picker
     // -----------------------------------------------------------------
     const createModal = document.getElementById('createAccountModal');
     const btnOpenCreate = document.getElementById('btnOpenCreateAccount');
@@ -238,12 +372,111 @@ export function initAdminAccounts() {
     const picNameInput = document.getElementById('create_name');
     const emailInput = document.getElementById('create_email');
     const phoneInput = document.getElementById('create_phone');
+    const addressInput = document.getElementById('create_acc_address');
+    const latInput = document.getElementById('create_acc_lat');
+    const lngInput = document.getElementById('create_acc_lng');
     const usernameInput = document.getElementById('create_username');
     const passwordInput = document.getElementById('create_password');
     const btnSuggestUsername = document.getElementById('btnSuggestUsername');
     const btnGeneratePassword = document.getElementById('btnGeneratePassword');
     const togglePasswordBtn = document.getElementById('toggleCreatePassword');
     const validBadge = document.getElementById('usernameValidBadge');
+
+    // Interactive Map Picker inside Create Account Modal
+    const accMapState = {
+        map: null,
+        marker: null,
+    };
+
+    function setModalMapCoordinates(lat, lng, zoom = 15) {
+        const numLat = parseFloat(lat);
+        const numLng = parseFloat(lng);
+        if (isNaN(numLat) || isNaN(numLng)) return;
+
+        if (latInput) latInput.value = numLat.toFixed(6);
+        if (lngInput) lngInput.value = numLng.toFixed(6);
+
+        if (accMapState.map && accMapState.marker) {
+            accMapState.marker.setLatLng([numLat, numLng]);
+            accMapState.map.setView([numLat, numLng], zoom);
+        }
+    }
+
+    function openCreateModalMap(defaultLat = -6.208763, defaultLng = 106.845599) {
+        const container = document.getElementById('mapCreateAccount');
+        if (!container || typeof L === 'undefined') return;
+
+        const initLat = latInput && latInput.value ? parseFloat(latInput.value) : defaultLat;
+        const initLng = lngInput && lngInput.value ? parseFloat(lngInput.value) : defaultLng;
+
+        if (!accMapState.map) {
+            accMapState.map = L.map('mapCreateAccount').setView([initLat, initLng], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap',
+            }).addTo(accMapState.map);
+
+            accMapState.marker = L.marker([initLat, initLng], { draggable: true }).addTo(accMapState.map);
+
+            accMapState.marker.on('dragend', function (e) {
+                const pos = e.target.getLatLng();
+                if (latInput) latInput.value = pos.lat.toFixed(6);
+                if (lngInput) lngInput.value = pos.lng.toFixed(6);
+            });
+
+            accMapState.map.on('click', function (e) {
+                accMapState.marker.setLatLng(e.latlng);
+                if (latInput) latInput.value = e.latlng.lat.toFixed(6);
+                if (lngInput) lngInput.value = e.latlng.lng.toFixed(6);
+            });
+
+            const searchInputMap = document.getElementById('search_map_create_acc');
+            const searchBtnMap = document.getElementById('btn_search_map_create_acc');
+            if (searchBtnMap && searchInputMap) {
+                const triggerGeocode = () => {
+                    const q = searchInputMap.value.trim();
+                    if (!q) return;
+                    const originalText = searchBtnMap.textContent;
+                    searchBtnMap.textContent = 'Mencari...';
+                    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1`)
+                        .then(res => res.json())
+                        .then(results => {
+                            searchBtnMap.textContent = originalText;
+                            if (results && results.length > 0) {
+                                const foundLat = parseFloat(results[0].lat);
+                                const foundLon = parseFloat(results[0].lon);
+                                setModalMapCoordinates(foundLat, foundLon, 16);
+                                if (addressInput && !addressInput.value.trim()) {
+                                    addressInput.value = results[0].display_name;
+                                }
+                            } else if (window.showToast) {
+                                window.showToast('Lokasi tidak ditemukan, silakan geser pin secara manual.', 'warning');
+                            }
+                        })
+                        .catch(() => {
+                            searchBtnMap.textContent = originalText;
+                        });
+                };
+
+                searchBtnMap.addEventListener('click', triggerGeocode);
+                searchInputMap.addEventListener('keydown', e => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        triggerGeocode();
+                    }
+                });
+            }
+        } else {
+            setModalMapCoordinates(initLat, initLng, 14);
+        }
+
+        if (latInput && !latInput.value) latInput.value = initLat.toFixed(6);
+        if (lngInput && !lngInput.value) lngInput.value = initLng.toFixed(6);
+
+        setTimeout(() => {
+            accMapState.map.invalidateSize();
+        }, 250);
+    }
 
     function setCustomerTypeMode(type) {
         if (customerTypeInput) customerTypeInput.value = type;
@@ -313,6 +546,7 @@ export function initAdminAccounts() {
         }
         if (emailInput) emailInput.value = '';
         if (phoneInput) phoneInput.value = '';
+        if (addressInput) addressInput.value = '';
         if (usernameInput) usernameInput.value = '';
         if (validBadge) validBadge.classList.add('hidden');
     }
@@ -328,6 +562,7 @@ export function initAdminAccounts() {
         btnOpenCreate.addEventListener('click', () => {
             setCustomerTypeMode('perusahaan');
             createModal.classList.remove('hidden');
+            openCreateModalMap(-6.208763, 106.845599);
         });
     }
 
@@ -345,6 +580,9 @@ export function initAdminAccounts() {
                 const pic = opt.getAttribute('data-pic') || custName;
                 const email = opt.getAttribute('data-email');
                 const phone = opt.getAttribute('data-phone');
+                const addr = opt.getAttribute('data-address') || '';
+                const lat = opt.getAttribute('data-latitude') || -6.208763;
+                const lng = opt.getAttribute('data-longitude') || 106.845599;
                 const prefix = opt.getAttribute('data-prefix') || 'user_';
                 const currentType = customerTypeInput ? customerTypeInput.value : 'perusahaan';
 
@@ -353,6 +591,8 @@ export function initAdminAccounts() {
                 }
                 if (email && emailInput) emailInput.value = email;
                 if (phone && phoneInput) phoneInput.value = phone;
+                if (addressInput) addressInput.value = addr;
+                setModalMapCoordinates(lat, lng, 15);
 
                 if (usernameInput) {
                     const baseTarget = currentType === 'rumahan' ? custName : (pic || 'pic');
@@ -417,12 +657,21 @@ export function initAdminAccounts() {
         const tbody = document.getElementById('accountsTableBody');
         if (!tbody) return;
 
+        const latVal = acc.latitude !== undefined && acc.latitude !== '' ? parseFloat(acc.latitude) : -6.208763;
+        const lngVal = acc.longitude !== undefined && acc.longitude !== '' ? parseFloat(acc.longitude) : 106.845599;
+        const addressText = acc.address || '-';
+
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-50/80 transition-colors account-row';
         tr.id = `row-account-${acc.id}`;
         tr.setAttribute('data-id', acc.id);
         tr.setAttribute('data-customer-id', acc.customer_id);
+        tr.setAttribute('data-customer-type', acc.customer_type || 'perusahaan');
         tr.setAttribute('data-customer-name', acc.customer_name);
+        tr.setAttribute('data-package', acc.package || '');
+        tr.setAttribute('data-address', addressText);
+        tr.setAttribute('data-latitude', latVal);
+        tr.setAttribute('data-longitude', lngVal);
         tr.setAttribute('data-name', acc.name);
         tr.setAttribute('data-username', acc.username);
         tr.setAttribute('data-email', acc.email);
@@ -442,6 +691,22 @@ export function initAdminAccounts() {
                         ${badgeHtml}
                     </div>
                     <p class="text-[11px] text-slate-500 font-mono">${acc.package}</p>
+                    <div class="flex items-center gap-1.5 pt-0.5">
+                        <span class="text-[10px] text-slate-400 truncate max-w-[210px]" title="${addressText}">${addressText}</span>
+                        <button
+                            type="button"
+                            data-lat="${latVal}"
+                            data-lng="${lngVal}"
+                            data-name="${acc.customer_name}"
+                            class="btn-focus-account-map inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200/80 text-[10px] font-bold transition-colors cursor-pointer shrink-0"
+                            title="Fokuskan ke titik lokasi customer di peta atas"
+                        >
+                            <svg class="w-3 h-3 text-rose-500 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/>
+                            </svg>
+                            <span>Lihat Titik di Peta</span>
+                        </button>
+                    </div>
                 </div>
             </td>
             <td class="py-4 px-5 align-middle">
@@ -499,6 +764,8 @@ export function initAdminAccounts() {
         tbody.insertBefore(tr, tbody.firstChild);
         setupToggleListeners();
         setupActionButtons();
+        bindFocusAccountMapButtons();
+        renderAccountsOverviewMap(false);
         recalculateMetrics();
         filterTable();
     }
@@ -521,6 +788,9 @@ export function initAdminAccounts() {
             const picName = (picNameInput && picNameInput.value.trim()) ? picNameInput.value.trim() : customerName;
             const email = emailInput ? emailInput.value.trim() : '';
             const phone = phoneInput ? phoneInput.value.trim() : '';
+            const address = addressInput && addressInput.value.trim() ? addressInput.value.trim() : (opt.getAttribute('data-address') || '-');
+            const latitude = latInput && latInput.value ? parseFloat(latInput.value) : parseFloat(opt.getAttribute('data-latitude') || -6.208763);
+            const longitude = lngInput && lngInput.value ? parseFloat(lngInput.value) : parseFloat(opt.getAttribute('data-longitude') || 106.845599);
             const username = usernameInput ? usernameInput.value.trim() : '';
             const isActive = formCreate.querySelector('input[name="is_active"]')?.checked ?? true;
 
@@ -550,6 +820,9 @@ export function initAdminAccounts() {
                         customer_name: customerName,
                         customer_code: customerCode,
                         package: customerPkg,
+                        address: data.account?.address || address,
+                        latitude: data.account?.latitude ?? latitude,
+                        longitude: data.account?.longitude ?? longitude,
                         name: picName,
                         username: username,
                         email: email,
@@ -572,6 +845,9 @@ export function initAdminAccounts() {
                         customer_name: customerName,
                         customer_code: customerCode,
                         package: customerPkg,
+                        address: address,
+                        latitude: latitude,
+                        longitude: longitude,
                         name: picName,
                         username: username,
                         email: email,
@@ -808,6 +1084,7 @@ export function initAdminAccounts() {
                     if (deleteModal) deleteModal.classList.add('hidden');
                     const row = document.getElementById(`row-account-${targetDeleteAccountId}`);
                     if (row) row.remove();
+                    renderAccountsOverviewMap(false);
                     recalculateMetrics();
                     filterTable();
                     window.showToast(data.message || 'Akun berhasil dihapus.', 'success');
@@ -816,6 +1093,7 @@ export function initAdminAccounts() {
                     if (deleteModal) deleteModal.classList.add('hidden');
                     const row = document.getElementById(`row-account-${targetDeleteAccountId}`);
                     if (row) row.remove();
+                    renderAccountsOverviewMap(false);
                     recalculateMetrics();
                     filterTable();
                     window.showToast('Akun berhasil dihapus.', 'success');

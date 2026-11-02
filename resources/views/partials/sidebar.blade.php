@@ -198,7 +198,7 @@
                     DATA & KEMITRAAN
                 </p>
                 <nav class="space-y-1">
-                    <!-- Customer & Project -->
+                    <!-- Customer Management -->
                     @php $isCustomersActive = request()->routeIs('customers.*') || request()->routeIs('projects.*'); @endphp
                     <a href="{{ route('customers.index') }}"
                         class="flex items-center justify-between px-3.5 py-2 text-xs rounded-lg transition-all duration-150 group border-l-4 {{ $isCustomersActive ? 'bg-blue-50/90 text-netfly-blue font-semibold border-netfly-blue shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium border-transparent' }}">
@@ -208,7 +208,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
                                     d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                             </svg>
-                            <span>Customer & Project</span>
+                            <span>Customer Management</span>
                         </div>
                     </a>
 

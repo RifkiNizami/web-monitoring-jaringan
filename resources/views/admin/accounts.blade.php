@@ -13,6 +13,10 @@
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    <!-- Leaflet.js 1.9.4 CSS & JS (OpenStreetMap Interactive Map) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="h-full bg-slate-50 font-sans text-slate-800 antialiased selection:bg-blue-600 selection:text-white">
@@ -198,6 +202,46 @@
                     </div>
                 @endif
 
+                <!-- KOTAK PETA SEBARAN LOKASI CUSTOMER (PERUSAHAAN & RUMAHAN) -->
+                <div class="bg-white rounded-xl border border-slate-200/80 shadow-2xs overflow-hidden">
+                    <div class="px-5 py-3.5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-slate-50/60">
+                        <div class="flex items-center gap-2.5">
+                            <span class="p-1.5 rounded-lg bg-blue-600 text-white shadow-2xs">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            </span>
+                            <div>
+                                <h2 class="text-xs font-extrabold text-slate-900 uppercase tracking-wide">
+                                    Peta Lokasi Customer Terdaftar (Perusahaan & Rumahan)
+                                </h2>
+                                <p class="text-[11px] text-slate-500">
+                                    Klik pin pada peta untuk melihat detail akun customer, atau klik tombol <b>Lihat Titik di Peta</b> pada baris tabel di bawah.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 text-[11px] font-semibold">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                                <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                                Perusahaan (B2B)
+                            </span>
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                                Rumahan (Home)
+                            </span>
+                            <button
+                                type="button"
+                                id="btnResetAccountsOverviewMap"
+                                class="px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-[11px] font-semibold transition-colors cursor-pointer"
+                            >
+                                Reset Zoom Peta
+                            </button>
+                        </div>
+                    </div>
+                    <div id="accountsOverviewMap" class="w-full h-80 z-10 bg-slate-100"></div>
+                </div>
+
                 <!-- FILTER BAR (SEARCH, STATUS SELECT, CUSTOMER SELECT) -->
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                     
@@ -281,7 +325,12 @@
                                         id="row-account-{{ $account['id'] }}"
                                         data-id="{{ $account['id'] }}"
                                         data-customer-id="{{ $account['customer_id'] }}"
+                                        data-customer-type="{{ $account['customer_type'] ?? 'perusahaan' }}"
                                         data-customer-name="{{ $account['customer_name'] }}"
+                                        data-package="{{ $account['package'] ?? 'Dedicated Fiber Link' }}"
+                                        data-address="{{ $account['address'] ?? '-' }}"
+                                        data-latitude="{{ $account['latitude'] ?? '' }}"
+                                        data-longitude="{{ $account['longitude'] ?? '' }}"
                                         data-name="{{ $account['name'] }}"
                                         data-username="{{ $account['username'] }}"
                                         data-email="{{ $account['email'] }}"
@@ -309,6 +358,26 @@
                                                 <p class="text-[11px] text-slate-500 font-mono">
                                                     {{ $account['package'] ?? 'Dedicated Fiber Link' }}
                                                 </p>
+                                                <div class="flex items-center gap-1.5 pt-0.5">
+                                                    <span class="text-[10px] text-slate-400 truncate max-w-[210px]" title="{{ $account['address'] ?? '-' }}">
+                                                        {{ $account['address'] ?? '-' }}
+                                                    </span>
+                                                    @if (!empty($account['latitude']) && !empty($account['longitude']))
+                                                        <button
+                                                            type="button"
+                                                            data-lat="{{ $account['latitude'] }}"
+                                                            data-lng="{{ $account['longitude'] }}"
+                                                            data-name="{{ $account['customer_name'] }}"
+                                                            class="btn-focus-account-map inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200/80 text-[10px] font-bold transition-colors cursor-pointer shrink-0"
+                                                            title="Fokuskan ke titik lokasi customer di peta atas"
+                                                        >
+                                                            <svg class="w-3 h-3 text-rose-500 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/>
+                                                            </svg>
+                                                            <span>Lihat Titik di Peta</span>
+                                                        </button>
+                                                    @endif
+                                                </div>
                                             </div>
                                         </td>
 
@@ -616,6 +685,9 @@
                                             data-name="{{ $c['name'] }}"
                                             data-code="{{ $c['code'] }}"
                                             data-package="{{ $c['package'] }}"
+                                            data-address="{{ $c['address'] ?? '' }}"
+                                            data-latitude="{{ $c['latitude'] ?? -6.208763 }}"
+                                            data-longitude="{{ $c['longitude'] ?? 106.845599 }}"
                                             data-pic="{{ $c['default_pic'] }}"
                                             data-email="{{ $c['default_email'] }}"
                                             data-phone="{{ $c['default_phone'] }}"
@@ -633,7 +705,7 @@
                                 </div>
                             </div>
                             <p class="text-[10px] text-slate-400 mt-1" id="helperSelectCustomer">
-                                Memilih customer akan otomatis mengisi saran username dan kontak resmi.
+                                Memilih customer akan otomatis mengisi saran username, kontak resmi, dan titik lokasi pada peta.
                             </p>
                         </div>
 
@@ -680,6 +752,77 @@
                                 placeholder="Contoh: 0812-8877-6655"
                                 class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs"
                             >
+                        </div>
+
+                        <!-- Alamat & Titik Lokasi Peta Interaktif (Leaflet.js) -->
+                        <div class="pt-2 border-t border-slate-200/70 space-y-2.5">
+                            <div>
+                                <label for="create_acc_address" class="block text-xs font-bold text-slate-700 mb-1">
+                                    Alamat Instalasi / Lokasi Customer
+                                </label>
+                                <input
+                                    type="text"
+                                    id="create_acc_address"
+                                    name="address"
+                                    placeholder="Alamat lengkap lokasi customer..."
+                                    class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs"
+                                >
+                            </div>
+
+                            <div>
+                                <div class="flex items-center justify-between mb-1">
+                                    <label class="block text-xs font-bold text-slate-700">
+                                        Titik Lokasi Peta Pelanggan (Geser Pin / Klik Peta)
+                                    </label>
+                                    <span class="text-[10px] font-semibold text-blue-600">OpenStreetMap Geocoding</span>
+                                </div>
+
+                                <!-- Input Pencarian Alamat (Geocoding) -->
+                                <div class="flex gap-1.5 mb-2">
+                                    <input
+                                        type="text"
+                                        id="search_map_create_acc"
+                                        placeholder="Ketik nama jalan / gedung / kota lalu klik Cari Lokasi..."
+                                        class="flex-1 px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500"
+                                    >
+                                    <button
+                                        type="button"
+                                        id="btn_search_map_create_acc"
+                                        class="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer shrink-0"
+                                    >
+                                        Cari Lokasi
+                                    </button>
+                                </div>
+
+                                <!-- Kontainer Peta Interaktif Leaflet -->
+                                <div id="mapCreateAccount" class="w-full h-52 rounded-xl border border-slate-200 z-10 shadow-inner"></div>
+
+                                <!-- Input Read-Only Latitude & Longitude -->
+                                <div class="grid grid-cols-2 gap-2.5 mt-2">
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Latitude</label>
+                                        <input
+                                            type="text"
+                                            name="latitude"
+                                            id="create_acc_lat"
+                                            readonly
+                                            placeholder="-6.208763"
+                                            class="w-full px-2.5 py-1.5 text-xs font-mono bg-slate-100 border border-slate-200 rounded-lg text-slate-700 cursor-not-allowed"
+                                        >
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Longitude</label>
+                                        <input
+                                            type="text"
+                                            name="longitude"
+                                            id="create_acc_lng"
+                                            readonly
+                                            placeholder="106.845599"
+                                            class="w-full px-2.5 py-1.5 text-xs font-mono bg-slate-100 border border-slate-200 rounded-lg text-slate-700 cursor-not-allowed"
+                                        >
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
