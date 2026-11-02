@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\AdminKonten;
 
+use App\Http\Controllers\Controller;
 use App\Models\LandingClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -9,7 +10,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
-class LandingClientController extends Controller
+class KontenKlienController extends Controller
 {
     /**
      * Tampilkan halaman daftar klien landing page.
@@ -45,7 +46,7 @@ class LandingClientController extends Controller
         $activeClients = LandingClient::where('is_active', true)->count();
         $inactiveClients = $totalClients - $activeClients;
 
-        return view('admin.landing_clients', compact(
+        return view('admin-konten.konten_klien', compact(
             'clients',
             'categories',
             'totalClients',
@@ -83,11 +84,11 @@ class LandingClientController extends Controller
             $file = $request->file('logo');
             $filename = 'client_' . time() . '_' . Str::slug($request->name) . '.' . $file->getClientOriginalExtension();
             $destination = public_path('uploads/clients');
-            
+
             if (!File::exists($destination)) {
                 File::makeDirectory($destination, 0755, true);
             }
-            
+
             $file->move($destination, $filename);
             $logoPath = 'uploads/clients/' . $filename;
         }
@@ -103,7 +104,9 @@ class LandingClientController extends Controller
             'created_by' => Auth::id(),
         ]);
 
-        return redirect()->route('landing-clients.index')
+        $redirectRoute = $request->routeIs('klien.*') ? 'klien.index' : 'landing-clients.index';
+
+        return redirect()->route($redirectRoute)
             ->with('success', "Klien '{$request->name}' berhasil ditambahkan ke landing page.");
     }
 
@@ -161,14 +164,16 @@ class LandingClientController extends Controller
 
         $client->update($data);
 
-        return redirect()->route('landing-clients.index')
+        $redirectRoute = $request->routeIs('klien.*') ? 'klien.index' : 'landing-clients.index';
+
+        return redirect()->route($redirectRoute)
             ->with('success', "Data klien '{$client->name}' berhasil diperbarui.");
     }
 
     /**
      * Hapus data klien dari landing page.
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $client = LandingClient::findOrFail($id);
         $clientName = $client->name;
@@ -183,22 +188,25 @@ class LandingClientController extends Controller
 
         $client->delete();
 
-        return redirect()->route('landing-clients.index')
+        $redirectRoute = $request->routeIs('klien.*') ? 'klien.index' : 'landing-clients.index';
+
+        return redirect()->route($redirectRoute)
             ->with('success', "Klien '{$clientName}' berhasil dihapus dari landing page.");
     }
 
     /**
      * Toggle status aktif/nonaktif cepat.
      */
-    public function toggleStatus($id)
+    public function toggleStatus(Request $request, $id)
     {
         $client = LandingClient::findOrFail($id);
         $client->is_active = !$client->is_active;
         $client->save();
 
         $statusText = $client->is_active ? 'diaktifkan' : 'dinonaktifkan';
+        $redirectRoute = $request->routeIs('klien.*') ? 'klien.index' : 'landing-clients.index';
 
-        return redirect()->route('landing-clients.index')
+        return redirect()->route($redirectRoute)
             ->with('success', "Status klien '{$client->name}' berhasil {$statusText}.");
     }
 }

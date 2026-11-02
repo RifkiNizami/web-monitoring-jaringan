@@ -1,7 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminKonten\KontenDashboardController;
 use App\Models\Customer;
 use App\Models\Device;
 use App\Models\LandingClient;
@@ -23,27 +25,7 @@ class DashboardController extends Controller
     {
         // Khusus peran Admin Konten: Tampilkan Dashboard Pengelolaan Konten & Pemberitahuan
         if (Auth::check() && Auth::user()->role === 'admin_konten') {
-            $totalClients = LandingClient::count();
-            $activeClients = LandingClient::where('is_active', true)->count();
-            $latestClients = LandingClient::latest('updated_at')->take(6)->get();
-
-            $totalAnnouncements = Announcement::count();
-            $activeAnnouncements = Announcement::where('status', 'aktif')->count();
-            $latestAnnouncements = Announcement::with('creator')->latest()->take(5)->get();
-
-            $lastUpdatedClient = LandingClient::latest('updated_at')->first();
-            $lastUpdatedAnnouncement = Announcement::latest('updated_at')->first();
-
-            return view('admin.dashboard_konten', compact(
-                'totalClients',
-                'activeClients',
-                'latestClients',
-                'totalAnnouncements',
-                'activeAnnouncements',
-                'latestAnnouncements',
-                'lastUpdatedClient',
-                'lastUpdatedAnnouncement'
-            ));
+            return app(KontenDashboardController::class)->index();
         }
 
         // 1. Data Uptime SLA 30 Hari Terakhir (Dihitung Dinamis dari Database)

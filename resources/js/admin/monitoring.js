@@ -6,9 +6,10 @@
 export function initAdminMonitoring() {
     const deviceGrid = document.getElementById('deviceGrid');
     const alertContainer = document.getElementById('alertContainer');
+    const deleteModalEl = document.getElementById('deleteMonitoringNodeModal');
 
-    // Only run if on the monitoring device list page
-    if (!deviceGrid && !alertContainer) return;
+    // Run if on the monitoring list page or edit page with delete modal
+    if (!deviceGrid && !alertContainer && !deleteModalEl) return;
 
     const getCsrfToken = () =>
         document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
@@ -257,6 +258,8 @@ export function initAdminMonitoring() {
         if (e.key !== 'Escape') return;
         if (pingModal && !pingModal.classList.contains('hidden')) closePingModal();
         if (settingModal && !settingModal.classList.contains('hidden')) closeSettingModal();
+        if (createModal && !createModal.classList.contains('hidden')) closeCreateModal();
+        if (deleteModal && !deleteModal.classList.contains('hidden')) closeDeleteModal();
         closeAllCardMenus();
     });
 
@@ -474,6 +477,159 @@ export function initAdminMonitoring() {
                 btnPollAllNodes.querySelector('svg')?.classList.remove('animate-spin');
                 window.showToast(`Telemetri ${total} perangkat berhasil disinkronisasi.`, 'success');
             }, 800);
+        });
+    }
+
+    // -----------------------------------------------------------------
+    // 7. Tambah Target Monitoring Baru (Modal & Form Submit)
+    // -----------------------------------------------------------------
+    const createModal = document.getElementById('createMonitoringNodeModal');
+    const btnOpenCreate = document.getElementById('btnOpenCreateMonitoringNode');
+    const formCreate = document.getElementById('formCreateMonitoringNode');
+
+    function closeCreateModal() {
+        if (createModal) {
+            createModal.classList.add('hidden');
+            formCreate?.reset();
+        }
+    }
+
+    if (btnOpenCreate && createModal) {
+        btnOpenCreate.addEventListener('click', () => {
+            createModal.classList.remove('hidden');
+            createModal.querySelector('input[name="hostname"]')?.focus();
+        });
+    }
+
+    document.querySelectorAll('.close-create-monitoring-modal').forEach(btn => {
+        btn.addEventListener('click', closeCreateModal);
+    });
+
+    if (createModal) {
+        createModal.addEventListener('click', e => {
+            if (e.target === createModal) closeCreateModal();
+        });
+    }
+
+    if (formCreate) {
+        formCreate.addEventListener('submit', async e => {
+            e.preventDefault();
+            const submitBtn = document.getElementById('btnSubmitCreateMonitoring');
+            const originalLabel = submitBtn ? submitBtn.innerHTML : '';
+
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `
+                    <svg class="animate-spin -ml-1 mr-2 h-3.5 w-3.5 text-white inline-block" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                    </svg>
+                    <span>Menyimpan...</span>
+                `;
+            }
+
+            try {
+                const res = await fetch('/monitoring/devices', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': getCsrfToken(),
+                        Accept: 'application/json',
+                    },
+                    body: new FormData(formCreate),
+                });
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    window.showToast(data.message || 'Perangkat monitoring berhasil ditambahkan.', 'success');
+                    closeCreateModal();
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 600);
+                } else {
+                    window.showToast(data.message || 'Periksa kembali formulir isian.', 'error');
+                }
+            } catch (err) {
+                window.showToast('Gagal menambahkan perangkat monitoring.', 'error');
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalLabel;
+                }
+            }
+        });
+    }
+
+    // -----------------------------------------------------------------
+    // 8. Hapus Perangkat dari Monitoring (Modal & Action)
+    // -----------------------------------------------------------------
+    const deleteModal = document.getElementById('deleteMonitoringNodeModal');
+    const deleteHostnameText = document.getElementById('deleteNodeHostname');
+    const btnConfirmDelete = document.getElementById('btnConfirmDeleteNode');
+    let targetDeleteDeviceId = null;
+
+    function closeDeleteModal() {
+        if (deleteModal) deleteModal.classList.add('hidden');
+        targetDeleteDeviceId = null;
+    }
+
+    document.querySelectorAll('.btn-delete-node').forEach(btn => {
+        btn.addEventListener('click', e => {
+            e.preventDefault();
+            e.stopPropagation();
+            closeAllCardMenus();
+
+            targetDeleteDeviceId = btn.dataset.deviceId;
+            if (deleteHostnameText) {
+                deleteHostnameText.textContent = btn.dataset.deviceHostname || `#${targetDeleteDeviceId}`;
+            }
+
+            if (deleteModal) deleteModal.classList.remove('hidden');
+        });
+    });
+
+    document.querySelectorAll('.close-delete-monitoring-modal').forEach(btn => {
+        btn.addEventListener('click', closeDeleteModal);
+    });
+
+    if (deleteModal) {
+        deleteModal.addEventListener('click', e => {
+            if (e.target === deleteModal) closeDeleteModal();
+        });
+    }
+
+    if (btnConfirmDelete) {
+        btnConfirmDelete.addEventListener('click', async () => {
+            if (!targetDeleteDeviceId) return;
+
+            const originalLabel = btnConfirmDelete.textContent;
+            btnConfirmDelete.disabled = true;
+            btnConfirmDelete.textContent = 'Menghapus...';
+
+            try {
+                const res = await fetch(`/monitoring/devices/${targetDeleteDeviceId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': getCsrfToken(),
+                        Accept: 'application/json',
+                    },
+                });
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    window.showToast(data.message || 'Perangkat monitoring berhasil dihapus.', 'success');
+                    closeDeleteModal();
+                    setTimeout(() => {
+                        window.location.href = '/monitoring';
+                    }, 500);
+                } else {
+                    window.showToast(data.message || 'Gagal menghapus perangkat.', 'error');
+                }
+            } catch (err) {
+                window.showToast('Gagal menghapus perangkat dari monitoring.', 'error');
+            } finally {
+                btnConfirmDelete.disabled = false;
+                btnConfirmDelete.textContent = originalLabel;
+            }
         });
     }
 }

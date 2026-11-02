@@ -105,13 +105,13 @@
 
                     <!-- Action Buttons -->
                     <div class="flex items-center gap-2.5 shrink-0">
-                        <a href="{{ route('landing-clients.index') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-netfly-blue hover:bg-blue-700 rounded-lg shadow-sm transition-all">
+                        <a href="{{ route('klien.index') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-netfly-blue hover:bg-blue-700 rounded-lg shadow-sm transition-all">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                             </svg>
                             <span>Kelola Klien Landing</span>
                         </a>
-                        <a href="{{ route('announcements.index') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 rounded-lg border border-slate-200 shadow-2xs transition-all">
+                        <a href="{{ route('pemberitahuan.index') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 rounded-lg border border-slate-200 shadow-2xs transition-all">
                             <svg class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
                             </svg>
@@ -216,7 +216,7 @@
                                     <p class="text-[11px] text-slate-400">Daftar logo dan instansi mitra yang baru diunggah/diperbarui</p>
                                 </div>
                             </div>
-                            <a href="{{ route('landing-clients.index') }}" class="text-xs font-semibold text-netfly-blue hover:text-blue-700">
+                            <a href="{{ route('klien.index') }}" class="text-xs font-semibold text-netfly-blue hover:text-blue-700">
                                 Lihat Semua ›
                             </a>
                         </div>
@@ -255,7 +255,7 @@
                         </div>
 
                         <div class="p-3 bg-slate-50 border-t border-slate-100 text-center">
-                            <a href="{{ route('landing-clients.index') }}" class="text-xs font-semibold text-netfly-blue hover:underline">
+                            <a href="{{ route('klien.index') }}" class="text-xs font-semibold text-netfly-blue hover:underline">
                                 + Kelola & Unggah Logo Klien Baru
                             </a>
                         </div>
@@ -275,7 +275,7 @@
                                     <p class="text-[11px] text-slate-400">Siaran informasi maintenance, perbaikan, dan pengumuman untuk admin</p>
                                 </div>
                             </div>
-                            <a href="{{ route('announcements.index') }}" class="text-xs font-semibold text-netfly-blue hover:text-blue-700">
+                            <a href="{{ route('pemberitahuan.index') }}" class="text-xs font-semibold text-netfly-blue hover:text-blue-700">
                                 Kelola ›
                             </a>
                         </div>
@@ -316,7 +316,7 @@
                         </div>
 
                         <div class="p-3 bg-slate-50 border-t border-slate-100 text-center">
-                            <a href="{{ route('announcements.index') }}" class="text-xs font-semibold text-netfly-blue hover:underline">
+                            <a href="{{ route('pemberitahuan.index') }}" class="text-xs font-semibold text-netfly-blue hover:underline">
                                 + Buat Pemberitahuan Maintenance / Info Baru
                             </a>
                         </div>

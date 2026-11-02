@@ -95,26 +95,88 @@
                     ];
                 @endphp
 
+                @if(session('success'))
+                    <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between text-emerald-800 text-xs font-semibold">
+                        <div class="flex items-center gap-2.5">
+                            <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>{{ session('success') }}</span>
+                        </div>
+                    </div>
+                @endif
+
+                @if(session('error'))
+                    <div class="p-4 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-between text-rose-800 text-xs font-semibold">
+                        <div class="flex items-center gap-2.5">
+                            <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>{{ session('error') }}</span>
+                        </div>
+                    </div>
+                @endif
+
                 <!-- PAGE HEADER -->
                 <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                     <div>
-                        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Monitoring Perangkat</h1>
-                        <p class="text-sm text-slate-500 mt-1">
-                            Pilih perangkat untuk melihat telemetri CPU, RAM, dan bandwidth secara real-time.
+                        <div class="text-[11px] font-semibold text-slate-400 mb-1 flex items-center gap-1.5">
+                            <span class="text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded border border-blue-200">NOC MONITORING</span>
+                            <span>›</span>
+                            <span>Live Telemetri & Target Node</span>
+                        </div>
+                        <h1 class="text-xl lg:text-2xl font-black text-slate-900 tracking-tight">Monitoring Perangkat</h1>
+                        <p class="text-xs text-slate-500 mt-1">
+                            Kelola dan pantau telemetri CPU, RAM, bandwidth, dan latensi node secara mandiri tanpa bergantung ke inventaris.
                         </p>
                     </div>
-                    <button
-                        id="btnPollAllNodes"
-                        type="button"
-                        title="Sinkronisasi telemetri semua perangkat sekarang"
-                        class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 transition cursor-pointer shadow-2xs active:scale-95"
-                    >
-                        <svg class="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        <span id="pollerStatusText">Sinkronisasi Semua</span>
-                    </button>
+                    <div class="flex items-center gap-2.5 shrink-0">
+                        <button
+                            id="btnPollAllNodes"
+                            type="button"
+                            title="Sinkronisasi telemetri semua perangkat sekarang"
+                            class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 transition cursor-pointer shadow-2xs active:scale-95"
+                        >
+                            <svg class="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            <span id="pollerStatusText">Sinkronisasi Semua</span>
+                        </button>
+
+                        <a
+                            href="{{ route('monitoring.devices.create') }}"
+                            id="btnOpenCreateMonitoringNode"
+                            class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm active:scale-95 transition-all cursor-pointer"
+                        >
+                            <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4" />
+                            </svg>
+                            <span>Tambah Perangkat Monitoring</span>
+                        </a>
+                    </div>
                 </div>
+
+                <!-- FLASH ALERTS -->
+                @if (session('success'))
+                    <div class="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>{{ session('success') }}</span>
+                        </div>
+                    </div>
+                @endif
+                @if (session('error'))
+                    <div class="p-3.5 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            <span>{{ session('error') }}</span>
+                        </div>
+                    </div>
+                @endif
 
                 <!-- SUMMARY STRIP -->
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -201,12 +263,31 @@
                         </div>
 
                         <!-- Device Cards -->
-                        <div id="deviceGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        @if (empty($telemetryDevices))
+                            <div class="bg-white rounded-xl border border-dashed border-slate-300 p-12 text-center">
+                                <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                                    </svg>
+                                </div>
+                                <h3 class="text-sm font-semibold text-slate-900 mb-4">Belum Ada Perangkat Monitoring</h3>
+                                <a href="{{ route('monitoring.devices.create') }}" class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition shadow-xs">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    <span>Tambah Perangkat Monitoring</span>
+                                </a>
+                            </div>
+                        @endif
+
+                        <div id="deviceGrid" class="{{ empty($telemetryDevices) ? 'hidden ' : '' }}grid grid-cols-1 md:grid-cols-2 gap-4">
                             @foreach ($telemetryDevices as $device)
                                 @php
-                                    $st = $statusStyles[$device['status']] ?? $statusStyles['offline'];
-                                    $cpuColor = $device['cpu_load'] > 85 ? 'bg-rose-500' : ($device['cpu_load'] > 70 ? 'bg-amber-500' : 'bg-emerald-500');
-                                    $ramColor = $device['ram_load'] > 85 ? 'bg-rose-500' : ($device['ram_load'] > 75 ? 'bg-amber-500' : 'bg-blue-500');
+                                    $devCpu = (float) ($device['cpu_load'] ?? 0);
+                                    $devRam = (float) ($device['ram_load'] ?? 0);
+                                    $st = $statusStyles[$device['status'] ?? 'online'] ?? $statusStyles['offline'];
+                                    $cpuColor = $devCpu > 85 ? 'bg-rose-500' : ($devCpu > 70 ? 'bg-amber-500' : 'bg-emerald-500');
+                                    $ramColor = $devRam > 85 ? 'bg-rose-500' : ($devRam > 75 ? 'bg-amber-500' : 'bg-blue-500');
                                 @endphp
                                 <article
                                     id="row-device-{{ $device['id'] }}"
@@ -262,19 +343,15 @@
                                                         </svg>
                                                         Pantau detail
                                                     </a>
-                                                    <button
-                                                        type="button"
-                                                        data-device-id="{{ $device['id'] }}"
-                                                        data-device-hostname="{{ $device['hostname'] }}"
-                                                        data-device-ip="{{ $device['ip_address'] }}"
-                                                        class="btn-setting-ip w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 cursor-pointer text-left"
+                                                    <a
+                                                        href="{{ route('monitoring.devices.edit', $device['id']) }}"
+                                                        class="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 cursor-pointer text-left"
                                                     >
                                                         <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                         </svg>
-                                                        Setting koneksi
-                                                    </button>
+                                                        Edit perangkat
+                                                    </a>
                                                     <button
                                                         type="button"
                                                         data-device-id="{{ $device['id'] }}"
@@ -286,6 +363,18 @@
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                                                         </svg>
                                                         Tes ping
+                                                    </button>
+                                                    <div class="my-1 border-t border-slate-100"></div>
+                                                    <button
+                                                        type="button"
+                                                        data-device-id="{{ $device['id'] }}"
+                                                        data-device-hostname="{{ $device['hostname'] }}"
+                                                        class="btn-delete-node w-full flex items-center gap-2 px-3 py-2 text-xs text-rose-600 hover:bg-rose-50 cursor-pointer text-left font-medium"
+                                                    >
+                                                        <svg class="w-3.5 h-3.5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                        Hapus dari monitoring
                                                     </button>
                                                 </div>
                                             </div>
@@ -309,19 +398,19 @@
                                             <div>
                                                 <div class="flex items-center justify-between text-xs">
                                                     <span class="text-slate-500">CPU</span>
-                                                    <span class="font-semibold tabular-nums {{ $device['cpu_load'] > 70 ? 'text-rose-600' : 'text-slate-900' }}">{{ $device['cpu_load'] }}%</span>
+                                                    <span class="font-semibold tabular-nums {{ $devCpu > 70 ? 'text-rose-600' : 'text-slate-900' }}">{{ $devCpu }}%</span>
                                                 </div>
                                                 <div class="mt-1.5 h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                                                    <div class="h-full rounded-full {{ $cpuColor }}" data-progress-width="{{ $device['cpu_load'] }}"></div>
+                                                    <div class="h-full rounded-full {{ $cpuColor }}" data-progress-width="{{ $devCpu }}"></div>
                                                 </div>
                                             </div>
                                             <div>
                                                 <div class="flex items-center justify-between text-xs">
                                                     <span class="text-slate-500">RAM</span>
-                                                    <span class="font-semibold tabular-nums {{ $device['ram_load'] > 75 ? 'text-rose-600' : 'text-slate-900' }}">{{ $device['ram_load'] }}%</span>
+                                                    <span class="font-semibold tabular-nums {{ $devRam > 75 ? 'text-rose-600' : 'text-slate-900' }}">{{ $devRam }}%</span>
                                                 </div>
                                                 <div class="mt-1.5 h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                                                    <div class="h-full rounded-full {{ $ramColor }}" data-progress-width="{{ $device['ram_load'] }}"></div>
+                                                    <div class="h-full rounded-full {{ $ramColor }}" data-progress-width="{{ $devRam }}"></div>
                                                 </div>
                                             </div>
                                         </div>
@@ -329,15 +418,15 @@
                                         <div class="mt-4 pt-3 border-t border-slate-100 grid grid-cols-3 gap-2 text-xs">
                                             <div>
                                                 <p class="text-slate-400">Traffic</p>
-                                                <p class="mt-0.5 font-medium text-slate-700 tabular-nums whitespace-nowrap">↓{{ $device['rx_mbps'] }} ↑{{ $device['tx_mbps'] }}</p>
+                                                <p class="mt-0.5 font-medium text-slate-700 tabular-nums whitespace-nowrap">↓{{ $device['rx_mbps'] ?? '0 Mbps' }} ↑{{ $device['tx_mbps'] ?? '0 Mbps' }}</p>
                                             </div>
                                             <div>
                                                 <p class="text-slate-400">Latensi</p>
-                                                <p class="mt-0.5 font-medium tabular-nums {{ $device['last_ping_ms'] > 30 ? 'text-amber-600' : 'text-slate-700' }}">{{ $device['last_ping_ms'] }} ms</p>
+                                                <p class="mt-0.5 font-medium tabular-nums {{ ($device['last_ping_ms'] ?? 0) > 30 ? 'text-amber-600' : 'text-slate-700' }}">{{ $device['last_ping_ms'] ?? 0 }} ms</p>
                                             </div>
                                             <div>
                                                 <p class="text-slate-400">Packet loss</p>
-                                                <p class="mt-0.5 font-medium tabular-nums {{ $device['packet_loss'] > 5 ? 'text-rose-600' : 'text-slate-700' }}">{{ $device['packet_loss'] }}%</p>
+                                                <p class="mt-0.5 font-medium tabular-nums {{ ($device['packet_loss'] ?? 0) > 5 ? 'text-rose-600' : 'text-slate-700' }}">{{ $device['packet_loss'] ?? 0 }}%</p>
                                             </div>
                                         </div>
                                     @endif
@@ -365,7 +454,7 @@
                         </div>
 
                         <div id="alertContainer" class="divide-y divide-slate-100">
-                            @foreach ($alerts as $alert)
+                            @forelse ($alerts as $alert)
                                 @php $sv = $severityStyles[$alert['severity']] ?? $severityStyles['info']; @endphp
                                 <div id="alert-item-{{ $alert['id'] }}" class="px-4 py-3.5 border-l-[3px] {{ $sv['border'] }} {{ $alert['is_resolved'] ? 'opacity-60' : '' }}">
                                     <div class="flex items-center justify-between gap-2">
@@ -397,7 +486,17 @@
                                         </div>
                                     </div>
                                 </div>
-                            @endforeach
+                            @empty
+                                <div class="px-4 py-8 text-center text-slate-400">
+                                    <div class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-2">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-xs font-semibold text-slate-700">Semua Jaringan Normal</p>
+                                    <p class="text-[11px] text-slate-400 mt-0.5">Tidak ada insiden atau alert aktif.</p>
+                                </div>
+                            @endforelse
                         </div>
                     </aside>
                 </div>
@@ -512,86 +611,8 @@
         </div>
     </div>
 
-    <!-- MODAL: SETTING IP & KREDENSIAL API MIKROTIK -->
-    <div id="settingIpModal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs hidden [&:not(.hidden)]:flex">
-        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200/80 w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            
-            <!-- Modal Header -->
-            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-900 text-white">
-                <div class="flex items-center gap-2.5">
-                    <div class="p-1.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-lg">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-sm text-white">Konfigurasi Koneksi & IP Router</h4>
-                        <p class="text-[11px] text-slate-400 font-mono">MikroTik RouterOS API / VPN Remote</p>
-                    </div>
-                </div>
-                <button type="button" class="close-setting-modal text-slate-400 hover:text-white p-1 cursor-pointer">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-
-            <!-- Form Body -->
-            <form id="formSettingIp" class="p-6 space-y-4">
-                <input type="hidden" id="settingDeviceId" name="device_id">
-
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Nama Perangkat (Hostname)</label>
-                    <input type="text" id="settingHostname" readonly class="w-full px-3 py-2 text-xs bg-slate-100 border border-slate-200 rounded-lg text-slate-600 font-mono focus:outline-none">
-                </div>
-
-                <div class="grid grid-cols-3 gap-3">
-                    <div class="col-span-2">
-                        <label class="block text-xs font-bold text-slate-700 mb-1">IP Address / Host VPN <span class="text-rose-500">*</span></label>
-                        <input type="text" id="settingIpAddress" name="ip_address" required placeholder="Contoh: 10.200.45.1 atau IP ZeroTier" class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 font-mono focus:outline-none focus:border-blue-500 shadow-2xs">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">Port API <span class="text-rose-500">*</span></label>
-                        <input type="number" id="settingApiPort" name="api_port" value="8728" required class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 font-mono focus:outline-none focus:border-blue-500 shadow-2xs">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">Username API <span class="text-rose-500">*</span></label>
-                        <input type="text" id="settingApiUser" name="api_username" value="webmonitor" required class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">Password API</label>
-                        <input type="password" id="settingApiPass" name="api_password" placeholder="••••••••" class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Tipe Jalur Koneksi</label>
-                    <select id="settingConnType" name="connection_type" class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:border-blue-500 shadow-2xs cursor-pointer">
-                        <option value="lan">Jaringan Langsung (Direct LAN / IP Lokal)</option>
-                        <option value="zerotier">ZeroTier Virtual LAN (Gratis & Tembus NAT)</option>
-                        <option value="vpn">VPN Tunnel (WireGuard / SSTP / OpenVPN)</option>
-                        <option value="ipcloud">MikroTik IP Cloud / DDNS Public</option>
-                    </select>
-                </div>
-
-                <div class="p-3 bg-blue-50/70 border border-blue-100 rounded-xl text-[11px] text-blue-700 leading-relaxed">
-                    <strong>Catatan:</strong> Pengaturan ini digunakan mesin monitoring untuk menarik data CPU, RAM, dan Traffic Interface dari router klien secara otomatis.
-                </div>
-
-                <div class="pt-2 flex items-center justify-end gap-2 border-t border-slate-100">
-                    <button type="button" class="close-setting-modal px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition cursor-pointer">
-                        Batal
-                    </button>
-                    <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition cursor-pointer shadow-xs">
-                        Simpan Koneksi
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+    {{-- Modal Konfirmasi Hapus Target Monitoring --}}
+    @include('admin.monitoring.delete_modal')
 
     <!-- TOAST NOTIFICATION CONTAINER -->
     <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>

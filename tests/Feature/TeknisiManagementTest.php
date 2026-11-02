@@ -67,7 +67,7 @@ class TeknisiManagementTest extends TestCase
         $teknisi = Teknisi::first();
 
         $updatePayload = [
-            'nama' => $teknisi->nama . ' Updated',
+            'nama' => 'Budi Santoso Updated',
             'nomor_hp' => '0813-1111-2222',
             'alamat' => 'Alamat Baru No. 99',
         ];
