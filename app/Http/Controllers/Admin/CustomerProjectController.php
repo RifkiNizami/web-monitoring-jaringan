@@ -275,6 +275,18 @@ class CustomerProjectController extends Controller
 
         session(['nms_customers_rumahan' => $filtered]);
 
+        // Sinkronisasi: Hapus juga akun terkait dari session 'customer_accounts' jika ada
+        $sessionAccounts = session('customer_accounts', null);
+        if (is_array($sessionAccounts)) {
+            $targetNameLower = strtolower(trim($customerName));
+            $sessionAccounts = array_values(array_filter($sessionAccounts, function ($acc) use ($id, $targetNameLower) {
+                $isSameRumahanId = (($acc['customer_type'] ?? '') === 'rumahan') && ((string) ($acc['customer_id'] ?? '') === (string) $id);
+                $isSameName = strtolower(trim($acc['customer_name'] ?? '')) === $targetNameLower;
+                return !($isSameRumahanId || $isSameName);
+            }));
+            session(['customer_accounts' => $sessionAccounts]);
+        }
+
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
@@ -403,6 +415,18 @@ class CustomerProjectController extends Controller
         }
 
         session(['nms_customers_perusahaan' => $filtered]);
+
+        // Sinkronisasi: Hapus juga akun terkait dari session 'customer_accounts' jika ada
+        $sessionAccounts = session('customer_accounts', null);
+        if (is_array($sessionAccounts)) {
+            $targetNameLower = strtolower(trim($companyName));
+            $sessionAccounts = array_values(array_filter($sessionAccounts, function ($acc) use ($id, $targetNameLower) {
+                $isSameCorpId = (($acc['customer_type'] ?? 'perusahaan') === 'perusahaan') && ((string) ($acc['customer_id'] ?? '') === (string) $id);
+                $isSameName = strtolower(trim($acc['customer_name'] ?? '')) === $targetNameLower;
+                return !($isSameCorpId || $isSameName);
+            }));
+            session(['customer_accounts' => $sessionAccounts]);
+        }
 
         if ($request->wantsJson()) {
             return response()->json([

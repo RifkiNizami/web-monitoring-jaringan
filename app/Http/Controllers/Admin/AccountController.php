@@ -13,209 +13,122 @@ class AccountController extends Controller
 {
     /**
      * Master Data Customer Perusahaan (Korporat / B2B) NetFly
+     * Disinkronkan langsung dengan daftar aktif di menu Customer Management (session 'nms_customers_perusahaan')
      */
     protected function getCorporateCustomerList(): array
     {
-        $defaults = [
-            [
-                'id' => 1,
-                'customer_type' => 'perusahaan',
-                'name' => 'PT. Bank Mandiri (Persero) Tbk',
+        $presetMeta = [
+            'pt. bank mandiri (persero) tbk' => [
                 'code' => 'MANDIRI',
                 'category' => 'Enterprise Banking',
                 'package' => 'MPLS Core Interconnect 10Gbps',
-                'address' => 'Plaza Mandiri, Jl. Jend. Gatot Subroto Kav. 36-38, Jakarta Selatan',
                 'latitude' => -6.224468,
                 'longitude' => 106.815095,
-                'default_pic' => 'Bambang Kurniawan, S.Kom',
-                'default_email' => 'pic.noc@bankmandiri.co.id',
-                'default_phone' => '0812-8877-6655',
                 'username_prefix' => 'mandiri_',
             ],
-            [
-                'id' => 2,
-                'customer_type' => 'perusahaan',
-                'name' => 'PT. Shopee International Indonesia',
+            'pt. shopee international indonesia' => [
                 'code' => 'SHOPEE',
                 'category' => 'E-Commerce Tech Hub',
                 'package' => 'Dedicated Fiber 2Gbps + SCBD Direct Peering',
-                'address' => 'Pacific Century Place Tower Lt. 26, SCBD, Jakarta Selatan',
                 'latitude' => -6.225582,
                 'longitude' => 106.808764,
-                'default_pic' => 'Jessica Tanuwijaya',
-                'default_email' => 'noc-corp@shopee.co.id',
-                'default_phone' => '0813-1122-3344',
                 'username_prefix' => 'shopee_',
             ],
-            [
-                'id' => 3,
-                'customer_type' => 'perusahaan',
-                'name' => 'Dinas Pendidikan Provinsi DKI Jakarta',
+            'dinas pendidikan provinsi dki jakarta' => [
                 'code' => 'DISDIK',
                 'category' => 'Pemerintahan & Pendidikan',
                 'package' => 'Smart City Backbone Fiber 1Gbps',
-                'address' => 'Jl. Jend. Gatot Subroto No. 40-41, Kuningan Barat, Jakarta Selatan',
                 'latitude' => -6.238270,
                 'longitude' => 106.826108,
-                'default_pic' => 'Ir. Hendra Wijaya, M.T.',
-                'default_email' => 'admin.jaringan@disdik.jakarta.go.id',
-                'default_phone' => '0815-9988-1234',
                 'username_prefix' => 'disdik_',
             ],
-            [
-                'id' => 4,
-                'customer_type' => 'perusahaan',
-                'name' => 'PT. XYZ Teknologi',
+            'pt. xyz teknologi solusi' => [
                 'code' => 'XYZ',
                 'category' => 'Software & Datacenter',
                 'package' => 'Dedicated Fiber 1Gbps',
-                'address' => 'Cyber 2 Tower Lt. 18, Jl. HR Rasuna Said, Jakarta Selatan',
                 'latitude' => -6.226195,
                 'longitude' => 106.832761,
-                'default_pic' => 'Rian Saputra',
-                'default_email' => 'infra@xyzteknologi.id',
-                'default_phone' => '0821-4455-6677',
                 'username_prefix' => 'xyz_',
             ],
-            [
-                'id' => 5,
-                'customer_type' => 'perusahaan',
-                'name' => 'RS Medika Center',
-                'code' => 'MEDIKA',
-                'category' => 'Healthcare & Rumah Sakit',
-                'package' => 'Dedicated Internet Broadband 500Mbps',
-                'address' => 'Jl. Kesehatan Raya No. 12, Jakarta Barat',
-                'latitude' => -6.174465,
-                'longitude' => 106.809124,
-                'default_pic' => 'dr. Anton Pratama, Sp.A',
-                'default_email' => 'simrs@medikacenter.org',
-                'default_phone' => '0818-7766-5544',
-                'username_prefix' => 'medika_',
-            ],
-            [
-                'id' => 6,
-                'customer_type' => 'perusahaan',
-                'name' => 'PT. Astra Agro Lestari Tbk',
-                'code' => 'ASTRA',
-                'category' => 'Manufaktur & Agribisnis',
-                'package' => 'Microwave Wireless Remote Backbone 200Mbps',
-                'address' => 'Kawasan Industri Pulo Gadung, Jakarta Timur',
-                'latitude' => -6.193125,
-                'longitude' => 106.915842,
-                'default_pic' => 'Ferry Gunawan',
-                'default_email' => 'it-noc@astra-agro.co.id',
-                'default_phone' => '0811-2233-4455',
-                'username_prefix' => 'astra_',
+            'pt. xyz teknologi' => [
+                'code' => 'XYZ',
+                'category' => 'Software & Datacenter',
+                'package' => 'Dedicated Fiber 1Gbps',
+                'latitude' => -6.226195,
+                'longitude' => 106.832761,
+                'username_prefix' => 'xyz_',
             ],
         ];
 
-        // Sinkronisasi dengan Customer Perusahaan yang ditambahkan dari menu Customer Management
-        $sessionCorporate = session('nms_customers_perusahaan', []);
-        $existingNames = array_map('strtolower', array_column($defaults, 'name'));
+        $activeCorporate = app(CustomerProjectController::class)->getActiveCorporateCustomers();
+        $list = [];
 
-        foreach ($sessionCorporate as $sc) {
-            if (!in_array(strtolower($sc['name']), $existingNames, true)) {
-                $shortCode = strtoupper(preg_replace('/[^a-zA-Z0-9]/', '', explode(' ', str_replace(['PT.', 'PT', 'CV.'], '', $sc['name']))[0] ?? 'CORP'));
-                $shortCode = substr($shortCode ?: 'CORP', 0, 8);
-                $defaults[] = [
-                    'id' => (int) $sc['id'] + 50,
-                    'customer_type' => 'perusahaan',
-                    'name' => $sc['name'],
-                    'code' => $shortCode,
-                    'category' => 'Mitra Korporat',
-                    'package' => $sc['note'] ?: 'Dedicated Corporate Fiber',
-                    'address' => $sc['address'] ?? '-',
-                    'latitude' => $sc['latitude'] ?? -6.208763,
-                    'longitude' => $sc['longitude'] ?? 106.845599,
-                    'default_pic' => $sc['pic_name'] ?? 'PIC Perusahaan',
-                    'default_email' => $sc['email'] ?? '',
-                    'default_phone' => $sc['phone'] ?? '',
-                    'username_prefix' => strtolower($shortCode) . '_',
-                ];
-            }
+        foreach ($activeCorporate as $sc) {
+            $nameKey = strtolower(trim($sc['name'] ?? ''));
+            $meta = $presetMeta[$nameKey] ?? null;
+
+            $cleanTitle = trim(str_ireplace(['PT.', 'PT', 'CV.'], '', $sc['name'] ?? ''));
+            $firstWord = explode(' ', $cleanTitle)[0] ?? 'CORP';
+            $shortCode = $meta['code'] ?? strtoupper(preg_replace('/[^a-zA-Z0-9]/', '', $firstWord));
+            $shortCode = substr($shortCode ?: 'CORP', 0, 8);
+
+            $list[] = [
+                'id' => (int) $sc['id'],
+                'customer_type' => 'perusahaan',
+                'name' => $sc['name'],
+                'code' => $shortCode,
+                'category' => $meta['category'] ?? 'Mitra Korporat',
+                'package' => $meta['package'] ?? ($sc['note'] ?: 'Dedicated Corporate Fiber'),
+                'address' => $sc['address'] ?? '-',
+                'latitude' => $sc['latitude'] ?? ($meta['latitude'] ?? -6.208763),
+                'longitude' => $sc['longitude'] ?? ($meta['longitude'] ?? 106.845599),
+                'default_pic' => $sc['pic_name'] ?? 'PIC Perusahaan',
+                'default_email' => $sc['email'] ?? '',
+                'default_phone' => $sc['phone'] ?? '',
+                'username_prefix' => $meta['username_prefix'] ?? (strtolower($shortCode) . '_'),
+            ];
         }
 
-        return $defaults;
+        return $list;
     }
 
     /**
      * Master Data Customer Rumahan (Residensial / Home Fiber) NetFly
+     * Disinkronkan langsung dengan daftar aktif di menu Customer Management (session 'nms_customers_rumahan')
      */
     protected function getResidentialCustomerList(): array
     {
-        $defaults = [
-            [
-                'id' => 101,
-                'customer_type' => 'rumahan',
-                'name' => 'Budi Santoso',
-                'code' => 'HOME-0001',
-                'category' => 'Customer Rumahan',
-                'package' => 'Paket Home Fiber 50 Mbps Unlimited',
-                'address' => 'Perumahan Griya Asri Blok C2 No. 14, Kel. Sukamaju, Kec. Cilodong, Depok',
-                'latitude' => -6.418254,
-                'longitude' => 106.854912,
-                'default_pic' => 'Budi Santoso',
-                'default_email' => 'budi.santoso@gmail.com',
-                'default_phone' => '0812-8450-1122',
-                'username_prefix' => 'home_',
-            ],
-            [
-                'id' => 102,
-                'customer_type' => 'rumahan',
-                'name' => 'Siti Aminah',
-                'code' => 'HOME-0002',
-                'category' => 'Customer Rumahan',
-                'package' => 'Paket Home Fiber Gamer 100 Mbps + Static IP',
-                'address' => 'Jl. Melati Indah IV No. 8, RT.04/RW.09, Bintaro, Tangerang Selatan',
-                'latitude' => -6.273812,
-                'longitude' => 106.741298,
-                'default_pic' => 'Siti Aminah',
-                'default_email' => 'sitiaminah.home@yahoo.com',
-                'default_phone' => '0813-9088-3344',
-                'username_prefix' => 'home_',
-            ],
-            [
-                'id' => 103,
-                'customer_type' => 'rumahan',
-                'name' => 'Hendra Kusuma',
-                'code' => 'HOME-0003',
-                'category' => 'Customer Rumahan',
-                'package' => 'FTTH Home Broadband 30 Mbps',
-                'address' => 'Cluster Harmoni Residence No. B12, Bekasi Barat',
-                'latitude' => -6.234891,
-                'longitude' => 106.975421,
-                'default_pic' => 'Hendra Kusuma',
-                'default_email' => 'hendra.kusuma88@gmail.com',
-                'default_phone' => '0857-2211-9090',
-                'username_prefix' => 'home_',
-            ],
+        $presetCoords = [
+            'budi santoso' => ['latitude' => -6.418254, 'longitude' => 106.854912],
+            'siti aminah' => ['latitude' => -6.273812, 'longitude' => 106.741298],
+            'hendra kusuma' => ['latitude' => -6.234891, 'longitude' => 106.975421],
         ];
 
-        // Sinkronisasi dengan Customer Rumahan yang ditambahkan dari menu Customer Management
-        $sessionResidential = session('nms_customers_rumahan', []);
-        $existingNames = array_map('strtolower', array_column($defaults, 'name'));
+        $activeResidential = app(CustomerProjectController::class)->getActiveResidentialCustomers();
+        $list = [];
 
-        foreach ($sessionResidential as $sr) {
-            if (!in_array(strtolower($sr['name']), $existingNames, true)) {
-                $defaults[] = [
-                    'id' => (int) $sr['id'],
-                    'customer_type' => 'rumahan',
-                    'name' => $sr['name'],
-                    'code' => $sr['code'] ?? 'HOME',
-                    'category' => 'Customer Rumahan',
-                    'package' => $sr['note'] ?: 'Layanan Internet Rumahan NetFly',
-                    'address' => $sr['address'] ?? '-',
-                    'latitude' => $sr['latitude'] ?? -6.250000,
-                    'longitude' => $sr['longitude'] ?? 106.820000,
-                    'default_pic' => $sr['name'],
-                    'default_email' => $sr['email'] ?? '',
-                    'default_phone' => $sr['phone'] ?? '',
-                    'username_prefix' => 'home_',
-                ];
-            }
+        foreach ($activeResidential as $sr) {
+            $nameKey = strtolower(trim($sr['name'] ?? ''));
+            $coords = $presetCoords[$nameKey] ?? null;
+
+            $list[] = [
+                'id' => (int) $sr['id'],
+                'customer_type' => 'rumahan',
+                'name' => $sr['name'],
+                'code' => $sr['code'] ?? 'HOME',
+                'category' => 'Customer Rumahan',
+                'package' => $sr['note'] ?: 'Layanan Internet Rumahan NetFly',
+                'address' => $sr['address'] ?? '-',
+                'latitude' => $sr['latitude'] ?? ($coords['latitude'] ?? -6.250000),
+                'longitude' => $sr['longitude'] ?? ($coords['longitude'] ?? 106.820000),
+                'default_pic' => $sr['name'],
+                'default_email' => $sr['email'] ?? '',
+                'default_phone' => $sr['phone'] ?? '',
+                'username_prefix' => 'home_',
+            ];
         }
 
-        return $defaults;
+        return $list;
     }
 
     /**
@@ -234,7 +147,7 @@ class AccountController extends Controller
         return [
             [
                 'id' => 101,
-                'customer_id' => 1,
+                'customer_id' => 4,
                 'customer_type' => 'perusahaan',
                 'customer_name' => 'PT. Bank Mandiri (Persero) Tbk',
                 'customer_code' => 'MANDIRI',
@@ -300,7 +213,7 @@ class AccountController extends Controller
             ],
             [
                 'id' => 103,
-                'customer_id' => 3,
+                'customer_id' => 1,
                 'customer_type' => 'perusahaan',
                 'customer_name' => 'Dinas Pendidikan Provinsi DKI Jakarta',
                 'customer_code' => 'DISDIK',
@@ -322,9 +235,9 @@ class AccountController extends Controller
             ],
             [
                 'id' => 104,
-                'customer_id' => 4,
+                'customer_id' => 3,
                 'customer_type' => 'perusahaan',
-                'customer_name' => 'PT. XYZ Teknologi',
+                'customer_name' => 'PT. XYZ Teknologi Solusi',
                 'customer_code' => 'XYZ',
                 'package' => 'Dedicated Fiber 1Gbps',
                 'address' => 'Cyber 2 Tower Lt. 18, Jl. HR Rasuna Said, Jakarta Selatan',
@@ -342,28 +255,6 @@ class AccountController extends Controller
                 'created_at' => '01 Feb 2026',
                 'must_change_password' => false,
             ],
-            [
-                'id' => 105,
-                'customer_id' => 5,
-                'customer_type' => 'perusahaan',
-                'customer_name' => 'RS Medika Center',
-                'customer_code' => 'MEDIKA',
-                'package' => 'Dedicated Internet Broadband 500Mbps',
-                'address' => 'Jl. Kesehatan Raya No. 12, Jakarta Barat',
-                'latitude' => -6.174465,
-                'longitude' => 106.809124,
-                'name' => 'dr. Anton Pratama, Sp.A',
-                'username' => 'medika_simrs',
-                'email' => 'simrs@medikacenter.org',
-                'phone' => '0818-7766-5544',
-                'role' => 'customer_representative',
-                'role_label' => 'PIC Perwakilan Customer',
-                'is_active' => true,
-                'last_login' => '3 hari lalu',
-                'last_login_ip' => '180.252.61.3',
-                'created_at' => '05 Feb 2026',
-                'must_change_password' => false,
-            ],
         ];
     }
 
@@ -372,23 +263,52 @@ class AccountController extends Controller
      */
     protected function getActiveAccounts(): array
     {
+        $activeCustomers = $this->getCustomerList();
+        $customersByName = collect($activeCustomers)->keyBy(fn($c) => strtolower(trim($c['name'])));
+        $customersById = collect($activeCustomers)->keyBy(fn($c) => ($c['customer_type'] ?? 'perusahaan') . '_' . $c['id']);
+
+        $filterValidAccounts = function (array $items) use ($customersByName, $customersById): array {
+            $valid = [];
+            foreach ($items as $acc) {
+                $ctype = $acc['customer_type'] ?? 'perusahaan';
+                $cid = (int) ($acc['customer_id'] ?? 0);
+                $cname = strtolower(trim($acc['customer_name'] ?? ''));
+
+                // Cocokkan berdasarkan nama customer terlebih dahulu (agar tahan terhadap perbedaan ID sesi lama)
+                $matched = $customersByName->get($cname);
+                if ($matched === null && $cname === 'pt. xyz teknologi') {
+                    $matched = $customersByName->get('pt. xyz teknologi solusi');
+                }
+                if ($matched === null) {
+                    $byId = $customersById->get($ctype . '_' . $cid);
+                    if ($byId !== null && strtolower(trim($byId['name'])) === $cname) {
+                        $matched = $byId;
+                    }
+                }
+
+                // Hanya tampilkan akun yang PT / Customer-nya masih terdaftar aktif di Customer Management
+                if ($matched !== null) {
+                    $acc['customer_id'] = (int) $matched['id'];
+                    $acc['customer_type'] = $matched['customer_type'] ?? $ctype;
+                    $acc['customer_name'] = $matched['name'];
+                    $acc['address'] = $acc['address'] ?? ($matched['address'] ?? '-');
+                    $acc['latitude'] = $acc['latitude'] ?? ($matched['latitude'] ?? -6.208763);
+                    $acc['longitude'] = $acc['longitude'] ?? ($matched['longitude'] ?? 106.845599);
+                    $valid[] = $acc;
+                }
+            }
+            return $valid;
+        };
+
         $sessionAccounts = session('customer_accounts', null);
 
         if ($sessionAccounts !== null) {
-            $customersMap = collect($this->getCustomerList())->keyBy('id');
-            foreach ($sessionAccounts as $idx => $acc) {
-                if (!isset($acc['latitude']) || !isset($acc['longitude']) || !isset($acc['address'])) {
-                    $matched = $customersMap->get($acc['customer_id'] ?? 1);
-                    $sessionAccounts[$idx]['address'] = $acc['address'] ?? ($matched['address'] ?? '-');
-                    $sessionAccounts[$idx]['latitude'] = $acc['latitude'] ?? ($matched['latitude'] ?? -6.208763);
-                    $sessionAccounts[$idx]['longitude'] = $acc['longitude'] ?? ($matched['longitude'] ?? 106.845599);
-                }
-            }
+            $sessionAccounts = $filterValidAccounts($sessionAccounts);
             session(['customer_accounts' => $sessionAccounts]);
             return $sessionAccounts;
         }
 
-        $accounts = $this->getDefaultAccounts();
+        $accounts = $filterValidAccounts($this->getDefaultAccounts());
 
         // Check if database has users with customer_id or customer_representative role
         try {
