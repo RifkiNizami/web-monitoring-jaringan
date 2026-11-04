@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -188,8 +189,14 @@ class DeviceController extends Controller
         $newId = empty($devices) ? 1 : (max(array_keys($devices)) + 1);
 
         $photoUrl = null;
+        $photoMeta = null;
         if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
             $file = $request->file('photo');
+            $photoMeta = [
+                'file_name' => $file->getClientOriginalName(),
+                'size_kb' => round($file->getSize() / 1024, 2),
+                'mime_type' => $file->getClientMimeType(),
+            ];
             $filename = 'device_' . time() . '_' . Str::slug($validated['hostname']) . '.' . $file->getClientOriginalExtension();
             $destination = public_path('uploads/devices');
 
@@ -215,6 +222,26 @@ class DeviceController extends Controller
 
         $devices[$newId] = $newDevice;
         self::saveInventoryDevicesList($devices);
+
+        $properties = [
+            'hostname' => $newDevice['hostname'],
+            'type' => $newDevice['type'],
+            'brand_model' => $newDevice['brand_model'],
+            'quantity' => $newDevice['quantity'],
+            'status' => $newDevice['status'],
+        ];
+        if ($photoMeta) {
+            $properties['photo'] = $photoMeta;
+        }
+
+        ActivityLogger::log(
+            'inventaris',
+            'create',
+            "Menambahkan barang inventaris '{$newDevice['hostname']}' ({$newDevice['brand_model']})",
+            $newDevice['hostname'],
+            (string) $newId,
+            $properties
+        );
 
         $msg = "Barang inventaris '{$newDevice['hostname']}' berhasil ditambahkan.";
 
@@ -282,8 +309,14 @@ class DeviceController extends Controller
         }
 
         $photoUrl = $devices[$id]['photo'] ?? null;
+        $photoMeta = null;
         if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
             $file = $request->file('photo');
+            $photoMeta = [
+                'file_name' => $file->getClientOriginalName(),
+                'size_kb' => round($file->getSize() / 1024, 2),
+                'mime_type' => $file->getClientMimeType(),
+            ];
             $filename = 'device_' . time() . '_' . Str::slug($validated['hostname']) . '.' . $file->getClientOriginalExtension();
             $destination = public_path('uploads/devices');
 
@@ -305,6 +338,26 @@ class DeviceController extends Controller
         $devices[$id]['photo'] = $photoUrl;
 
         self::saveInventoryDevicesList($devices);
+
+        $properties = [
+            'hostname' => $devices[$id]['hostname'],
+            'type' => $devices[$id]['type'],
+            'brand_model' => $devices[$id]['brand_model'],
+            'quantity' => $devices[$id]['quantity'],
+            'status' => $devices[$id]['status'],
+        ];
+        if ($photoMeta) {
+            $properties['photo'] = $photoMeta;
+        }
+
+        ActivityLogger::log(
+            'inventaris',
+            'update',
+            "Memperbarui data barang inventaris '{$devices[$id]['hostname']}'",
+            $devices[$id]['hostname'],
+            (string) $id,
+            $properties
+        );
 
         $msg = "Data barang '{$devices[$id]['hostname']}' berhasil diperbarui.";
 
@@ -328,8 +381,22 @@ class DeviceController extends Controller
 
         if (isset($devices[$id])) {
             $hostname = $devices[$id]['hostname'];
+            $deletedDevice = $devices[$id];
             unset($devices[$id]);
             self::saveInventoryDevicesList($devices);
+
+            ActivityLogger::log(
+                'inventaris',
+                'delete',
+                "Menghapus barang inventaris '{$hostname}'",
+                $hostname,
+                (string) $id,
+                [
+                    'hostname' => $hostname,
+                    'type' => $deletedDevice['type'] ?? null,
+                    'brand_model' => $deletedDevice['brand_model'] ?? null,
+                ]
+            );
 
             $msg = "Barang '{$hostname}' berhasil dihapus dari inventaris.";
 
