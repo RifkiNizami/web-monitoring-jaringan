@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Teknisi;
 use App\Models\Ticket;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -134,6 +135,20 @@ class TicketController extends Controller
 
         $ticket->save();
 
+        ActivityLogger::log(
+            'tiket',
+            'update',
+            "Memperbarui tiket {$ticket->ticket_number}: status '{$ticket->status}'" . ($assignedTech ? ", teknisi: '{$assignedTech}'" : ''),
+            $ticket->ticket_number,
+            (string) $ticket->id,
+            [
+                'ticket_number' => $ticket->ticket_number,
+                'status' => $ticket->status,
+                'status_type' => $ticket->status_type,
+                'assigned_technician' => $ticket->assigned_technician,
+            ]
+        );
+
         $message = $assignedTech 
             ? "Teknisi '{$assignedTech}' berhasil ditugaskan untuk tiket {$ticket->ticket_number}."
             : "Data tiket {$ticket->ticket_number} berhasil diperbarui.";
@@ -200,6 +215,21 @@ class TicketController extends Controller
             'reported_at' => now(),
         ]);
 
+        ActivityLogger::log(
+            'tiket',
+            'create',
+            "Membuat tiket insiden baru '{$ticketNumber}' ({$ticket->subject})",
+            $ticketNumber,
+            (string) $ticket->id,
+            [
+                'ticket_number' => $ticketNumber,
+                'priority' => $ticket->priority,
+                'client_name' => $ticket->client_name,
+                'subject' => $ticket->subject,
+                'status' => $ticket->status,
+            ]
+        );
+
         $msg = "Tiket baru '{$ticketNumber}' berhasil ditambahkan ke antrean.";
 
         if ($request->wantsJson()) {
@@ -221,7 +251,18 @@ class TicketController extends Controller
         $ticket = Ticket::where('ticket_number', $id)->orWhere('id', $id)->first();
         if ($ticket) {
             $ticketNumber = $ticket->ticket_number;
+            $ticketDbId = (string) $ticket->id;
             $ticket->delete();
+
+            ActivityLogger::log(
+                'tiket',
+                'delete',
+                "Menghapus tiket '{$ticketNumber}'",
+                $ticketNumber,
+                $ticketDbId,
+                ['ticket_number' => $ticketNumber]
+            );
+
             $msg = "Tiket '{$ticketNumber}' berhasil dihapus dari antrean.";
         } else {
             $msg = "Tiket '{$id}' tidak ditemukan.";

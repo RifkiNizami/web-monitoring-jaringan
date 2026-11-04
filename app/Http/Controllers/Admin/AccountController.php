@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -491,6 +492,23 @@ class AccountController extends Controller
         array_unshift($currentAccounts, $newAccount);
         session(['customer_accounts' => $currentAccounts]);
 
+        ActivityLogger::log(
+            'akun',
+            'create',
+            "Menambahkan akun customer '{$accountHolderName}' ({$validated['username']})",
+            $validated['username'],
+            (string) $newId,
+            [
+                'name' => $accountHolderName,
+                'username' => $validated['username'],
+                'email' => $validated['email'],
+                'customer_id' => $validated['customer_id'],
+                'customer_name' => $customerName,
+                'role' => $newAccount['role'],
+                'is_active' => $isActive,
+            ]
+        );
+
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
@@ -536,6 +554,18 @@ class AccountController extends Controller
 
         $statusText = $newStatus ? 'diaktifkan' : 'dinonaktifkan';
         $username = $targetAccount['username'] ?? 'User';
+
+        ActivityLogger::log(
+            'akun',
+            'update',
+            "Mengubah status akun '{$username}' menjadi " . ($newStatus ? 'Aktif' : 'Nonaktif'),
+            $username,
+            (string) $id,
+            [
+                'username' => $username,
+                'is_active' => $newStatus,
+            ]
+        );
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
@@ -586,6 +616,18 @@ class AccountController extends Controller
 
         $username = $targetAccount['username'] ?? 'User';
 
+        ActivityLogger::log(
+            'akun',
+            'update',
+            "Mereset kata sandi akun '{$username}'",
+            $username,
+            (string) $id,
+            [
+                'username' => $username,
+                'action_type' => 'reset_password',
+            ]
+        );
+
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
@@ -624,6 +666,15 @@ class AccountController extends Controller
         } catch (\Throwable $e) {
             Log::info('Destroy User DB Fallback: ' . $e->getMessage());
         }
+
+        ActivityLogger::log(
+            'akun',
+            'delete',
+            "Menghapus akun pengguna '{$username}'",
+            $username,
+            (string) $id,
+            ['username' => $username]
+        );
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([

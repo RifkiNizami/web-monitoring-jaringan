@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -54,11 +55,30 @@ class AuthController extends Controller
 
             $request->session()->regenerate();
 
+            $user = Auth::user();
+            ActivityLogger::log(
+                'auth',
+                'login',
+                "Pengguna '{$user->name}' berhasil login ke sistem",
+                $user->name,
+                (string) $user->id,
+                ['email' => $user->email, 'role' => $user->role]
+            );
+
             return redirect()->intended(route('dashboard'));
         }
 
         // Gagal login: tambah hitungan percobaan (decay 60 detik)
         RateLimiter::hit($throttleKey, 60);
+
+        ActivityLogger::log(
+            'auth',
+            'login_failed',
+            "Percobaan login gagal dengan email '{$credentials['email']}'",
+            $credentials['email'],
+            null,
+            ['attempted_email' => $credentials['email']]
+        );
 
         return back()->withErrors([
             'email' => 'Email atau kata sandi yang Anda masukkan salah.',
@@ -78,6 +98,18 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
+        $user = Auth::user();
+        if ($user) {
+            ActivityLogger::log(
+                'auth',
+                'logout',
+                "Pengguna '{$user->name}' keluar dari sistem",
+                $user->name,
+                (string) $user->id,
+                ['email' => $user->email, 'role' => $user->role]
+            );
+        }
+
         Auth::logout();
 
         $request->session()->invalidate();

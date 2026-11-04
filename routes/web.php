@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\CustomerProjectController;
 use App\Http\Controllers\Admin\MonitoringController;
 use App\Http\Controllers\Admin\MonitoringDeviceController;
 use App\Http\Controllers\Admin\TeknisiController;
+use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\AdminKonten\KontenDashboardController;
 use App\Http\Controllers\AdminKonten\KontenKlienController;
 use App\Http\Controllers\AdminKonten\KontenPemberitahuanController;
@@ -130,5 +131,8 @@ Route::middleware('auth')->group(function () {
         // Laporan Kinerja SLA & Audit (Executive Report Generator & PDF Export)
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
         Route::get('/reports/export-pdf', [ReportController::class, 'exportPdf'])->name('reports.exportPdf');
+
+        // Log Aktivitas Sistem (Activity Log Audit Trail)
+        Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
     });
 });
