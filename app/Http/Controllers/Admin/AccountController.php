@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -25,6 +26,8 @@ class AccountController extends Controller
                 'category' => 'Enterprise Banking',
                 'package' => 'MPLS Core Interconnect 10Gbps',
                 'address' => 'Plaza Mandiri, Jl. Jend. Gatot Subroto Kav. 36-38, Jakarta Selatan',
+                'latitude' => -6.224468,
+                'longitude' => 106.815095,
                 'default_pic' => 'Bambang Kurniawan, S.Kom',
                 'default_email' => 'pic.noc@bankmandiri.co.id',
                 'default_phone' => '0812-8877-6655',
@@ -38,6 +41,8 @@ class AccountController extends Controller
                 'category' => 'E-Commerce Tech Hub',
                 'package' => 'Dedicated Fiber 2Gbps + SCBD Direct Peering',
                 'address' => 'Pacific Century Place Tower Lt. 26, SCBD, Jakarta Selatan',
+                'latitude' => -6.225582,
+                'longitude' => 106.808764,
                 'default_pic' => 'Jessica Tanuwijaya',
                 'default_email' => 'noc-corp@shopee.co.id',
                 'default_phone' => '0813-1122-3344',
@@ -51,6 +56,8 @@ class AccountController extends Controller
                 'category' => 'Pemerintahan & Pendidikan',
                 'package' => 'Smart City Backbone Fiber 1Gbps',
                 'address' => 'Jl. Jend. Gatot Subroto No. 40-41, Kuningan Barat, Jakarta Selatan',
+                'latitude' => -6.238270,
+                'longitude' => 106.826108,
                 'default_pic' => 'Ir. Hendra Wijaya, M.T.',
                 'default_email' => 'admin.jaringan@disdik.jakarta.go.id',
                 'default_phone' => '0815-9988-1234',
@@ -64,6 +71,8 @@ class AccountController extends Controller
                 'category' => 'Software & Datacenter',
                 'package' => 'Dedicated Fiber 1Gbps',
                 'address' => 'Cyber 2 Tower Lt. 18, Jl. HR Rasuna Said, Jakarta Selatan',
+                'latitude' => -6.226195,
+                'longitude' => 106.832761,
                 'default_pic' => 'Rian Saputra',
                 'default_email' => 'infra@xyzteknologi.id',
                 'default_phone' => '0821-4455-6677',
@@ -77,6 +86,8 @@ class AccountController extends Controller
                 'category' => 'Healthcare & Rumah Sakit',
                 'package' => 'Dedicated Internet Broadband 500Mbps',
                 'address' => 'Jl. Kesehatan Raya No. 12, Jakarta Barat',
+                'latitude' => -6.174465,
+                'longitude' => 106.809124,
                 'default_pic' => 'dr. Anton Pratama, Sp.A',
                 'default_email' => 'simrs@medikacenter.org',
                 'default_phone' => '0818-7766-5544',
@@ -90,6 +101,8 @@ class AccountController extends Controller
                 'category' => 'Manufaktur & Agribisnis',
                 'package' => 'Microwave Wireless Remote Backbone 200Mbps',
                 'address' => 'Kawasan Industri Pulo Gadung, Jakarta Timur',
+                'latitude' => -6.193125,
+                'longitude' => 106.915842,
                 'default_pic' => 'Ferry Gunawan',
                 'default_email' => 'it-noc@astra-agro.co.id',
                 'default_phone' => '0811-2233-4455',
@@ -97,7 +110,7 @@ class AccountController extends Controller
             ],
         ];
 
-        // Sinkronisasi dengan Customer Perusahaan yang ditambahkan dari menu Customer & Project
+        // Sinkronisasi dengan Customer Perusahaan yang ditambahkan dari menu Customer Management
         $sessionCorporate = session('nms_customers_perusahaan', []);
         $existingNames = array_map('strtolower', array_column($defaults, 'name'));
 
@@ -113,6 +126,8 @@ class AccountController extends Controller
                     'category' => 'Mitra Korporat',
                     'package' => $sc['note'] ?: 'Dedicated Corporate Fiber',
                     'address' => $sc['address'] ?? '-',
+                    'latitude' => $sc['latitude'] ?? -6.208763,
+                    'longitude' => $sc['longitude'] ?? 106.845599,
                     'default_pic' => $sc['pic_name'] ?? 'PIC Perusahaan',
                     'default_email' => $sc['email'] ?? '',
                     'default_phone' => $sc['phone'] ?? '',
@@ -138,6 +153,8 @@ class AccountController extends Controller
                 'category' => 'Customer Rumahan',
                 'package' => 'Paket Home Fiber 50 Mbps Unlimited',
                 'address' => 'Perumahan Griya Asri Blok C2 No. 14, Kel. Sukamaju, Kec. Cilodong, Depok',
+                'latitude' => -6.418254,
+                'longitude' => 106.854912,
                 'default_pic' => 'Budi Santoso',
                 'default_email' => 'budi.santoso@gmail.com',
                 'default_phone' => '0812-8450-1122',
@@ -151,6 +168,8 @@ class AccountController extends Controller
                 'category' => 'Customer Rumahan',
                 'package' => 'Paket Home Fiber Gamer 100 Mbps + Static IP',
                 'address' => 'Jl. Melati Indah IV No. 8, RT.04/RW.09, Bintaro, Tangerang Selatan',
+                'latitude' => -6.273812,
+                'longitude' => 106.741298,
                 'default_pic' => 'Siti Aminah',
                 'default_email' => 'sitiaminah.home@yahoo.com',
                 'default_phone' => '0813-9088-3344',
@@ -164,6 +183,8 @@ class AccountController extends Controller
                 'category' => 'Customer Rumahan',
                 'package' => 'FTTH Home Broadband 30 Mbps',
                 'address' => 'Cluster Harmoni Residence No. B12, Bekasi Barat',
+                'latitude' => -6.234891,
+                'longitude' => 106.975421,
                 'default_pic' => 'Hendra Kusuma',
                 'default_email' => 'hendra.kusuma88@gmail.com',
                 'default_phone' => '0857-2211-9090',
@@ -171,7 +192,7 @@ class AccountController extends Controller
             ],
         ];
 
-        // Sinkronisasi dengan Customer Rumahan yang ditambahkan dari menu Customer & Project
+        // Sinkronisasi dengan Customer Rumahan yang ditambahkan dari menu Customer Management
         $sessionResidential = session('nms_customers_rumahan', []);
         $existingNames = array_map('strtolower', array_column($defaults, 'name'));
 
@@ -185,6 +206,8 @@ class AccountController extends Controller
                     'category' => 'Customer Rumahan',
                     'package' => $sr['note'] ?: 'Layanan Internet Rumahan NetFly',
                     'address' => $sr['address'] ?? '-',
+                    'latitude' => $sr['latitude'] ?? -6.250000,
+                    'longitude' => $sr['longitude'] ?? 106.820000,
                     'default_pic' => $sr['name'],
                     'default_email' => $sr['email'] ?? '',
                     'default_phone' => $sr['phone'] ?? '',
@@ -217,6 +240,9 @@ class AccountController extends Controller
                 'customer_name' => 'PT. Bank Mandiri (Persero) Tbk',
                 'customer_code' => 'MANDIRI',
                 'package' => 'MPLS Core Interconnect 10Gbps',
+                'address' => 'Plaza Mandiri, Jl. Jend. Gatot Subroto Kav. 36-38, Jakarta Selatan',
+                'latitude' => -6.224468,
+                'longitude' => 106.815095,
                 'name' => 'Bambang Kurniawan, S.Kom',
                 'username' => 'pic_mandiri',
                 'email' => 'pic.noc@bankmandiri.co.id',
@@ -236,6 +262,9 @@ class AccountController extends Controller
                 'customer_name' => 'PT. Shopee International Indonesia',
                 'customer_code' => 'SHOPEE',
                 'package' => 'Dedicated Fiber 2Gbps + SCBD Peering',
+                'address' => 'Pacific Century Place Tower Lt. 26, SCBD, Jakarta Selatan',
+                'latitude' => -6.225582,
+                'longitude' => 106.808764,
                 'name' => 'Jessica Tanuwijaya',
                 'username' => 'noc_shopee',
                 'email' => 'noc-corp@shopee.co.id',
@@ -255,6 +284,9 @@ class AccountController extends Controller
                 'customer_name' => 'Budi Santoso',
                 'customer_code' => 'RUMAHAN',
                 'package' => 'Paket Home Fiber 50 Mbps Unlimited',
+                'address' => 'Perumahan Griya Asri Blok C2 No. 14, Kel. Sukamaju, Kec. Cilodong, Depok',
+                'latitude' => -6.418254,
+                'longitude' => 106.854912,
                 'name' => 'Budi Santoso',
                 'username' => 'home_budi',
                 'email' => 'budi.santoso@gmail.com',
@@ -274,6 +306,9 @@ class AccountController extends Controller
                 'customer_name' => 'Dinas Pendidikan Provinsi DKI Jakarta',
                 'customer_code' => 'DISDIK',
                 'package' => 'Smart City Backbone Fiber 1Gbps',
+                'address' => 'Jl. Jend. Gatot Subroto No. 40-41, Kuningan Barat, Jakarta Selatan',
+                'latitude' => -6.238270,
+                'longitude' => 106.826108,
                 'name' => 'Ir. Hendra Wijaya, M.T.',
                 'username' => 'disdik_jkt',
                 'email' => 'admin.jaringan@disdik.jakarta.go.id',
@@ -293,6 +328,9 @@ class AccountController extends Controller
                 'customer_name' => 'PT. XYZ Teknologi',
                 'customer_code' => 'XYZ',
                 'package' => 'Dedicated Fiber 1Gbps',
+                'address' => 'Cyber 2 Tower Lt. 18, Jl. HR Rasuna Said, Jakarta Selatan',
+                'latitude' => -6.226195,
+                'longitude' => 106.832761,
                 'name' => 'Rian Saputra',
                 'username' => 'it_xyz_tech',
                 'email' => 'infra@xyzteknologi.id',
@@ -312,6 +350,9 @@ class AccountController extends Controller
                 'customer_name' => 'RS Medika Center',
                 'customer_code' => 'MEDIKA',
                 'package' => 'Dedicated Internet Broadband 500Mbps',
+                'address' => 'Jl. Kesehatan Raya No. 12, Jakarta Barat',
+                'latitude' => -6.174465,
+                'longitude' => 106.809124,
                 'name' => 'dr. Anton Pratama, Sp.A',
                 'username' => 'medika_simrs',
                 'email' => 'simrs@medikacenter.org',
@@ -335,6 +376,16 @@ class AccountController extends Controller
         $sessionAccounts = session('customer_accounts', null);
 
         if ($sessionAccounts !== null) {
+            $customersMap = collect($this->getCustomerList())->keyBy('id');
+            foreach ($sessionAccounts as $idx => $acc) {
+                if (!isset($acc['latitude']) || !isset($acc['longitude']) || !isset($acc['address'])) {
+                    $matched = $customersMap->get($acc['customer_id'] ?? 1);
+                    $sessionAccounts[$idx]['address'] = $acc['address'] ?? ($matched['address'] ?? '-');
+                    $sessionAccounts[$idx]['latitude'] = $acc['latitude'] ?? ($matched['latitude'] ?? -6.208763);
+                    $sessionAccounts[$idx]['longitude'] = $acc['longitude'] ?? ($matched['longitude'] ?? 106.845599);
+                }
+            }
+            session(['customer_accounts' => $sessionAccounts]);
             return $sessionAccounts;
         }
 
@@ -370,6 +421,9 @@ class AccountController extends Controller
                             'customer_name' => $matchedCustomer['name'] ?? 'Mitra Customer Terdaftar',
                             'customer_code' => $custType === 'rumahan' ? 'RUMAHAN' : ($matchedCustomer['code'] ?? 'CUST'),
                             'package' => $matchedCustomer['package'] ?? 'Dedicated Connection',
+                            'address' => $matchedCustomer['address'] ?? '-',
+                            'latitude' => $matchedCustomer['latitude'] ?? -6.208763,
+                            'longitude' => $matchedCustomer['longitude'] ?? 106.845599,
                             'name' => $dbUser->name,
                             'username' => $dbUser->username ?? ('user_' . $dbUser->id),
                             'email' => $dbUser->email,
@@ -442,6 +496,9 @@ class AccountController extends Controller
             'email' => 'required|email|max:150',
             'password' => 'required|string|min:6',
             'phone' => 'nullable|string|max:30',
+            'address' => 'nullable|string',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
             'is_active' => 'nullable|boolean',
             'must_change_password' => 'nullable|boolean',
         ], [
@@ -495,6 +552,9 @@ class AccountController extends Controller
             'customer_name' => $customerName,
             'customer_code' => $customerCode,
             'package' => $customerPackage,
+            'address' => !empty($validated['address']) ? $validated['address'] : ($selectedCustomer['address'] ?? '-'),
+            'latitude' => isset($validated['latitude']) && $validated['latitude'] !== '' ? (float) $validated['latitude'] : ($selectedCustomer['latitude'] ?? -6.208763),
+            'longitude' => isset($validated['longitude']) && $validated['longitude'] !== '' ? (float) $validated['longitude'] : ($selectedCustomer['longitude'] ?? 106.845599),
             'name' => $accountHolderName,
             'username' => $validated['username'],
             'email' => $validated['email'],
@@ -511,6 +571,23 @@ class AccountController extends Controller
         $currentAccounts = $this->getActiveAccounts();
         array_unshift($currentAccounts, $newAccount);
         session(['customer_accounts' => $currentAccounts]);
+
+        ActivityLogger::log(
+            'akun',
+            'create',
+            "Menambahkan akun customer '{$accountHolderName}' ({$validated['username']})",
+            $validated['username'],
+            (string) $newId,
+            [
+                'name' => $accountHolderName,
+                'username' => $validated['username'],
+                'email' => $validated['email'],
+                'customer_id' => $validated['customer_id'],
+                'customer_name' => $customerName,
+                'role' => $newAccount['role'],
+                'is_active' => $isActive,
+            ]
+        );
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -557,6 +634,18 @@ class AccountController extends Controller
 
         $statusText = $newStatus ? 'diaktifkan' : 'dinonaktifkan';
         $username = $targetAccount['username'] ?? 'User';
+
+        ActivityLogger::log(
+            'akun',
+            'update',
+            "Mengubah status akun '{$username}' menjadi " . ($newStatus ? 'Aktif' : 'Nonaktif'),
+            $username,
+            (string) $id,
+            [
+                'username' => $username,
+                'is_active' => $newStatus,
+            ]
+        );
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
@@ -607,6 +696,18 @@ class AccountController extends Controller
 
         $username = $targetAccount['username'] ?? 'User';
 
+        ActivityLogger::log(
+            'akun',
+            'update',
+            "Mereset kata sandi akun '{$username}'",
+            $username,
+            (string) $id,
+            [
+                'username' => $username,
+                'action_type' => 'reset_password',
+            ]
+        );
+
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
@@ -645,6 +746,15 @@ class AccountController extends Controller
         } catch (\Throwable $e) {
             Log::info('Destroy User DB Fallback: ' . $e->getMessage());
         }
+
+        ActivityLogger::log(
+            'akun',
+            'delete',
+            "Menghapus akun pengguna '{$username}'",
+            $username,
+            (string) $id,
+            ['username' => $username]
+        );
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([

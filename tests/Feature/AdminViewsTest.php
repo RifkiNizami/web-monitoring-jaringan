@@ -21,6 +21,7 @@ class AdminViewsTest extends TestCase
             '/tickets',
             '/monitoring',
             '/reports',
+            '/activity-logs',
         ];
 
         foreach ($protectedRoutes as $uri) {
@@ -50,6 +51,7 @@ class AdminViewsTest extends TestCase
             '/tickets' => 'admin.tickets',
             '/monitoring' => 'admin.monitoring.index',
             '/reports' => 'admin.reports',
+            '/activity-logs' => 'admin.activity-logs.index',
         ];
 
         foreach ($adminRoutes as $uri => $expectedView) {

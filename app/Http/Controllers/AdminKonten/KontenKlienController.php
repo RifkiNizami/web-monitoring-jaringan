@@ -4,6 +4,7 @@ namespace App\Http\Controllers\AdminKonten;
 
 use App\Http\Controllers\Controller;
 use App\Models\LandingClient;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
@@ -93,7 +94,7 @@ class KontenKlienController extends Controller
             $logoPath = 'uploads/clients/' . $filename;
         }
 
-        LandingClient::create([
+        $client = LandingClient::create([
             'name' => $request->name,
             'category' => $request->category,
             'location' => $request->location,
@@ -103,6 +104,19 @@ class KontenKlienController extends Controller
             'is_active' => $request->has('is_active'),
             'created_by' => Auth::id(),
         ]);
+
+        ActivityLogger::log(
+            'konten',
+            'create',
+            "Menambahkan klien landing page '{$client->name}' ({$client->category})",
+            $client->name,
+            (string) $client->id,
+            [
+                'category' => $client->category,
+                'location' => $client->location,
+                'is_active' => $client->is_active,
+            ]
+        );
 
         $redirectRoute = $request->routeIs('klien.*') ? 'klien.index' : 'landing-clients.index';
 
@@ -164,6 +178,19 @@ class KontenKlienController extends Controller
 
         $client->update($data);
 
+        ActivityLogger::log(
+            'konten',
+            'update',
+            "Memperbarui data klien '{$client->name}'",
+            $client->name,
+            (string) $client->id,
+            [
+                'category' => $client->category,
+                'location' => $client->location,
+                'is_active' => $client->is_active,
+            ]
+        );
+
         $redirectRoute = $request->routeIs('klien.*') ? 'klien.index' : 'landing-clients.index';
 
         return redirect()->route($redirectRoute)
@@ -188,6 +215,15 @@ class KontenKlienController extends Controller
 
         $client->delete();
 
+        ActivityLogger::log(
+            'konten',
+            'delete',
+            "Menghapus klien landing page '{$clientName}'",
+            $clientName,
+            (string) $id,
+            ['name' => $clientName]
+        );
+
         $redirectRoute = $request->routeIs('klien.*') ? 'klien.index' : 'landing-clients.index';
 
         return redirect()->route($redirectRoute)
@@ -202,6 +238,15 @@ class KontenKlienController extends Controller
         $client = LandingClient::findOrFail($id);
         $client->is_active = !$client->is_active;
         $client->save();
+
+        ActivityLogger::log(
+            'konten',
+            'update',
+            "Mengubah status klien '{$client->name}' menjadi " . ($client->is_active ? 'Aktif' : 'Nonaktif'),
+            $client->name,
+            (string) $client->id,
+            ['is_active' => $client->is_active]
+        );
 
         $statusText = $client->is_active ? 'diaktifkan' : 'dinonaktifkan';
         $redirectRoute = $request->routeIs('klien.*') ? 'klien.index' : 'landing-clients.index';

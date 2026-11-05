@@ -17,6 +17,8 @@ class Customer extends Model
         'email',
         'phone',
         'address',
+        'latitude',
+        'longitude',
         'category',
         'package',
         'note',

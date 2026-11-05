@@ -193,7 +193,7 @@
                     DATA & KEMITRAAN
                 </p>
                 <nav class="space-y-1">
-                    <!-- Customer & Project -->
+                    <!-- Customer Management -->
                     @php $isCustomersActive = request()->routeIs('customers.*') || request()->routeIs('projects.*'); @endphp
                     <a href="{{ route('customers.index') }}"
                         class="flex items-center justify-between px-3.5 py-2 text-xs rounded-lg transition-all duration-150 group border-l-4 {{ $isCustomersActive ? 'bg-blue-50/90 text-netfly-blue font-semibold border-netfly-blue shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium border-transparent' }}">
@@ -253,6 +253,20 @@
                                     d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                             <span>Report Generator</span>
+                        </div>
+                    </a>
+
+                    <!-- Log Aktivitas -->
+                    @php $isActivityLogsActive = request()->routeIs('activity-logs.*'); @endphp
+                    <a href="{{ route('activity-logs.index') }}"
+                        class="flex items-center justify-between px-3.5 py-2 text-xs rounded-lg transition-all duration-150 group border-l-4 {{ $isActivityLogsActive ? 'bg-blue-50/90 text-netfly-blue font-semibold border-netfly-blue shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium border-transparent' }}">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-4 h-4 shrink-0 {{ $isActivityLogsActive ? 'text-netfly-blue' : 'text-slate-400 group-hover:text-slate-600' }}"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Log Aktivitas</span>
                         </div>
                     </a>
                 </nav>

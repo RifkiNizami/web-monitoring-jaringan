@@ -4,6 +4,7 @@ namespace App\Http\Controllers\AdminKonten;
 
 use App\Http\Controllers\Controller;
 use App\Models\Announcement;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -93,7 +94,7 @@ class KontenPemberitahuanController extends Controller
             'expires_at.after_or_equal' => 'Waktu selesai harus setelah atau sama dengan waktu mulai.',
         ]);
 
-        Announcement::create([
+        $announcement = Announcement::create([
             'title' => $request->title,
             'category' => $request->category,
             'message' => $request->message,
@@ -103,6 +104,19 @@ class KontenPemberitahuanController extends Controller
             'expires_at' => $request->expires_at,
             'created_by' => Auth::id(),
         ]);
+
+        ActivityLogger::log(
+            'konten',
+            'create',
+            "Membuat pemberitahuan '{$announcement->title}' ({$announcement->category})",
+            $announcement->title,
+            (string) $announcement->id,
+            [
+                'category' => $announcement->category,
+                'priority' => $announcement->priority,
+                'status' => $announcement->status,
+            ]
+        );
 
         $redirectRoute = $request->routeIs('pemberitahuan.*') ? 'pemberitahuan.index' : 'announcements.index';
 
@@ -141,6 +155,19 @@ class KontenPemberitahuanController extends Controller
             'expires_at' => $request->expires_at,
         ]);
 
+        ActivityLogger::log(
+            'konten',
+            'update',
+            "Memperbarui pemberitahuan '{$announcement->title}'",
+            $announcement->title,
+            (string) $announcement->id,
+            [
+                'category' => $announcement->category,
+                'priority' => $announcement->priority,
+                'status' => $announcement->status,
+            ]
+        );
+
         $redirectRoute = $request->routeIs('pemberitahuan.*') ? 'pemberitahuan.index' : 'announcements.index';
 
         return redirect()->route($redirectRoute)
@@ -154,7 +181,17 @@ class KontenPemberitahuanController extends Controller
     {
         $announcement = Announcement::findOrFail($id);
         $title = $announcement->title;
+        $announcementId = (string) $announcement->id;
         $announcement->delete();
+
+        ActivityLogger::log(
+            'konten',
+            'delete',
+            "Menghapus pemberitahuan '{$title}'",
+            $title,
+            $announcementId,
+            ['title' => $title]
+        );
 
         $redirectRoute = $request->routeIs('pemberitahuan.*') ? 'pemberitahuan.index' : 'announcements.index';
 
@@ -170,6 +207,15 @@ class KontenPemberitahuanController extends Controller
         $announcement = Announcement::findOrFail($id);
         $announcement->status = ($announcement->status === 'aktif') ? 'selesai' : 'aktif';
         $announcement->save();
+
+        ActivityLogger::log(
+            'konten',
+            'update',
+            "Mengubah status pemberitahuan '{$announcement->title}' menjadi '{$announcement->status}'",
+            $announcement->title,
+            (string) $announcement->id,
+            ['status' => $announcement->status]
+        );
 
         $redirectRoute = $request->routeIs('pemberitahuan.*') ? 'pemberitahuan.index' : 'announcements.index';
 

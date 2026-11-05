@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -118,6 +119,21 @@ class MonitoringDeviceController extends Controller
         $devices[$newId] = $newDevice;
         MonitoringController::saveTelemetryDevicesList($devices);
 
+        ActivityLogger::log(
+            'monitoring',
+            'create',
+            "Mendaftarkan perangkat monitoring '{$newDevice['hostname']}' ({$newDevice['ip_address']})",
+            $newDevice['hostname'],
+            (string) $newId,
+            [
+                'hostname' => $newDevice['hostname'],
+                'unit_type' => $newDevice['unit_type'],
+                'ip_address' => $newDevice['ip_address'],
+                'customer' => $newDevice['customer'],
+                'status' => $newDevice['status'],
+            ]
+        );
+
         $msg = "Perangkat monitoring '{$newDevice['hostname']}' berhasil ditambahkan{$connectNotice}";
 
         if ($request->wantsJson()) {
@@ -203,6 +219,21 @@ class MonitoringDeviceController extends Controller
 
         MonitoringController::saveTelemetryDevicesList($devices);
 
+        ActivityLogger::log(
+            'monitoring',
+            'update',
+            "Memperbarui data perangkat monitoring '{$devices[$id]['hostname']}'",
+            $devices[$id]['hostname'],
+            (string) $id,
+            [
+                'hostname' => $devices[$id]['hostname'],
+                'unit_type' => $devices[$id]['unit_type'],
+                'ip_address' => $devices[$id]['ip_address'],
+                'customer' => $devices[$id]['customer'],
+                'status' => $devices[$id]['status'],
+            ]
+        );
+
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
@@ -224,8 +255,21 @@ class MonitoringDeviceController extends Controller
 
         if (isset($devices[$id])) {
             $hostname = $devices[$id]['hostname'];
+            $deleted = $devices[$id];
             unset($devices[$id]);
             MonitoringController::saveTelemetryDevicesList($devices);
+
+            ActivityLogger::log(
+                'monitoring',
+                'delete',
+                "Menghapus perangkat monitoring '{$hostname}'",
+                $hostname,
+                (string) $id,
+                [
+                    'hostname' => $hostname,
+                    'ip_address' => $deleted['ip_address'] ?? null,
+                ]
+            );
 
             if ($request->wantsJson()) {
                 return response()->json([
@@ -272,6 +316,20 @@ class MonitoringDeviceController extends Controller
             $devices[$id]['api_port'] = $validated['api_port'];
             $devices[$id]['api_username'] = $validated['api_username'];
             MonitoringController::saveTelemetryDevicesList($devices);
+
+            ActivityLogger::log(
+                'monitoring',
+                'update',
+                "Memperbarui konfigurasi API MikroTik perangkat '{$devices[$id]['hostname']}'",
+                $devices[$id]['hostname'] ?? "ID: {$id}",
+                (string) $id,
+                [
+                    'ip_address' => $validated['ip_address'],
+                    'api_port' => $validated['api_port'],
+                    'connection_type' => $validated['connection_type'],
+                    'api_username' => $validated['api_username'],
+                ]
+            );
         }
 
         return response()->json([
