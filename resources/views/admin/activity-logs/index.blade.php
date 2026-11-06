@@ -487,7 +487,7 @@
         updateLiveClock();
 
         // Fungsi pintasan rentang tanggal cepat
-        function setDateShortcut(preset) {
+        window.setDateShortcut = function(preset) {
             const now = new Date();
             const pad = (n) => String(n).padStart(2, '0');
             const formatDate = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -519,7 +519,7 @@
             if (form) {
                 form.submit();
             }
-        }
+        };
 
         // Penyesuaian otomatis jika tanggal awal melebihi tanggal akhir
         const dateFromInput = document.getElementById('date_from');

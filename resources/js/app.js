@@ -1,4 +1,10 @@
 import './bootstrap';
+import * as Turbo from '@hotwired/turbo';
+
+// Daftarkan Turbo secara global
+if (typeof window !== 'undefined') {
+    window.Turbo = Turbo;
+}
 
 import { initClientsCarousel } from './landing/clients';
 import { initAdminCommon } from './admin/common';
@@ -10,7 +16,7 @@ import { initAdminCustomers } from './admin/customers';
 import { initAdminAccounts } from './admin/accounts';
 import { initAdminMonitoring } from './admin/monitoring';
 
-document.addEventListener('DOMContentLoaded', () => {
+function initAppModules() {
     /* ==========================================
        0. Fast-Path untuk Halaman Login
        (Tidak mengeksekusi observer/script halaman lain)
@@ -147,4 +153,14 @@ document.addEventListener('DOMContentLoaded', () => {
     initAdminCustomers();
     initAdminAccounts();
     initAdminMonitoring();
+}
+
+// Jalankan modul pada load awal dan setiap perpindahan halaman via Turbo Drive
+document.addEventListener('turbo:load', initAppModules);
+
+// Fallback jika Turbo dinonaktifkan
+document.addEventListener('DOMContentLoaded', () => {
+    if (!window.Turbo) {
+        initAppModules();
+    }
 });

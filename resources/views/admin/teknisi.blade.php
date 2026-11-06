@@ -551,7 +551,7 @@
     <!-- INTERACTIVE JAVASCRIPT LOGIC                                              -->
     <!-- ========================================================================= -->
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        function initTeknisiPage() {
             
             // 1. Digital Clock (WIB)
             function updateClock() {
@@ -564,7 +564,6 @@
                 clockEl.textContent = `${hours}:${minutes}:${seconds} WIB`;
             }
             updateClock();
-            setInterval(updateClock, 1000);
 
             // 2. Mobile Sidebar Toggle
             const openSidebarBtn = document.getElementById('openSidebar');
@@ -691,6 +690,13 @@
 
             if (searchInput) {
                 searchInput.addEventListener('input', performFilter);
+            }
+        }
+
+        document.addEventListener('turbo:load', initTeknisiPage);
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!window.Turbo) {
+                initTeknisiPage();
             }
         });
     </script>

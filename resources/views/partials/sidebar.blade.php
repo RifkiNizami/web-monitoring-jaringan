@@ -337,7 +337,7 @@
             </div>
 
             <!-- Tombol Logout -->
-            <form action="{{ route('logout') }}" method="POST" class="inline shrink-0">
+            <form action="{{ route('logout') }}" method="POST" data-turbo="false" class="inline shrink-0">
                 @csrf
                 <button type="submit" title="Keluar dari Portal"
                     class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"

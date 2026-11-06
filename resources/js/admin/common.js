@@ -6,6 +6,9 @@ export function initAdminCommon() {
     // 1. Live Digital Clock (WIB)
     const clockEl = document.getElementById('liveClock');
     if (clockEl) {
+        if (window._clockInterval) {
+            clearInterval(window._clockInterval);
+        }
         function updateClock() {
             const now = new Date();
             const hours = String(now.getHours()).padStart(2, '0');
@@ -13,7 +16,7 @@ export function initAdminCommon() {
             const seconds = String(now.getSeconds()).padStart(2, '0');
             clockEl.textContent = `${hours}.${minutes}.${seconds} WIB`;
         }
-        setInterval(updateClock, 1000);
+        window._clockInterval = setInterval(updateClock, 1000);
         updateClock();
     }
 
@@ -33,6 +36,9 @@ export function initAdminCommon() {
             if (sidebarBackdrop) sidebarBackdrop.classList.add('hidden');
         }
     }
+
+    // Pastikan mobile sidebar tertutup saat pindah halaman
+    toggleMobileSidebar(false);
 
     if (openSidebarBtn) {
         openSidebarBtn.addEventListener('click', (e) => {

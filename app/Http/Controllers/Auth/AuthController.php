@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\AuthenticateSingleSession;
 use App\Models\User;
 use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
@@ -55,14 +56,25 @@ class AuthController extends Controller
 
             $request->session()->regenerate();
 
+            // Single Device Login: putus sesi akun ini di perangkat/browser lain
+            Auth::logoutOtherDevices($credentials['password']);
+            AuthenticateSingleSession::refreshCurrentSessionHash($request);
+            $terminatedSessions = AuthenticateSingleSession::terminateOtherSessions($request, Auth::id());
+
             $user = Auth::user();
             ActivityLogger::log(
                 'auth',
                 'login',
-                "Pengguna '{$user->name}' berhasil login ke sistem",
+                "Pengguna '{$user->name}' berhasil login ke sistem (Sesi perangkat lain otomatis ditutup)",
                 $user->name,
                 (string) $user->id,
-                ['email' => $user->email, 'role' => $user->role]
+                [
+                    'email' => $user->email,
+                    'role' => $user->role,
+                    'ip' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                    'terminated_sessions' => $terminatedSessions,
+                ]
             );
 
             return redirect()->intended(route('dashboard'));
