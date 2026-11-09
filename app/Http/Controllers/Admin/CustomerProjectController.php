@@ -3,277 +3,175 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
+use App\Services\ActivityLogger;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class CustomerProjectController extends Controller
 {
     /**
-     * Default daftar Customer Rumahan (Residensial / Home Fiber)
-     */
-    protected function getDefaultResidentialCustomers(): array
-    {
-        return [
-            [
-                'id' => 101,
-                'code' => 'HOME-0001',
-                'customer_type' => 'rumahan',
-                'name' => 'Budi Santoso',
-                'pic_name' => '-',
-                'phone' => '0812-8450-1122',
-                'email' => 'budi.santoso@gmail.com',
-                'address' => 'Perumahan Griya Asri Blok C2 No. 14, Kel. Sukamaju, Kec. Cilodong, Depok',
-                'note' => 'Paket Home Fiber 50 Mbps Unlimited',
-                'status' => 'Aktif',
-                'status_color' => 'emerald',
-                'active_projects' => 1,
-            ],
-            [
-                'id' => 102,
-                'code' => 'HOME-0002',
-                'customer_type' => 'rumahan',
-                'name' => 'Siti Aminah',
-                'pic_name' => '-',
-                'phone' => '0813-9088-3344',
-                'email' => 'sitiaminah.home@yahoo.com',
-                'address' => 'Jl. Melati Indah IV No. 8, RT.04/RW.09, Bintaro, Tangerang Selatan',
-                'note' => 'Paket Home Fiber Gamer 100 Mbps + Static IP',
-                'status' => 'Aktif',
-                'status_color' => 'emerald',
-                'active_projects' => 1,
-            ],
-            [
-                'id' => 103,
-                'code' => 'HOME-0003',
-                'customer_type' => 'rumahan',
-                'name' => 'Hendra Kusuma',
-                'pic_name' => '-',
-                'phone' => '0857-2211-9090',
-                'email' => 'hendra.kusuma88@gmail.com',
-                'address' => 'Cluster Harmoni Residence No. B12, Bekasi Barat',
-                'note' => 'Instalasi baru FTTH Home Broadband 30 Mbps',
-                'status' => 'Negosiasi',
-                'status_color' => 'amber',
-                'active_projects' => 0,
-            ],
-        ];
-    }
-
-    /**
-     * Default daftar Customer Perusahaan (Korporat / Mitra B2B)
-     */
-    protected function getDefaultCorporateCustomers(): array
-    {
-        return [
-            [
-                'id' => 1,
-                'code' => 'CUST-0004',
-                'customer_type' => 'perusahaan',
-                'name' => 'Dinas Pendidikan Provinsi DKI Jakarta',
-                'pic_name' => 'Drs. H. Mulyadi',
-                'phone' => '021-3844567',
-                'email' => 'tik@disdik.jakarta.go.id',
-                'address' => 'Jl. Gatot Subroto No. 40, RT.7/RW.1, Bendungan Hilir, Tanah Abang, Jakarta Pusat',
-                'note' => 'Proyek Smart School dan Integrasi Jaringan AMDK...',
-                'status' => 'Negosiasi',
-                'status_color' => 'amber',
-                'active_projects' => 1,
-            ],
-            [
-                'id' => 2,
-                'code' => 'CUST-0002',
-                'customer_type' => 'perusahaan',
-                'name' => 'PT. Shopee International Indonesia',
-                'pic_name' => 'Indra Gunawan',
-                'phone' => '021-80647300',
-                'email' => 'indra.g@shopee.co.id',
-                'address' => 'Pacific Century Place Lt. 26, SCBD Lot 10, Jl. Jend. Sudirman Kav 52-53, Jakarta Selatan',
-                'note' => 'High-Traffic e-Commerce Hub, Penanganan Khusus...',
-                'status' => 'Aktif',
-                'status_color' => 'emerald',
-                'active_projects' => 2,
-            ],
-            [
-                'id' => 3,
-                'code' => 'CUST-0003',
-                'customer_type' => 'perusahaan',
-                'name' => 'PT. XYZ Teknologi Solusi',
-                'pic_name' => 'Rian Hendrawan',
-                'phone' => '0812-3456-7890',
-                'email' => 'rian@xyzteknologi.id',
-                'address' => 'Cyber 2 Tower Lt. 18, Jl. HR Rasuna Said Blok X-5 No. 13, Kuningan, Jakarta Selatan',
-                'note' => 'Dedicated IP Transit dan Cloud Connect',
-                'status' => 'Aktif',
-                'status_color' => 'emerald',
-                'active_projects' => 1,
-            ],
-            [
-                'id' => 4,
-                'code' => 'CUST-0001',
-                'customer_type' => 'perusahaan',
-                'name' => 'PT. Bank Mandiri (Persero) Tbk',
-                'pic_name' => 'Bambang Pratama',
-                'phone' => '021-5263000',
-                'email' => 'bambang.p@bankmandiri.co.id',
-                'address' => 'Gedung Plaza Mandiri, Jl. Jend. Gatot Subroto Kav. 36-38, Jakarta Selatan 12190',
-                'note' => 'Pelanggan Enterprise Prioritas SLA 99.95% 24/7',
-                'status' => 'Aktif',
-                'status_color' => 'emerald',
-                'active_projects' => 2,
-            ],
-        ];
-    }
-
-    /**
-     * Ambil daftar Customer Rumahan aktif dari session
-     */
-    public function getActiveResidentialCustomers(): array
-    {
-        $customers = session('nms_customers_rumahan', null);
-        if ($customers === null) {
-            $customers = $this->getDefaultResidentialCustomers();
-            session(['nms_customers_rumahan' => $customers]);
-        }
-        return $customers;
-    }
-
-    /**
-     * Ambil daftar Customer Perusahaan aktif dari session
-     */
-    public function getActiveCorporateCustomers(): array
-    {
-        $corporate = session('nms_customers_perusahaan', null);
-        if ($corporate === null) {
-            $corporate = $this->getDefaultCorporateCustomers();
-            session(['nms_customers_perusahaan' => $corporate]);
-        }
-        return $corporate;
-    }
-
-    /**
-     * Tampilkan halaman Customer & Project Management (Customer Rumahan & Customer Perusahaan)
+     * Tampilkan halaman Customer Management (Customer Rumahan & Customer Perusahaan).
      */
     public function index(Request $request): View
     {
-        $customers = $this->getActiveResidentialCustomers();
-        $projects = $this->getActiveCorporateCustomers();
+        $customers = Customer::where('customer_type', 'rumahan')
+            ->orderBy('id', 'desc')
+            ->get();
+
+        $projects = Customer::where('customer_type', 'perusahaan')
+            ->withCount('projects')
+            ->orderBy('id', 'desc')
+            ->get();
+
         $activeTab = $request->query('tab', 'customer');
 
         return view('admin.customers', compact('customers', 'projects', 'activeTab'));
     }
 
     /**
-     * Simpan Customer Rumahan Baru
+     * Simpan Customer Rumahan Baru ke database.
      */
-    public function storeCustomer(Request $request)
+    public function storeCustomer(Request $request): JsonResponse|RedirectResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:200',
-            'status' => 'required|string',
+            'status' => 'required|string|max:50',
             'email' => 'required|email|max:150',
             'phone' => 'required|string|max:50',
             'address' => 'required|string|max:300',
             'note' => 'nullable|string|max:300',
+        ], [
+            'name.required' => 'Nama customer rumahan wajib diisi.',
+            'email.required' => 'Email customer wajib diisi.',
+            'phone.required' => 'Nomor kontak telepon/WA wajib diisi.',
+            'address.required' => 'Alamat customer wajib diisi.',
         ]);
 
-        $customers = $this->getActiveResidentialCustomers();
-        $newId = count($customers) > 0 ? max(array_column($customers, 'id')) + 1 : 101;
-        $seq = count($customers) + 1;
-        $code = sprintf('HOME-%04d', $seq);
+        $code = $this->generateNextCode('rumahan');
 
-        $newCustomer = [
-            'id' => $newId,
-            'code' => $code,
+        $customer = Customer::create([
             'customer_type' => 'rumahan',
-            'name' => $validated['name'],
+            'code' => $code,
+            'name' => trim($validated['name']),
             'pic_name' => '-',
-            'phone' => $validated['phone'],
-            'email' => $validated['email'],
-            'address' => $validated['address'],
-            'note' => $validated['note'] ?? 'Layanan Internet Rumahan NetFly',
+            'phone' => trim($validated['phone']),
+            'email' => trim($validated['email']),
+            'address' => trim($validated['address']),
+            'note' => !empty($validated['note']) ? trim($validated['note']) : 'Layanan Internet Rumahan NetFly',
             'status' => $validated['status'],
-            'status_color' => $validated['status'] === 'Aktif' ? 'emerald' : ($validated['status'] === 'Negosiasi' ? 'amber' : 'slate'),
-            'active_projects' => 1,
-        ];
+            'category' => 'Customer Rumahan',
+        ]);
 
-        array_unshift($customers, $newCustomer);
-        session(['nms_customers_rumahan' => $customers]);
+        ActivityLogger::log(
+            'kemitraan',
+            'create',
+            "Menambahkan customer rumahan '{$customer->name}' (#{$customer->code})",
+            $customer->name,
+            (string) $customer->id,
+            [
+                'code' => $customer->code,
+                'status' => $customer->status,
+                'type' => 'rumahan',
+            ]
+        );
 
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => "Customer Rumahan '{$validated['name']}' berhasil ditambahkan!",
-                'customer' => $newCustomer,
+                'message' => "Customer Rumahan '{$customer->name}' berhasil ditambahkan!",
+                'customer' => $customer,
             ]);
         }
 
         return redirect()->route('customers.index', ['tab' => 'customer'])
-            ->with('success', "Customer Rumahan '{$validated['name']}' berhasil ditambahkan!");
+            ->with('success', "Customer Rumahan '{$customer->name}' berhasil ditambahkan!");
     }
 
     /**
-     * Update Data Customer Rumahan
+     * Update Data Customer Rumahan di database.
      */
-    public function updateCustomer(Request $request, $id)
+    public function updateCustomer(Request $request, int|string $id): JsonResponse|RedirectResponse
     {
+        $customer = Customer::where('id', $id)
+            ->where('customer_type', 'rumahan')
+            ->firstOrFail();
+
         $validated = $request->validate([
             'name' => 'required|string|max:200',
-            'status' => 'required|string',
+            'status' => 'required|string|max:50',
             'email' => 'required|email|max:150',
             'phone' => 'required|string|max:50',
             'address' => 'required|string|max:300',
             'note' => 'nullable|string|max:300',
+        ], [
+            'name.required' => 'Nama customer rumahan wajib diisi.',
+            'email.required' => 'Email customer wajib diisi.',
+            'phone.required' => 'Nomor kontak telepon/WA wajib diisi.',
+            'address.required' => 'Alamat customer wajib diisi.',
         ]);
 
-        $customers = $this->getActiveResidentialCustomers();
-        $updatedCustomer = null;
+        $customer->update([
+            'name' => trim($validated['name']),
+            'status' => $validated['status'],
+            'email' => trim($validated['email']),
+            'phone' => trim($validated['phone']),
+            'address' => trim($validated['address']),
+            'note' => !empty($validated['note']) ? trim($validated['note']) : $customer->note,
+        ]);
 
-        foreach ($customers as $k => $c) {
-            if ((string) $c['id'] === (string) $id) {
-                $customers[$k]['name'] = $validated['name'];
-                $customers[$k]['status'] = $validated['status'];
-                $customers[$k]['status_color'] = $validated['status'] === 'Aktif' ? 'emerald' : ($validated['status'] === 'Negosiasi' ? 'amber' : 'slate');
-                $customers[$k]['email'] = $validated['email'];
-                $customers[$k]['phone'] = $validated['phone'];
-                $customers[$k]['address'] = $validated['address'];
-                $customers[$k]['note'] = $validated['note'] ?? $customers[$k]['note'];
-                $updatedCustomer = $customers[$k];
-                break;
-            }
-        }
-
-        session(['nms_customers_rumahan' => $customers]);
+        ActivityLogger::log(
+            'kemitraan',
+            'update',
+            "Memperbarui data customer rumahan '{$customer->name}' (#{$customer->code})",
+            $customer->name,
+            (string) $customer->id,
+            [
+                'code' => $customer->code,
+                'status' => $customer->status,
+                'type' => 'rumahan',
+            ]
+        );
 
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => "Data Customer Rumahan '{$validated['name']}' berhasil diperbarui!",
-                'customer' => $updatedCustomer,
+                'message' => "Data Customer Rumahan '{$customer->name}' berhasil diperbarui!",
+                'customer' => $customer,
             ]);
         }
 
         return redirect()->route('customers.index', ['tab' => 'customer'])
-            ->with('success', "Data Customer Rumahan '{$validated['name']}' berhasil diperbarui!");
+            ->with('success', "Data Customer Rumahan '{$customer->name}' berhasil diperbarui!");
     }
 
     /**
-     * Hapus Customer Rumahan
+     * Hapus Customer Rumahan dari database.
      */
-    public function destroyCustomer(Request $request, $id)
+    public function destroyCustomer(Request $request, int|string $id): JsonResponse|RedirectResponse
     {
-        $customers = $this->getActiveResidentialCustomers();
-        $customerName = 'Customer Rumahan';
-        $filtered = [];
+        $customer = Customer::where('id', $id)
+            ->where('customer_type', 'rumahan')
+            ->firstOrFail();
 
-        foreach ($customers as $c) {
-            if ((string) $c['id'] === (string) $id) {
-                $customerName = $c['name'];
-            } else {
-                $filtered[] = $c;
-            }
-        }
+        $customerName = $customer->name;
+        $customerCode = $customer->code;
 
-        session(['nms_customers_rumahan' => $filtered]);
+        $customer->delete();
+
+        ActivityLogger::log(
+            'kemitraan',
+            'delete',
+            "Menghapus customer rumahan '{$customerName}' (#{$customerCode})",
+            $customerName,
+            (string) $id,
+            [
+                'code' => $customerCode,
+                'type' => 'rumahan',
+            ]
+        );
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -287,122 +185,153 @@ class CustomerProjectController extends Controller
     }
 
     /**
-     * Simpan Customer Perusahaan Baru
+     * Simpan Customer Perusahaan Baru ke database.
      */
-    public function storeProject(Request $request)
+    public function storeProject(Request $request): JsonResponse|RedirectResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:200',
             'pic_name' => 'required|string|max:150',
-            'status' => 'required|string',
+            'status' => 'required|string|max:50',
             'email' => 'required|email|max:150',
             'phone' => 'required|string|max:50',
             'address' => 'required|string|max:300',
             'note' => 'nullable|string|max:300',
+        ], [
+            'name.required' => 'Nama perusahaan / PT wajib diisi.',
+            'pic_name.required' => 'Nama PIC penanggung jawab wajib diisi.',
+            'email.required' => 'Email PIC wajib diisi.',
+            'phone.required' => 'Nomor kontak telepon/WA wajib diisi.',
+            'address.required' => 'Alamat kantor wajib diisi.',
         ]);
 
-        $corporate = $this->getActiveCorporateCustomers();
-        $newId = count($corporate) > 0 ? max(array_column($corporate, 'id')) + 1 : 1;
-        $code = sprintf('CUST-%04d', $newId);
+        $code = $this->generateNextCode('perusahaan');
 
-        $statusColor = $validated['status'] === 'Aktif' ? 'emerald' : ($validated['status'] === 'Negosiasi' ? 'amber' : 'slate');
-
-        $newCorporate = [
-            'id' => $newId,
-            'code' => $code,
+        $corporate = Customer::create([
             'customer_type' => 'perusahaan',
-            'name' => $validated['name'],
-            'pic_name' => $validated['pic_name'],
-            'phone' => $validated['phone'],
-            'email' => $validated['email'],
-            'address' => $validated['address'],
-            'note' => $validated['note'] ?? 'Kemitraan Jaringan Korporat NetFly',
+            'code' => $code,
+            'name' => trim($validated['name']),
+            'pic_name' => trim($validated['pic_name']),
+            'phone' => trim($validated['phone']),
+            'email' => trim($validated['email']),
+            'address' => trim($validated['address']),
+            'note' => !empty($validated['note']) ? trim($validated['note']) : 'Kemitraan Jaringan Korporat NetFly',
             'status' => $validated['status'],
-            'status_color' => $statusColor,
-            'active_projects' => 1,
-        ];
+            'category' => 'Mitra Korporat',
+        ]);
 
-        array_unshift($corporate, $newCorporate);
-        session(['nms_customers_perusahaan' => $corporate]);
+        ActivityLogger::log(
+            'kemitraan',
+            'create',
+            "Menambahkan customer perusahaan '{$corporate->name}' (#{$corporate->code})",
+            $corporate->name,
+            (string) $corporate->id,
+            [
+                'code' => $corporate->code,
+                'status' => $corporate->status,
+                'pic' => $corporate->pic_name,
+                'type' => 'perusahaan',
+            ]
+        );
 
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => "Customer Perusahaan '{$validated['name']}' berhasil ditambahkan!",
-                'project' => $newCorporate,
+                'message' => "Customer Perusahaan '{$corporate->name}' berhasil ditambahkan!",
+                'project' => $corporate,
             ]);
         }
 
         return redirect()->route('customers.index', ['tab' => 'project'])
-            ->with('success', "Customer Perusahaan '{$validated['name']}' berhasil ditambahkan!");
+            ->with('success', "Customer Perusahaan '{$corporate->name}' berhasil ditambahkan!");
     }
 
     /**
-     * Update Data Customer Perusahaan
+     * Update Data Customer Perusahaan di database.
      */
-    public function updateProject(Request $request, $id)
+    public function updateProject(Request $request, int|string $id): JsonResponse|RedirectResponse
     {
+        $corporate = Customer::where('id', $id)
+            ->where('customer_type', 'perusahaan')
+            ->firstOrFail();
+
         $validated = $request->validate([
             'name' => 'required|string|max:200',
             'pic_name' => 'required|string|max:150',
-            'status' => 'required|string',
+            'status' => 'required|string|max:50',
             'email' => 'required|email|max:150',
             'phone' => 'required|string|max:50',
             'address' => 'required|string|max:300',
             'note' => 'nullable|string|max:300',
+        ], [
+            'name.required' => 'Nama perusahaan / PT wajib diisi.',
+            'pic_name.required' => 'Nama PIC penanggung jawab wajib diisi.',
+            'email.required' => 'Email PIC wajib diisi.',
+            'phone.required' => 'Nomor kontak telepon/WA wajib diisi.',
+            'address.required' => 'Alamat kantor wajib diisi.',
         ]);
 
-        $corporate = $this->getActiveCorporateCustomers();
-        $updatedCorporate = null;
-        $statusColor = $validated['status'] === 'Aktif' ? 'emerald' : ($validated['status'] === 'Negosiasi' ? 'amber' : 'slate');
+        $corporate->update([
+            'name' => trim($validated['name']),
+            'pic_name' => trim($validated['pic_name']),
+            'status' => $validated['status'],
+            'email' => trim($validated['email']),
+            'phone' => trim($validated['phone']),
+            'address' => trim($validated['address']),
+            'note' => !empty($validated['note']) ? trim($validated['note']) : $corporate->note,
+        ]);
 
-        foreach ($corporate as $k => $p) {
-            if ((string) $p['id'] === (string) $id) {
-                $corporate[$k]['name'] = $validated['name'];
-                $corporate[$k]['pic_name'] = $validated['pic_name'];
-                $corporate[$k]['status'] = $validated['status'];
-                $corporate[$k]['status_color'] = $statusColor;
-                $corporate[$k]['email'] = $validated['email'];
-                $corporate[$k]['phone'] = $validated['phone'];
-                $corporate[$k]['address'] = $validated['address'];
-                $corporate[$k]['note'] = $validated['note'] ?? $corporate[$k]['note'];
-                $updatedCorporate = $corporate[$k];
-                break;
-            }
-        }
-
-        session(['nms_customers_perusahaan' => $corporate]);
+        ActivityLogger::log(
+            'kemitraan',
+            'update',
+            "Memperbarui data customer perusahaan '{$corporate->name}' (#{$corporate->code})",
+            $corporate->name,
+            (string) $corporate->id,
+            [
+                'code' => $corporate->code,
+                'status' => $corporate->status,
+                'pic' => $corporate->pic_name,
+                'type' => 'perusahaan',
+            ]
+        );
 
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => "Data Customer Perusahaan '{$validated['name']}' berhasil diperbarui!",
-                'project' => $updatedCorporate,
+                'message' => "Data Customer Perusahaan '{$corporate->name}' berhasil diperbarui!",
+                'project' => $corporate,
             ]);
         }
 
         return redirect()->route('customers.index', ['tab' => 'project'])
-            ->with('success', "Data Customer Perusahaan '{$validated['name']}' berhasil diperbarui!");
+            ->with('success', "Data Customer Perusahaan '{$corporate->name}' berhasil diperbarui!");
     }
 
     /**
-     * Hapus Customer Perusahaan
+     * Hapus Customer Perusahaan dari database.
      */
-    public function destroyProject(Request $request, $id)
+    public function destroyProject(Request $request, int|string $id): JsonResponse|RedirectResponse
     {
-        $corporate = $this->getActiveCorporateCustomers();
-        $companyName = 'Customer Perusahaan';
-        $filtered = [];
+        $corporate = Customer::where('id', $id)
+            ->where('customer_type', 'perusahaan')
+            ->firstOrFail();
 
-        foreach ($corporate as $p) {
-            if ((string) $p['id'] === (string) $id) {
-                $companyName = $p['name'];
-            } else {
-                $filtered[] = $p;
-            }
-        }
+        $companyName = $corporate->name;
+        $companyCode = $corporate->code;
 
-        session(['nms_customers_perusahaan' => $filtered]);
+        $corporate->delete();
+
+        ActivityLogger::log(
+            'kemitraan',
+            'delete',
+            "Menghapus customer perusahaan '{$companyName}' (#{$companyCode})",
+            $companyName,
+            (string) $id,
+            [
+                'code' => $companyCode,
+                'type' => 'perusahaan',
+            ]
+        );
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -413,5 +342,26 @@ class CustomerProjectController extends Controller
 
         return redirect()->route('customers.index', ['tab' => 'project'])
             ->with('success', "Customer Perusahaan '{$companyName}' berhasil dihapus.");
+    }
+
+    /**
+     * Generate kode unik berikutnya untuk customer rumahan (HOME-xxxx) atau perusahaan (CUST-xxxx).
+     */
+    private function generateNextCode(string $type): string
+    {
+        $prefix = $type === 'rumahan' ? 'HOME' : 'CUST';
+        $codes = Customer::where('code', 'like', "{$prefix}-%")->pluck('code');
+
+        $maxSeq = 0;
+        foreach ($codes as $c) {
+            if (preg_match("/^{$prefix}-(\d+)$/", $c, $matches)) {
+                $num = (int) $matches[1];
+                if ($num > $maxSeq) {
+                    $maxSeq = $num;
+                }
+            }
+        }
+
+        return sprintf('%s-%04d', $prefix, $maxSeq + 1);
     }
 }

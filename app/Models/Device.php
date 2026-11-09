@@ -16,10 +16,14 @@ class Device extends Model
         'project_id',
         'hostname',
         'type',
+        'brand_model',
+        'serial_number',
+        'quantity',
         'ip_address',
         'mac_address',
         'status',
         'status_state',
+        'photo',
         'rack_location',
         'snmp_community',
         'snmp_port',
@@ -30,6 +34,10 @@ class Device extends Model
         'ram_load',
         'rx_rate',
         'tx_rate',
+    ];
+
+    protected $casts = [
+        'quantity' => 'integer',
     ];
 
     /**

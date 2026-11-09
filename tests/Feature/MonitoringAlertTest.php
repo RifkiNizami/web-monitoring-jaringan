@@ -3,21 +3,25 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class MonitoringAlertTest extends TestCase
 {
+    use DatabaseTransactions;
+
     protected User $adminUser;
 
     protected function setUp(): void
     {
         parent::setUp();
+        config(['activity_logger.enabled_in_tests' => true]);
         $this->adminUser = User::where('email', 'admin@netfly.id')->first() ?? User::factory()->create([
             'email' => 'admin@netfly.id',
             'role' => 'admin',
         ]);
 
-        // Inisialisasi mock devices untuk unit/feature testing
+        // Inisialisasi mock devices di database untuk unit/feature testing
         \App\Http\Controllers\Admin\MonitoringController::saveTelemetryDevicesList([
             1 => [
                 'id' => 1,
@@ -59,7 +63,6 @@ class MonitoringAlertTest extends TestCase
                 'interfaces' => [],
             ],
         ]);
-        session(['monitoring_devices_v2_initialized' => true]);
     }
 
     /**
@@ -162,7 +165,7 @@ class MonitoringAlertTest extends TestCase
     }
 
     /**
-     * Memastikan admin dapat memperbarui data perangkat secara lengkap.
+     * Memastikan admin dapat memperbarui data perangkat secara lengkap di database.
      */
     public function test_admin_can_update_device_in_monitoring(): void
     {
@@ -179,10 +182,17 @@ class MonitoringAlertTest extends TestCase
             'success' => true,
         ]);
         $response->assertJsonPath('device.hostname', 'AP-OUTDOOR-DISDIK-UPDATED');
+
+        $this->assertDatabaseHas('monitoring_devices', [
+            'id' => 1,
+            'hostname' => 'AP-OUTDOOR-DISDIK-UPDATED',
+            'ip_address' => '10.200.120.99',
+            'status' => 'online',
+        ]);
     }
 
     /**
-     * Memastikan admin dapat mendaftarkan perangkat baru langsung dari halaman monitoring.
+     * Memastikan admin dapat mendaftarkan perangkat baru langsung ke database monitoring.
      */
     public function test_admin_can_add_device_to_monitoring(): void
     {
@@ -200,10 +210,16 @@ class MonitoringAlertTest extends TestCase
             'success' => true,
         ]);
         $response->assertJsonPath('device.hostname', 'RTR-EDGE-TEST-99');
+
+        $this->assertDatabaseHas('monitoring_devices', [
+            'hostname' => 'RTR-EDGE-TEST-99',
+            'ip_address' => '10.200.99.1',
+            'customer' => 'PT Mitra Baru Mandiri',
+        ]);
     }
 
     /**
-     * Memastikan admin dapat menghapus perangkat dari monitoring secara mandiri.
+     * Memastikan admin dapat menghapus perangkat dari monitoring database secara mandiri.
      */
     public function test_admin_can_delete_device_from_monitoring(): void
     {
@@ -213,10 +229,14 @@ class MonitoringAlertTest extends TestCase
         $response->assertJson([
             'success' => true,
         ]);
+
+        $this->assertDatabaseMissing('monitoring_devices', [
+            'id' => 4,
+        ]);
     }
 
     /**
-     * Memastikan admin dapat memperbarui konfigurasi IP/Port dan kredensial API perangkat monitoring.
+     * Memastikan admin dapat memperbarui konfigurasi IP/Port dan kredensial API perangkat monitoring di database.
      */
     public function test_admin_can_save_monitoring_device_settings(): void
     {
@@ -235,5 +255,12 @@ class MonitoringAlertTest extends TestCase
             'message' => 'Konfigurasi IP & Kredensial API MikroTik berhasil diperbarui.',
         ]);
         $response->assertJsonPath('data.ip_address', '10.200.120.99');
+
+        $this->assertDatabaseHas('monitoring_devices', [
+            'id' => 1,
+            'ip_address' => '10.200.120.99',
+            'api_username' => 'testuser',
+            'connection_type' => 'zerotier',
+        ]);
     }
 }

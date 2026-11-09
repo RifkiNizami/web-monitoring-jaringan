@@ -23,6 +23,7 @@
         $isAdminBiasa = ($userRole === 'admin');
         $activeAnnouncementCount = \App\Models\Announcement::where('status', 'aktif')->count();
         $totalLandingClients = \App\Models\LandingClient::count();
+        $activeTicketCount = \App\Models\Ticket::whereNotIn('status', ['Resolved', 'Closed', 'Selesai'])->count();
     @endphp
 
     <!-- 2. Menu Navigation (Middle scrollable area ONLY - flex-1 min-h-0 overflow-y-auto) -->
@@ -179,10 +180,12 @@
                             </svg>
                             <span>Ticket & Insiden</span>
                         </div>
-                        <span
-                            class="inline-flex items-center justify-center min-w-4.5 h-4.5 px-1.5 text-[10px] font-bold rounded-full {{ $isTicketsActive ? 'bg-blue-100 text-netfly-blue' : 'bg-slate-100 text-slate-600' }}">
-                            3
-                        </span>
+                        @if($activeTicketCount > 0)
+                            <span
+                                class="inline-flex items-center justify-center min-w-4.5 h-4.5 px-1.5 text-[10px] font-bold rounded-full {{ $isTicketsActive ? 'bg-blue-100 text-netfly-blue' : 'bg-slate-100 text-slate-600' }}">
+                                {{ $activeTicketCount }}
+                            </span>
+                        @endif
                     </a>
                 </nav>
             </div>
@@ -331,7 +334,7 @@
             </div>
 
             <!-- Tombol Logout -->
-            <form action="{{ route('logout') }}" method="POST" class="inline shrink-0">
+            <form action="{{ route('logout') }}" method="POST" data-turbo="false" class="inline shrink-0">
                 @csrf
                 <button type="submit" title="Keluar dari Portal" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer" aria-label="Logout">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

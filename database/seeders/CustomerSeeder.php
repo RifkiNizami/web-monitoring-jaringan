@@ -13,9 +13,13 @@ class CustomerSeeder extends Seeder
     public function run(): void
     {
         $customers = [
+            // ==========================================
+            // 1. CUSTOMER PERUSAHAAN (KORPORAT / B2B)
+            // ==========================================
             [
                 'id' => 1,
                 'code' => 'CUST-0001',
+                'customer_type' => 'perusahaan',
                 'name' => 'PT. Bank Mandiri (Persero) Tbk',
                 'pic_name' => 'Bambang Pratama',
                 'phone' => '021-5263000',
@@ -29,6 +33,7 @@ class CustomerSeeder extends Seeder
             [
                 'id' => 2,
                 'code' => 'CUST-0002',
+                'customer_type' => 'perusahaan',
                 'name' => 'PT. Shopee International Indonesia',
                 'pic_name' => 'Indra Gunawan',
                 'phone' => '021-80647300',
@@ -42,6 +47,7 @@ class CustomerSeeder extends Seeder
             [
                 'id' => 3,
                 'code' => 'CUST-0003',
+                'customer_type' => 'perusahaan',
                 'name' => 'Dinas Pendidikan Provinsi DKI Jakarta',
                 'pic_name' => 'Drs. H. Mulyadi',
                 'phone' => '021-3844567',
@@ -55,6 +61,7 @@ class CustomerSeeder extends Seeder
             [
                 'id' => 4,
                 'code' => 'CUST-0004',
+                'customer_type' => 'perusahaan',
                 'name' => 'PT. XYZ Teknologi Solusi',
                 'pic_name' => 'Rian Hendrawan',
                 'phone' => '0812-3456-7890',
@@ -68,6 +75,7 @@ class CustomerSeeder extends Seeder
             [
                 'id' => 5,
                 'code' => 'CUST-0005',
+                'customer_type' => 'perusahaan',
                 'name' => 'RS Medika Center',
                 'pic_name' => 'dr. Anton Pratama, Sp.A',
                 'phone' => '0818-7766-5544',
@@ -77,6 +85,52 @@ class CustomerSeeder extends Seeder
                 'package' => 'Dedicated Fiber 500Mbps High SLA',
                 'note' => 'Interkoneksi Sistem SIMRS dan Telemedis Rawat Inap',
                 'status' => 'Aktif',
+            ],
+
+            // ==========================================
+            // 2. CUSTOMER RUMAHAN (RESIDENSIAL / HOME FIBER)
+            // ==========================================
+            [
+                'id' => 101,
+                'code' => 'HOME-0001',
+                'customer_type' => 'rumahan',
+                'name' => 'Budi Santoso',
+                'pic_name' => '-',
+                'phone' => '0812-8450-1122',
+                'email' => 'budi.santoso@gmail.com',
+                'address' => 'Perumahan Griya Asri Blok C2 No. 14, Kel. Sukamaju, Kec. Cilodong, Depok',
+                'category' => 'Customer Rumahan',
+                'package' => 'Paket Home Fiber 50 Mbps Unlimited',
+                'note' => 'Paket Home Fiber 50 Mbps Unlimited',
+                'status' => 'Aktif',
+            ],
+            [
+                'id' => 102,
+                'code' => 'HOME-0002',
+                'customer_type' => 'rumahan',
+                'name' => 'Siti Aminah',
+                'pic_name' => '-',
+                'phone' => '0813-9088-3344',
+                'email' => 'sitiaminah.home@yahoo.com',
+                'address' => 'Jl. Melati Indah IV No. 8, RT.04/RW.09, Bintaro, Tangerang Selatan',
+                'category' => 'Customer Rumahan',
+                'package' => 'Paket Home Fiber Gamer 100 Mbps + Static IP',
+                'note' => 'Paket Home Fiber Gamer 100 Mbps + Static IP',
+                'status' => 'Aktif',
+            ],
+            [
+                'id' => 103,
+                'code' => 'HOME-0003',
+                'customer_type' => 'rumahan',
+                'name' => 'Hendra Kusuma',
+                'pic_name' => '-',
+                'phone' => '0857-2211-9090',
+                'email' => 'hendra.kusuma88@gmail.com',
+                'address' => 'Cluster Harmoni Residence No. B12, Bekasi Barat',
+                'category' => 'Customer Rumahan',
+                'package' => 'FTTH Home Broadband 30 Mbps',
+                'note' => 'Instalasi baru FTTH Home Broadband 30 Mbps',
+                'status' => 'Negosiasi',
             ],
         ];
 

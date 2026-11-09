@@ -46,6 +46,15 @@
                     </picture>
                 </div>
 
+                @if (session('error') || session('status'))
+                    <div class="mb-5 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800 flex items-start gap-2.5 login-item">
+                        <svg class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                        <p>{{ session('error') ?? session('status') }}</p>
+                    </div>
+                @endif
+
                 @if ($errors->any())
                     <div class="mb-5 p-3.5 rounded-xl bg-red-50 border border-red-200/80 text-xs text-red-700 flex items-start gap-2.5 login-item login-error-shake">
                         <svg class="w-4 h-4 text-red-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -129,7 +138,7 @@
                         <button 
                             type="submit" 
                             id="loginSubmitBtn"
-                            class="inline-flex items-center justify-center gap-2 w-auto min-w-[130px] px-8 py-2.5 bg-[#0066cc] hover:bg-[#0052a3] text-white text-xs font-bold rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all duration-150 tracking-wider uppercase cursor-pointer"
+                            class="inline-flex items-center justify-center gap-2 w-auto min-w-32.5 px-8 py-2.5 bg-[#0066cc] hover:bg-[#0052a3] text-white text-xs font-bold rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all duration-150 tracking-wider uppercase cursor-pointer"
                         >
                             <svg id="loginBtnSpinner" class="hidden w-3.5 h-3.5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -158,12 +167,12 @@
             </div>
 
             <!-- Background Gradient Layer -->
-            <div class="absolute inset-0 bg-gradient-to-br from-[#123b88] via-[#0d276b] to-[#081842] z-0"></div>
+            <div class="absolute inset-0 bg-linear-to-br from-[#123b88] via-[#0d276b] to-[#081842] z-0"></div>
 
             <!-- Decorative Rings (Static GPU Layer + rAF Parallax) -->
             <div id="login-rings-wrapper" class="absolute inset-0 pointer-events-none will-change-transform">
                 <div class="absolute -top-20 -right-20 w-96 h-96 rounded-full border border-blue-400/15"></div>
-                <div class="absolute -top-36 -right-36 w-[520px] h-[520px] rounded-full border border-blue-400/10"></div>
+                <div class="absolute -top-36 -right-36 w-130 h-130 rounded-full border border-blue-400/10"></div>
             </div>
 
             <!-- Subtle Accent Dots (Lightweight Static Opacity) -->
@@ -175,7 +184,7 @@
             <div id="login-orb-wrapper" class="absolute bottom-24 left-12 pointer-events-none will-change-transform login-orb-enter">
                 <div class="relative flex items-center justify-center w-36 h-36">
                     <div class="absolute inset-0 rounded-full bg-blue-500/35 blur-xl"></div>
-                    <div class="relative w-24 h-24 rounded-full bg-gradient-to-tr from-blue-600 via-blue-500 to-cyan-400"></div>
+                    <div class="relative w-24 h-24 rounded-full bg-linear-to-tr from-blue-600 via-blue-500 to-cyan-400"></div>
                 </div>
             </div>
 

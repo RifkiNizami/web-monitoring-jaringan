@@ -134,96 +134,105 @@
                 <!-- FILTER CARD -->
                 <div class="bg-white rounded-xl border border-slate-200/80 p-5 shadow-2xs">
                     <form id="filterForm" method="GET" action="{{ route('activity-logs.index') }}" class="space-y-4">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-                            <!-- Search -->
-                            <div class="lg:col-span-2">
-                                <label for="search" class="block text-xs font-semibold text-slate-600 mb-1">Pencarian</label>
+                        
+                        <!-- Baris 1: Filter Kategori & Pencarian (4 Kolom Rata & Seimbang) -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                            <!-- 1. Pencarian -->
+                            <div>
+                                <label for="search" class="block text-[10px] font-bold text-slate-500 uppercase tracking-tight mb-1.5">
+                                    Pencarian
+                                </label>
                                 <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                        </svg>
+                                    </div>
                                     <input 
                                         type="text" 
                                         name="search" 
                                         id="search" 
                                         value="{{ $search }}" 
                                         placeholder="Cari keterangan, subjek, IP..." 
-                                        class="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-netfly-blue/20 focus:border-netfly-blue"
+                                        class="w-full pl-9 pr-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs transition-all"
                                     >
-                                    <svg class="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
                                 </div>
                             </div>
 
-                            <!-- Modul -->
+                            <!-- 2. Modul -->
                             <div>
-                                <label for="module" class="block text-xs font-semibold text-slate-600 mb-1">Modul</label>
-                                <select 
-                                    name="module" 
-                                    id="module" 
-                                    class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-netfly-blue/20 focus:border-netfly-blue bg-white"
-                                >
-                                    <option value="all">Semua Modul</option>
-                                    @foreach($modules as $modKey => $modLabel)
-                                        <option value="{{ $modKey }}" {{ $module === $modKey ? 'selected' : '' }}>{{ $modLabel }}</option>
-                                    @endforeach
-                                </select>
+                                <label for="module" class="block text-[10px] font-bold text-slate-500 uppercase tracking-tight mb-1.5">
+                                    Modul
+                                </label>
+                                <div class="relative">
+                                    <select 
+                                        name="module" 
+                                        id="module" 
+                                        class="w-full text-xs bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-700 font-medium focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none pr-8 cursor-pointer shadow-2xs transition-all"
+                                    >
+                                        <option value="all">Semua Modul</option>
+                                        @foreach($modules as $modKey => $modLabel)
+                                            <option value="{{ $modKey }}" {{ $module === $modKey ? 'selected' : '' }}>{{ $modLabel }}</option>
+                                        @endforeach
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-slate-400">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
+                                </div>
                             </div>
 
-                            <!-- Aksi -->
+                            <!-- 3. Aksi -->
                             <div>
-                                <label for="action" class="block text-xs font-semibold text-slate-600 mb-1">Aksi</label>
-                                <select 
-                                    name="action" 
-                                    id="action" 
-                                    class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-netfly-blue/20 focus:border-netfly-blue bg-white"
-                                >
-                                    <option value="all">Semua Aksi</option>
-                                    @foreach($actions as $actKey => $actLabel)
-                                        <option value="{{ $actKey }}" {{ $action === $actKey ? 'selected' : '' }}>{{ $actLabel }}</option>
-                                    @endforeach
-                                </select>
+                                <label for="action" class="block text-[10px] font-bold text-slate-500 uppercase tracking-tight mb-1.5">
+                                    Aksi
+                                </label>
+                                <div class="relative">
+                                    <select 
+                                        name="action" 
+                                        id="action" 
+                                        class="w-full text-xs bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-700 font-medium focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none pr-8 cursor-pointer shadow-2xs transition-all"
+                                    >
+                                        <option value="all">Semua Aksi</option>
+                                        @foreach($actions as $actKey => $actLabel)
+                                            <option value="{{ $actKey }}" {{ $action === $actKey ? 'selected' : '' }}>{{ $actLabel }}</option>
+                                        @endforeach
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-slate-400">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
+                                </div>
                             </div>
 
-                            <!-- Pengguna -->
+                            <!-- 4. Pengguna -->
                             <div>
-                                <label for="user_id" class="block text-xs font-semibold text-slate-600 mb-1">Pengguna</label>
-                                <select 
-                                    name="user_id" 
-                                    id="user_id" 
-                                    class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-netfly-blue/20 focus:border-netfly-blue bg-white"
-                                >
-                                    <option value="all">Semua Pengguna</option>
-                                    @foreach($users as $u)
-                                        <option value="{{ $u->id }}" {{ (string)$userId === (string)$u->id ? 'selected' : '' }}>{{ $u->name }} ({{ $u->role }})</option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <!-- Rentang Tanggal: Dari -->
-                            <div>
-                                <label for="date_from" class="block text-xs font-semibold text-slate-600 mb-1">Dari Tanggal</label>
-                                <input 
-                                    type="date" 
-                                    name="date_from" 
-                                    id="date_from" 
-                                    value="{{ $dateFrom }}" 
-                                    class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-netfly-blue/20 focus:border-netfly-blue bg-white"
-                                >
-                            </div>
-
-                            <!-- Rentang Tanggal: Sampai -->
-                            <div>
-                                <label for="date_to" class="block text-xs font-semibold text-slate-600 mb-1">Sampai Tanggal</label>
-                                <input 
-                                    type="date" 
-                                    name="date_to" 
-                                    id="date_to" 
-                                    value="{{ $dateTo }}" 
-                                    class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-netfly-blue/20 focus:border-netfly-blue bg-white"
-                                >
+                                <label for="user_id" class="block text-[10px] font-bold text-slate-500 uppercase tracking-tight mb-1.5">
+                                    Pengguna
+                                </label>
+                                <div class="relative">
+                                    <select 
+                                        name="user_id" 
+                                        id="user_id" 
+                                        class="w-full text-xs bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-700 font-medium focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none pr-8 cursor-pointer shadow-2xs transition-all"
+                                    >
+                                        <option value="all">Semua Pengguna</option>
+                                        @foreach($users as $u)
+                                            <option value="{{ $u->id }}" {{ (string)$userId === (string)$u->id ? 'selected' : '' }}>{{ $u->name }} ({{ $u->role }})</option>
+                                        @endforeach
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-slate-400">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Bar Tombol Filter & Pintasan Tanggal -->
+                        <!-- Baris 2: Filter Rentang Tanggal, Pintasan Cepat & Tombol Aksi -->
                         @php
                             $todayDateStr = \Carbon\Carbon::now('Asia/Jakarta')->toDateString();
                             $sevenDaysDateStr = \Carbon\Carbon::now('Asia/Jakarta')->subDays(6)->toDateString();
@@ -235,53 +244,83 @@
                             $is30DaysActive = ($dateFrom === $thirtyDaysDateStr && $dateTo === $todayDateStr);
                             $isThisMonthActive = ($dateFrom === $thisMonthDateStr && $dateTo === $todayDateStr);
                         @endphp
-                        <div class="flex flex-col md:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100">
-                            <!-- Pintasan Rentang Tanggal Cepat -->
-                            <div class="flex flex-wrap items-center gap-1.5 w-full md:w-auto">
-                                <span class="text-[11px] font-semibold text-slate-400 mr-1">Pintasan Tanggal:</span>
-                                <button 
-                                    type="button" 
-                                    onclick="setDateShortcut('today')"
-                                    class="px-2.5 py-1 text-[11px] font-medium rounded-md border transition-colors cursor-pointer {{ $isTodayActive ? 'bg-netfly-blue text-white border-netfly-blue font-semibold shadow-2xs' : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-netfly-blue' }}"
-                                >
-                                    Hari Ini
-                                </button>
-                                <button 
-                                    type="button" 
-                                    onclick="setDateShortcut('7days')"
-                                    class="px-2.5 py-1 text-[11px] font-medium rounded-md border transition-colors cursor-pointer {{ $is7DaysActive ? 'bg-netfly-blue text-white border-netfly-blue font-semibold shadow-2xs' : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-netfly-blue' }}"
-                                >
-                                    7 Hari Terakhir
-                                </button>
-                                <button 
-                                    type="button" 
-                                    onclick="setDateShortcut('30days')"
-                                    class="px-2.5 py-1 text-[11px] font-medium rounded-md border transition-colors cursor-pointer {{ $is30DaysActive ? 'bg-netfly-blue text-white border-netfly-blue font-semibold shadow-2xs' : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-netfly-blue' }}"
-                                >
-                                    30 Hari Terakhir
-                                </button>
-                                <button 
-                                    type="button" 
-                                    onclick="setDateShortcut('this_month')"
-                                    class="px-2.5 py-1 text-[11px] font-medium rounded-md border transition-colors cursor-pointer {{ $isThisMonthActive ? 'bg-netfly-blue text-white border-netfly-blue font-semibold shadow-2xs' : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-netfly-blue' }}"
-                                >
-                                    Bulan Ini
-                                </button>
+                        <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 pt-3.5 border-t border-slate-100">
+                            <!-- Kiri: Rentang Tanggal & Pintasan Cepat -->
+                            <div class="flex flex-wrap items-center gap-2.5 sm:gap-3">
+                                <!-- Group Rentang Tanggal -->
+                                <div class="flex items-center gap-2">
+                                    <div class="flex items-center gap-1.5">
+                                        <label for="date_from" class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Dari:</label>
+                                        <input 
+                                            type="date" 
+                                            name="date_from" 
+                                            id="date_from" 
+                                            value="{{ $dateFrom }}" 
+                                            class="px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs cursor-pointer"
+                                        >
+                                    </div>
+                                    <span class="text-xs font-semibold text-slate-400">s/d</span>
+                                    <div class="flex items-center gap-1.5">
+                                        <label for="date_to" class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Sampai:</label>
+                                        <input 
+                                            type="date" 
+                                            name="date_to" 
+                                            id="date_to" 
+                                            value="{{ $dateTo }}" 
+                                            class="px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs cursor-pointer"
+                                        >
+                                    </div>
+                                </div>
+
+                                <div class="h-4 w-px bg-slate-200 hidden sm:block"></div>
+
+                                <!-- Pintasan Tanggal Cepat -->
+                                <div class="flex flex-wrap items-center gap-1">
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tight mr-0.5">Pintasan:</span>
+                                    <button 
+                                        type="button" 
+                                        onclick="setDateShortcut('today')"
+                                        class="px-2.5 py-1 text-[11px] rounded-md border transition-all cursor-pointer {{ $isTodayActive ? 'bg-blue-600 text-white border-blue-600 font-semibold shadow-2xs' : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-blue-600' }}"
+                                    >
+                                        Hari Ini
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        onclick="setDateShortcut('7days')"
+                                        class="px-2.5 py-1 text-[11px] rounded-md border transition-all cursor-pointer {{ $is7DaysActive ? 'bg-blue-600 text-white border-blue-600 font-semibold shadow-2xs' : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-blue-600' }}"
+                                    >
+                                        7 Hari Terakhir
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        onclick="setDateShortcut('30days')"
+                                        class="px-2.5 py-1 text-[11px] rounded-md border transition-all cursor-pointer {{ $is30DaysActive ? 'bg-blue-600 text-white border-blue-600 font-semibold shadow-2xs' : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-blue-600' }}"
+                                    >
+                                        30 Hari Terakhir
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        onclick="setDateShortcut('this_month')"
+                                        class="px-2.5 py-1 text-[11px] rounded-md border transition-all cursor-pointer {{ $isThisMonthActive ? 'bg-blue-600 text-white border-blue-600 font-semibold shadow-2xs' : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-blue-600' }}"
+                                    >
+                                        Bulan Ini
+                                    </button>
+                                </div>
                             </div>
 
-                            <!-- Tombol Aksi Form -->
-                            <div class="flex items-center gap-2 w-full md:w-auto justify-end">
+                            <!-- Kanan: Tombol Reset & Terapkan Filter -->
+                            <div class="flex items-center gap-2 justify-end shrink-0 pt-2 lg:pt-0">
                                 <a 
                                     href="{{ route('activity-logs.index') }}" 
-                                    class="px-3.5 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+                                    class="px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
                                 >
                                     Reset Filter
                                 </a>
                                 <button 
                                     type="submit" 
-                                    class="px-4 py-1.5 text-xs font-semibold text-white bg-netfly-blue hover:bg-blue-700 rounded-lg shadow-2xs transition-all cursor-pointer flex items-center gap-1.5"
+                                    class="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-2xs active:scale-95 transition-all cursor-pointer"
                                 >
-                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <svg class="w-3.5 h-3.5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                                     </svg>
                                     <span>Terapkan Filter</span>
@@ -296,13 +335,13 @@
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse text-xs">
                             <thead>
-                                <tr class="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-semibold uppercase text-[10px] tracking-wider">
-                                    <th class="py-3 px-4">Waktu</th>
-                                    <th class="py-3 px-4">Pengguna</th>
-                                    <th class="py-3 px-4">Modul</th>
-                                    <th class="py-3 px-4">Aksi</th>
-                                    <th class="py-3 px-4">Keterangan Aktivitas</th>
-                                    <th class="py-3 px-4">Alamat IP</th>
+                                <tr class="border-b border-slate-100 bg-slate-50/60 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                    <th scope="col" class="py-3.5 px-5 whitespace-nowrap">Waktu</th>
+                                    <th scope="col" class="py-3.5 px-5 whitespace-nowrap">Pengguna</th>
+                                    <th scope="col" class="py-3.5 px-5 whitespace-nowrap">Modul</th>
+                                    <th scope="col" class="py-3.5 px-5 whitespace-nowrap">Aksi</th>
+                                    <th scope="col" class="py-3.5 px-5">Keterangan Aktivitas</th>
+                                    <th scope="col" class="py-3.5 px-5 whitespace-nowrap">Alamat IP</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100 text-slate-700">
@@ -340,13 +379,13 @@
                                     @endphp
                                     <tr class="hover:bg-slate-50/70 transition-colors">
                                         <!-- Waktu -->
-                                        <td class="py-3 px-4 whitespace-nowrap">
+                                        <td class="py-3.5 px-5 whitespace-nowrap">
                                             <div class="font-semibold text-slate-900">{{ $log->created_at->setTimezone('Asia/Jakarta')->format('d M Y H:i') }} <span class="text-[10px] text-slate-400 font-normal">WIB</span></div>
-                                            <div class="text-[10px] text-slate-400">{{ $log->created_at->setTimezone('Asia/Jakarta')->diffForHumans() }}</div>
+                                            <div class="text-[10px] text-slate-400">{{ $log->created_at->setTimezone('Asia/Jakarta')->locale('id')->diffForHumans() }}</div>
                                         </td>
 
                                         <!-- Pengguna + Role Badge -->
-                                        <td class="py-3 px-4">
+                                        <td class="py-3.5 px-5">
                                             <div class="font-medium text-slate-900 leading-tight">{{ $log->user_name }}</div>
                                             <span class="inline-block mt-0.5 px-1.5 py-0.2 rounded text-[10px] font-semibold uppercase tracking-wider border {{ $roleBadgeClass }}">
                                                 {{ $log->user_role }}
@@ -354,21 +393,21 @@
                                         </td>
 
                                         <!-- Modul -->
-                                        <td class="py-3 px-4 whitespace-nowrap">
+                                        <td class="py-3.5 px-5 whitespace-nowrap">
                                             <span class="font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded text-[11px] border border-slate-200/80">
                                                 {{ $moduleLabel }}
                                             </span>
                                         </td>
 
                                         <!-- Aksi -->
-                                        <td class="py-3 px-4 whitespace-nowrap">
+                                        <td class="py-3.5 px-5 whitespace-nowrap">
                                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border {{ $actionBadgeClass }}">
                                                 {{ strtoupper(str_replace('_', ' ', $log->action)) }}
                                             </span>
                                         </td>
 
                                         <!-- Keterangan -->
-                                        <td class="py-3 px-4">
+                                        <td class="py-3.5 px-5">
                                             <div class="text-slate-800 leading-snug">{{ $log->description }}</div>
                                             @if($log->subject_label)
                                                 <div class="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1">
@@ -382,7 +421,7 @@
                                         </td>
 
                                         <!-- IP Address -->
-                                        <td class="py-3 px-4 whitespace-nowrap font-mono text-[11px] text-slate-500">
+                                        <td class="py-3.5 px-5 whitespace-nowrap font-mono text-[11px] text-slate-500">
                                             {{ $log->ip_address ?? '—' }}
                                         </td>
                                     </tr>
@@ -448,7 +487,7 @@
         updateLiveClock();
 
         // Fungsi pintasan rentang tanggal cepat
-        function setDateShortcut(preset) {
+        window.setDateShortcut = function(preset) {
             const now = new Date();
             const pad = (n) => String(n).padStart(2, '0');
             const formatDate = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -480,7 +519,7 @@
             if (form) {
                 form.submit();
             }
-        }
+        };
 
         // Penyesuaian otomatis jika tanggal awal melebihi tanggal akhir
         const dateFromInput = document.getElementById('date_from');

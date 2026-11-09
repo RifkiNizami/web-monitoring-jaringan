@@ -45,4 +45,12 @@
     ::-webkit-scrollbar-thumb:hover {
         background: #3b82f6;
     }
+
+    /* Hotwire Turbo Navigation Progress Bar */
+    .turbo-progress-bar {
+        height: 3px;
+        background: #0066cc;
+        box-shadow: 0 0 10px rgba(0, 102, 204, 0.6);
+        z-index: 99999;
+    }
 }

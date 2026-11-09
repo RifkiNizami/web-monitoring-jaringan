@@ -99,6 +99,7 @@
                         <!-- Tombol Utama Download PDF Resmi -->
                         <a 
                             id="btnExportPdf"
+                            data-turbo="false"
                             href="{{ route('reports.exportPdf', ['customer' => $selectedCustomer, 'month' => $selectedMonth, 'year' => $selectedYear]) }}" 
                             class="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-sm active:scale-95 transition-all cursor-pointer"
                         >

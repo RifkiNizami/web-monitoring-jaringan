@@ -3,15 +3,19 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class DeviceInventoryCrudTest extends TestCase
 {
+    use DatabaseTransactions;
+
     protected User $adminUser;
 
     protected function setUp(): void
     {
         parent::setUp();
+        config(['activity_logger.enabled_in_tests' => true]);
         $this->adminUser = User::where('email', 'admin@netfly.id')->first() ?? User::factory()->create([
             'email' => 'admin@netfly.id',
             'role' => 'admin',
@@ -40,6 +44,16 @@ class DeviceInventoryCrudTest extends TestCase
 
         $response->assertRedirect(route('devices.index'));
         $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('devices', [
+            'hostname' => 'SW-DIST-99',
+            'type' => 'Switch',
+            'brand_model' => 'Cisco Catalyst 9300',
+            'serial_number' => 'SN-CISCO9300X',
+            'quantity' => 5,
+            'status' => 'Tersedia',
+            'status_state' => 'available',
+        ]);
 
         $listResponse = $this->actingAs($this->adminUser)->get('/devices');
         $listResponse->assertSee('SW-DIST-99');
@@ -75,6 +89,16 @@ class DeviceInventoryCrudTest extends TestCase
         $response->assertRedirect(route('devices.index'));
         $response->assertSessionHas('success');
 
+        $this->assertDatabaseHas('devices', [
+            'id' => 1,
+            'hostname' => 'RTR-CORE-01-REV',
+            'brand_model' => 'MikroTik CCR2116-12G-4S+',
+            'serial_number' => 'SN-UPDATED01',
+            'quantity' => 10,
+            'status' => 'Terpakai',
+            'status_state' => 'in_use',
+        ]);
+
         $listResponse = $this->actingAs($this->adminUser)->get('/devices');
         $listResponse->assertSee('RTR-CORE-01-REV');
         $listResponse->assertSee('MikroTik CCR2116-12G-4S+');
@@ -88,5 +112,9 @@ class DeviceInventoryCrudTest extends TestCase
 
         $response->assertRedirect(route('devices.index'));
         $response->assertSessionHas('success');
+
+        $this->assertDatabaseMissing('devices', [
+            'id' => 1,
+        ]);
     }
 }

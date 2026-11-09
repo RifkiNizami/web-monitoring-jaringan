@@ -11,6 +11,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Single Device Login: verifikasi hash sesi di setiap request
+        // (turunan \Illuminate\Session\Middleware\AuthenticateSession)
+        $middleware->web(append: [
+            \App\Http\Middleware\AuthenticateSingleSession::class,
+        ]);
+
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
         ]);

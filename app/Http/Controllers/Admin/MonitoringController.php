@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\MonitoringDevice;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -10,29 +11,89 @@ use Illuminate\View\View;
 class MonitoringController extends Controller
 {
     /**
-     * Tampilkan halaman telemetri pemantauan real-time & live alert NOC.
+     * Format instance Model MonitoringDevice menjadi struktur array standar.
      */
-    /**
-     * Helper data telemetri devices
-     */
-    public static function getTelemetryDevicesList(): array
+    public static function formatMonitoringDevice(MonitoringDevice $device): array
     {
-        // Inisialisasi state bersih v2 (menghapus data dummy bawaan sebelumnya)
-        if (!session()->has('monitoring_devices_v2_initialized')) {
-            session(['monitoring_devices_v2_initialized' => true]);
-            session(['monitoring_telemetry_devices' => []]);
-            return [];
-        }
+        $status = $device->status ?: 'online';
 
-        return session('monitoring_telemetry_devices', []);
+        return [
+            'id' => $device->id,
+            'hostname' => $device->hostname,
+            'unit_type' => $device->unit_type ?? 'Router',
+            'ip_address' => $device->ip_address,
+            'customer' => $device->customer,
+            'project' => $device->project ?: 'Dedicated SLA Monitoring',
+            'model' => $device->model ?: ($device->unit_type . ' Node'),
+            'rack_location' => $device->rack_location ?: 'POP Distribusi',
+            'status' => $status,
+            'status_label' => $device->status_label ?: strtoupper($status),
+            'uptime' => $device->uptime ?: 'Siap Pantau',
+            'rx_mbps' => $device->rx_mbps ?: '0.0 Mbps',
+            'tx_mbps' => $device->tx_mbps ?: '0.0 Mbps',
+            'cpu_load' => (float) ($device->cpu_load ?? 0.0),
+            'ram_load' => (float) ($device->ram_load ?? 0.0),
+            'temperature' => $device->temperature ?: '-',
+            'voltage' => $device->voltage ?: '-',
+            'packet_loss' => (float) ($device->packet_loss ?? 0.0),
+            'last_ping_ms' => (int) ($device->last_ping_ms ?? 0),
+            'connection_type' => $device->connection_type ?: 'lan',
+            'api_port' => (int) ($device->api_port ?? 8728),
+            'api_username' => $device->api_username ?: 'admin',
+            'api_password' => $device->api_password ?? '',
+            'interfaces' => is_array($device->interfaces) ? $device->interfaces : [
+                ['name' => 'ether1', 'status' => 'up', 'speed' => '1 Gbps', 'rx' => '0 Mbps', 'tx' => '0 Mbps'],
+            ],
+        ];
     }
 
     /**
-     * Simpan pembaruan list perangkat telemetri ke session.
+     * Ambil daftar target node telemetri dari database.
+     */
+    public static function getTelemetryDevicesList(): array
+    {
+        return MonitoringDevice::orderBy('id', 'asc')
+            ->get()
+            ->mapWithKeys(fn (MonitoringDevice $dev) => [$dev->id => self::formatMonitoringDevice($dev)])
+            ->all();
+    }
+
+    /**
+     * Sinkronisasi pembaruan list perangkat telemetri ke tabel database monitoring_devices.
      */
     public static function saveTelemetryDevicesList(array $devices): void
     {
-        session(['monitoring_telemetry_devices' => $devices]);
+        MonitoringDevice::query()->delete();
+
+        foreach ($devices as $key => $dev) {
+            $status = $dev['status'] ?? 'online';
+            MonitoringDevice::create([
+                'id' => $dev['id'] ?? (is_numeric($key) ? (int) $key : null),
+                'hostname' => $dev['hostname'] ?? 'NODE-UNKNOWN',
+                'unit_type' => $dev['unit_type'] ?? 'Router',
+                'ip_address' => $dev['ip_address'] ?? '127.0.0.1',
+                'customer' => $dev['customer'] ?? '-',
+                'project' => $dev['project'] ?? 'Dedicated SLA Monitoring',
+                'model' => $dev['model'] ?? (($dev['unit_type'] ?? 'Router') . ' Node'),
+                'rack_location' => $dev['rack_location'] ?? 'POP Distribusi',
+                'status' => $status,
+                'status_label' => $dev['status_label'] ?? strtoupper($status),
+                'uptime' => $dev['uptime'] ?? 'Siap Pantau',
+                'rx_mbps' => $dev['rx_mbps'] ?? '0.0 Mbps',
+                'tx_mbps' => $dev['tx_mbps'] ?? '0.0 Mbps',
+                'cpu_load' => (float) ($dev['cpu_load'] ?? 0.0),
+                'ram_load' => (float) ($dev['ram_load'] ?? 0.0),
+                'temperature' => $dev['temperature'] ?? '-',
+                'voltage' => $dev['voltage'] ?? '-',
+                'packet_loss' => (float) ($dev['packet_loss'] ?? 0.0),
+                'last_ping_ms' => (int) ($dev['last_ping_ms'] ?? 0),
+                'connection_type' => $dev['connection_type'] ?? 'lan',
+                'api_port' => (int) ($dev['api_port'] ?? 8728),
+                'api_username' => $dev['api_username'] ?? 'admin',
+                'api_password' => $dev['api_password'] ?? '',
+                'interfaces' => $dev['interfaces'] ?? [],
+            ]);
+        }
     }
 
     /**
@@ -40,7 +101,7 @@ class MonitoringController extends Controller
      */
     public function index(Request $request): View
     {
-        $telemetryDevices = array_values($this->getTelemetryDevicesList());
+        $telemetryDevices = array_values(self::getTelemetryDevicesList());
         $deviceCollection = collect($telemetryDevices);
 
         $totalNodes = $deviceCollection->count();
@@ -80,8 +141,8 @@ class MonitoringController extends Controller
                 'average_packet_loss' => $avgLoss,
             ],
             'incidents' => [
-                'active_count' => 0,
-                'subtext' => 'Tidak ada insiden aktif',
+                'active_count' => $warningNodes + $offlineNodes,
+                'subtext' => ($warningNodes + $offlineNodes) > 0 ? ($warningNodes + $offlineNodes) . ' node membutuhkan perhatian' : 'Tidak ada insiden aktif',
             ],
         ];
 
@@ -96,13 +157,13 @@ class MonitoringController extends Controller
      */
     public function show(int $id): View
     {
-        $devices = $this->getTelemetryDevicesList();
-        
-        if (!isset($devices[$id])) {
+        $deviceModel = MonitoringDevice::find($id);
+
+        if (!$deviceModel) {
             abort(404, 'Perangkat jaringan tidak ditemukan.');
         }
 
-        $device = $devices[$id];
+        $device = self::formatMonitoringDevice($deviceModel);
 
         // Filter alert khusus device ini
         $alerts = [
@@ -128,42 +189,45 @@ class MonitoringController extends Controller
      */
     public function telemetryStream(int $id): JsonResponse
     {
-        $devices = $this->getTelemetryDevicesList();
-        
-        if (!isset($devices[$id])) {
+        $deviceModel = MonitoringDevice::find($id);
+
+        if (!$deviceModel) {
             return response()->json(['error' => 'Device not found'], 404);
         }
 
-        $device = $devices[$id];
-
         // Ambil data telemetri langsung dari RouterOS MikroTik jika terdaftar
-        if (!empty($device['ip_address']) && !empty($device['api_username']) && !app()->runningUnitTests()) {
+        if (!empty($deviceModel->ip_address) && !empty($deviceModel->api_username) && !app()->runningUnitTests()) {
             $mikrotikService = new \App\Services\MikrotikService();
             $telemetry = $mikrotikService->getDeviceTelemetry(
-                $device['ip_address'],
-                $device['api_username'],
-                (string) ($device['api_password'] ?? ''),
-                (int) ($device['api_port'] ?? 8728),
+                $deviceModel->ip_address,
+                $deviceModel->api_username,
+                (string) ($deviceModel->api_password ?? ''),
+                (int) ($deviceModel->api_port ?? 8728),
                 2
             );
 
             if ($telemetry) {
-                $device['cpu_load'] = $telemetry['resource']['cpu_load'];
-                $device['ram_load'] = $telemetry['resource']['ram_load'];
-                $device['uptime'] = $telemetry['resource']['uptime'];
-                $device['last_ping_ms'] = (int) $telemetry['latency_ms'];
-                $device['status'] = 'online';
+                $updates = [
+                    'cpu_load' => $telemetry['resource']['cpu_load'],
+                    'ram_load' => $telemetry['resource']['ram_load'],
+                    'uptime' => $telemetry['resource']['uptime'],
+                    'last_ping_ms' => (int) $telemetry['latency_ms'],
+                    'status' => 'online',
+                    'status_label' => 'ONLINE',
+                ];
                 if (!empty($telemetry['interfaces'])) {
-                    $device['interfaces'] = $telemetry['interfaces'];
+                    $updates['interfaces'] = $telemetry['interfaces'];
                 }
-                $devices[$id] = $device;
-                self::saveTelemetryDevicesList($devices);
+                $deviceModel->update($updates);
             } else {
-                $device['status'] = 'offline';
-                $devices[$id] = $device;
-                self::saveTelemetryDevicesList($devices);
+                $deviceModel->update([
+                    'status' => 'offline',
+                    'status_label' => 'OFFLINE',
+                ]);
             }
         }
+
+        $device = self::formatMonitoringDevice($deviceModel);
 
         return response()->json([
             'success' => true,
@@ -198,8 +262,8 @@ class MonitoringController extends Controller
      */
     public function pollDevice(Request $request, int $id): JsonResponse
     {
-        $devices = $this->getTelemetryDevicesList();
-        $device = $devices[$id] ?? null;
+        $deviceModel = MonitoringDevice::find($id);
+        $device = $deviceModel ? self::formatMonitoringDevice($deviceModel) : null;
 
         $hostname = $device['hostname'] ?? ('Node Perangkat #' . $id);
         $ip = $device['ip_address'] ?? '127.0.0.1';
@@ -208,25 +272,26 @@ class MonitoringController extends Controller
         $snmpStatus = 'Status Link: ' . strtoupper($status);
         $quality = $status === 'offline' ? 'Offline / Unreachable' : 'Normal / Ready';
 
-        if ($device && !empty($device['api_username']) && !app()->runningUnitTests()) {
+        if ($deviceModel && !empty($deviceModel->api_username) && !app()->runningUnitTests()) {
             $mikrotikService = new \App\Services\MikrotikService();
             $test = $mikrotikService->testConnection(
-                $device['ip_address'],
-                $device['api_username'],
-                (string) ($device['api_password'] ?? ''),
-                (int) ($device['api_port'] ?? 8728),
+                $deviceModel->ip_address,
+                $deviceModel->api_username,
+                (string) ($deviceModel->api_password ?? ''),
+                (int) ($deviceModel->api_port ?? 8728),
                 2
             );
 
             if ($test['success']) {
                 $ping = $test['latency_ms'];
                 $snmpStatus = "RouterOS v{$test['resource']['version']} ({$test['resource']['board_name']}) OK";
-                $quality = 'Connected via Port ' . ($device['api_port'] ?? 8728);
+                $quality = 'Connected via Port ' . ($deviceModel->api_port ?? 8728);
                 $status = 'online';
-                $device['status'] = 'online';
-                $device['last_ping_ms'] = (int) $ping;
-                $devices[$id] = $device;
-                self::saveTelemetryDevicesList($devices);
+                $deviceModel->update([
+                    'status' => 'online',
+                    'status_label' => 'ONLINE',
+                    'last_ping_ms' => (int) $ping,
+                ]);
             } else {
                 $snmpStatus = 'API Unreachable: ' . $test['message'];
                 $quality = 'Port 8728 Timeout';
