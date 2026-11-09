@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Device;
 use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -53,14 +54,39 @@ class DeviceController extends Controller
     }
 
     /**
-     * Ambil daftar barang inventaris dari session (dengan inisialisasi awal).
+     * Format instance Model Device menjadi struktur array untuk view & JSON.
+     */
+    public static function formatDeviceModel(Device $device): array
+    {
+        $status = in_array($device->status, self::getStatusOptions(), true)
+            ? $device->status
+            : 'Tersedia';
+
+        $statusState = in_array($device->status_state, ['available', 'in_use', 'out_of_stock'], true)
+            ? $device->status_state
+            : self::resolveStatusState($status);
+
+        return [
+            'id' => $device->id,
+            'hostname' => $device->hostname,
+            'type' => $device->type ?? 'Router',
+            'brand_model' => $device->brand_model ?? '-',
+            'serial_number' => $device->serial_number ?? '-',
+            'quantity' => (int) ($device->quantity ?? 0),
+            'status' => $status,
+            'status_state' => $statusState,
+            'photo' => $device->photo,
+        ];
+    }
+
+    /**
+     * Ambil daftar barang inventaris dari database (dengan inisialisasi awal bila kosong).
      */
     public static function getInventoryDevicesList(): array
     {
-        if (!session()->has('inventory_devices_initialized')) {
+        if (Device::count() === 0) {
             $defaults = [
-                1 => [
-                    'id' => 1,
+                [
                     'hostname' => 'RTR-CORE-01',
                     'type' => 'Router',
                     'brand_model' => 'MikroTik CCR2004-16G-2S+',
@@ -70,8 +96,7 @@ class DeviceController extends Controller
                     'status_state' => 'available',
                     'photo' => null,
                 ],
-                2 => [
-                    'id' => 2,
+                [
                     'hostname' => 'SW-AGG-02',
                     'type' => 'Switch',
                     'brand_model' => 'MikroTik CRS328-24P-4S+RM',
@@ -81,8 +106,7 @@ class DeviceController extends Controller
                     'status_state' => 'in_use',
                     'photo' => null,
                 ],
-                3 => [
-                    'id' => 3,
+                [
                     'hostname' => 'AP-OUTDOOR-01',
                     'type' => 'Access Point',
                     'brand_model' => 'Ubiquiti UniFi U6-Mesh Pro',
@@ -92,8 +116,7 @@ class DeviceController extends Controller
                     'status_state' => 'available',
                     'photo' => null,
                 ],
-                4 => [
-                    'id' => 4,
+                [
                     'hostname' => 'FW-EDGE-01',
                     'type' => 'Firewall',
                     'brand_model' => 'FortiGate 60F Next-Gen',
@@ -105,26 +128,15 @@ class DeviceController extends Controller
                 ],
             ];
 
-            session([
-                'inventory_devices_initialized' => true,
-                'inventory_devices_list' => $defaults,
-            ]);
-
-            return $defaults;
+            foreach ($defaults as $item) {
+                Device::create($item);
+            }
         }
 
-        return session('inventory_devices_list', []);
-    }
-
-    /**
-     * Simpan pembaruan daftar barang inventaris ke session.
-     */
-    public static function saveInventoryDevicesList(array $devices): void
-    {
-        session([
-            'inventory_devices_initialized' => true,
-            'inventory_devices_list' => $devices,
-        ]);
+        return Device::orderBy('id', 'asc')
+            ->get()
+            ->mapWithKeys(fn (Device $device) => [$device->id => self::formatDeviceModel($device)])
+            ->all();
     }
 
     /**
@@ -161,7 +173,7 @@ class DeviceController extends Controller
     }
 
     /**
-     * Simpan data barang inventaris baru.
+     * Simpan data barang inventaris baru ke database.
      */
     public function store(Request $request): JsonResponse|RedirectResponse
     {
@@ -185,9 +197,6 @@ class DeviceController extends Controller
             'photo.max' => 'Ukuran foto barang maksimal 10 MB.',
         ]);
 
-        $devices = self::getInventoryDevicesList();
-        $newId = empty($devices) ? 1 : (max(array_keys($devices)) + 1);
-
         $photoUrl = null;
         $photoMeta = null;
         if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
@@ -208,8 +217,7 @@ class DeviceController extends Controller
             $photoUrl = asset('uploads/devices/' . $filename);
         }
 
-        $newDevice = [
-            'id' => $newId,
+        $deviceModel = Device::create([
             'hostname' => strtoupper(trim($validated['hostname'])),
             'type' => $validated['type'],
             'brand_model' => trim($validated['brand_model']),
@@ -218,10 +226,9 @@ class DeviceController extends Controller
             'status' => $validated['status'],
             'status_state' => self::resolveStatusState($validated['status']),
             'photo' => $photoUrl,
-        ];
+        ]);
 
-        $devices[$newId] = $newDevice;
-        self::saveInventoryDevicesList($devices);
+        $newDevice = self::formatDeviceModel($deviceModel);
 
         $properties = [
             'hostname' => $newDevice['hostname'],
@@ -239,7 +246,7 @@ class DeviceController extends Controller
             'create',
             "Menambahkan barang inventaris '{$newDevice['hostname']}' ({$newDevice['brand_model']})",
             $newDevice['hostname'],
-            (string) $newId,
+            (string) $deviceModel->id,
             $properties
         );
 
@@ -261,13 +268,13 @@ class DeviceController extends Controller
      */
     public function edit(int $id): View
     {
-        $devices = self::getInventoryDevicesList();
+        $deviceModel = Device::find($id);
 
-        if (!isset($devices[$id])) {
+        if (!$deviceModel) {
             abort(404, 'Data barang inventaris tidak ditemukan.');
         }
 
-        $device = $devices[$id];
+        $device = self::formatDeviceModel($deviceModel);
         $deviceTypes = self::getDeviceTypes();
         $statusOptions = self::getStatusOptions();
 
@@ -275,7 +282,7 @@ class DeviceController extends Controller
     }
 
     /**
-     * Perbarui data barang inventaris.
+     * Perbarui data barang inventaris di database.
      */
     public function update(Request $request, int $id): JsonResponse|RedirectResponse
     {
@@ -299,16 +306,16 @@ class DeviceController extends Controller
             'photo.max' => 'Ukuran foto barang maksimal 10 MB.',
         ]);
 
-        $devices = self::getInventoryDevicesList();
+        $deviceModel = Device::find($id);
 
-        if (!isset($devices[$id])) {
+        if (!$deviceModel) {
             if ($request->wantsJson()) {
                 return response()->json(['success' => false, 'message' => 'Data barang inventaris tidak ditemukan.'], 404);
             }
             return redirect()->route('devices.index')->with('error', 'Data barang inventaris tidak ditemukan.');
         }
 
-        $photoUrl = $devices[$id]['photo'] ?? null;
+        $photoUrl = $deviceModel->photo;
         $photoMeta = null;
         if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
             $file = $request->file('photo');
@@ -328,23 +335,25 @@ class DeviceController extends Controller
             $photoUrl = asset('uploads/devices/' . $filename);
         }
 
-        $devices[$id]['hostname'] = strtoupper(trim($validated['hostname']));
-        $devices[$id]['type'] = $validated['type'];
-        $devices[$id]['brand_model'] = trim($validated['brand_model']);
-        $devices[$id]['serial_number'] = strtoupper(trim($validated['serial_number']));
-        $devices[$id]['quantity'] = (int) $validated['quantity'];
-        $devices[$id]['status'] = $validated['status'];
-        $devices[$id]['status_state'] = self::resolveStatusState($validated['status']);
-        $devices[$id]['photo'] = $photoUrl;
+        $deviceModel->update([
+            'hostname' => strtoupper(trim($validated['hostname'])),
+            'type' => $validated['type'],
+            'brand_model' => trim($validated['brand_model']),
+            'serial_number' => strtoupper(trim($validated['serial_number'])),
+            'quantity' => (int) $validated['quantity'],
+            'status' => $validated['status'],
+            'status_state' => self::resolveStatusState($validated['status']),
+            'photo' => $photoUrl,
+        ]);
 
-        self::saveInventoryDevicesList($devices);
+        $updatedDevice = self::formatDeviceModel($deviceModel);
 
         $properties = [
-            'hostname' => $devices[$id]['hostname'],
-            'type' => $devices[$id]['type'],
-            'brand_model' => $devices[$id]['brand_model'],
-            'quantity' => $devices[$id]['quantity'],
-            'status' => $devices[$id]['status'],
+            'hostname' => $updatedDevice['hostname'],
+            'type' => $updatedDevice['type'],
+            'brand_model' => $updatedDevice['brand_model'],
+            'quantity' => $updatedDevice['quantity'],
+            'status' => $updatedDevice['status'],
         ];
         if ($photoMeta) {
             $properties['photo'] = $photoMeta;
@@ -353,19 +362,19 @@ class DeviceController extends Controller
         ActivityLogger::log(
             'inventaris',
             'update',
-            "Memperbarui data barang inventaris '{$devices[$id]['hostname']}'",
-            $devices[$id]['hostname'],
-            (string) $id,
+            "Memperbarui data barang inventaris '{$updatedDevice['hostname']}'",
+            $updatedDevice['hostname'],
+            (string) $deviceModel->id,
             $properties
         );
 
-        $msg = "Data barang '{$devices[$id]['hostname']}' berhasil diperbarui.";
+        $msg = "Data barang '{$updatedDevice['hostname']}' berhasil diperbarui.";
 
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
                 'message' => $msg,
-                'device' => $devices[$id],
+                'device' => $updatedDevice,
             ]);
         }
 
@@ -373,17 +382,18 @@ class DeviceController extends Controller
     }
 
     /**
-     * Hapus data barang dari inventaris.
+     * Hapus data barang dari inventaris database.
      */
     public function destroy(Request $request, int $id): JsonResponse|RedirectResponse
     {
-        $devices = self::getInventoryDevicesList();
+        $deviceModel = Device::find($id);
 
-        if (isset($devices[$id])) {
-            $hostname = $devices[$id]['hostname'];
-            $deletedDevice = $devices[$id];
-            unset($devices[$id]);
-            self::saveInventoryDevicesList($devices);
+        if ($deviceModel) {
+            $hostname = $deviceModel->hostname;
+            $type = $deviceModel->type;
+            $brandModel = $deviceModel->brand_model;
+
+            $deviceModel->delete();
 
             ActivityLogger::log(
                 'inventaris',
@@ -393,8 +403,8 @@ class DeviceController extends Controller
                 (string) $id,
                 [
                     'hostname' => $hostname,
-                    'type' => $deletedDevice['type'] ?? null,
-                    'brand_model' => $deletedDevice['brand_model'] ?? null,
+                    'type' => $type,
+                    'brand_model' => $brandModel,
                 ]
             );
 

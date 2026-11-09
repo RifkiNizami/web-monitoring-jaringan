@@ -51,6 +51,62 @@ class AuthController extends Controller
         $remember = $request->boolean('remember');
 
         if (Auth::attempt($credentials, $remember)) {
+            $user = Auth::user();
+
+            // Proteksi Role Web Portal: Akun Pelanggan (customer_representative) hanya untuk Mobile App
+            if (!in_array($user->role, ['admin', 'admin_konten'], true)) {
+                ActivityLogger::log(
+                    'auth',
+                    'login_failed',
+                    "Percobaan login portal web oleh akun pelanggan '{$user->name}' ditolak (Khusus Aplikasi Mobile)",
+                    $user->name,
+                    (string) $user->id,
+                    [
+                        'email' => $user->email,
+                        'role' => $user->role,
+                        'reason' => 'mobile_only_role',
+                    ]
+                );
+
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                $mobileMsg = 'Akses Ditolak: Akun pelanggan hanya dapat digunakan melalui aplikasi mobile NetFly.';
+
+                return redirect()->route('login')
+                    ->with('error', $mobileMsg)
+                    ->withErrors(['email' => $mobileMsg])
+                    ->onlyInput('email');
+            }
+
+            // Proteksi Status Akun Aktif
+            if (isset($user->is_active) && !$user->is_active) {
+                ActivityLogger::log(
+                    'auth',
+                    'login_failed',
+                    "Percobaan login oleh akun nonaktif '{$user->name}' ditolak",
+                    $user->name,
+                    (string) $user->id,
+                    [
+                        'email' => $user->email,
+                        'role' => $user->role,
+                        'reason' => 'inactive_account',
+                    ]
+                );
+
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                $inactiveMsg = 'Akun Anda sedang dinonaktifkan. Silakan hubungi Administrator NOC.';
+
+                return redirect()->route('login')
+                    ->with('error', $inactiveMsg)
+                    ->withErrors(['email' => $inactiveMsg])
+                    ->onlyInput('email');
+            }
+
             // Berhasil login: reset hitungan percobaan
             RateLimiter::clear($throttleKey);
 
@@ -61,7 +117,6 @@ class AuthController extends Controller
             AuthenticateSingleSession::refreshCurrentSessionHash($request);
             $terminatedSessions = AuthenticateSingleSession::terminateOtherSessions($request, Auth::id());
 
-            $user = Auth::user();
             ActivityLogger::log(
                 'auth',
                 'login',

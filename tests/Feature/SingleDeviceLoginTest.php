@@ -143,4 +143,27 @@ class SingleDeviceLoginTest extends TestCase
         $this->assertStringContainsString('Sesi perangkat lain otomatis ditutup', $log->description);
         $this->assertStringNotContainsString(self::PASSWORD, json_encode($log->properties ?? []));
     }
+
+    public function test_customer_representative_role_is_blocked_from_web_login(): void
+    {
+        config(['activity_logger.enabled_in_tests' => true]);
+
+        $clientUser = User::create([
+            'name' => 'Klien Mobile Test',
+            'username' => 'client_mobile_test',
+            'email' => 'client_mobile_test@netfly.id',
+            'password' => bcrypt(self::PASSWORD),
+            'role' => 'customer_representative',
+            'is_active' => true,
+        ]);
+
+        $response = $this->fromDevice(null)->post('/login', [
+            'email' => $clientUser->email,
+            'password' => self::PASSWORD,
+        ]);
+
+        $response->assertRedirect(route('login'));
+        $response->assertSessionHas('error', 'Akses Ditolak: Akun pelanggan hanya dapat digunakan melalui aplikasi mobile NetFly.');
+        $this->assertGuest();
+    }
 }

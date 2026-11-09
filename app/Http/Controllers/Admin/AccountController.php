@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
 use App\Models\User;
 use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
@@ -17,7 +18,31 @@ class AccountController extends Controller
      */
     protected function getCorporateCustomerList(): array
     {
-        $defaults = [
+        $dbCustomers = Customer::where('customer_type', 'perusahaan')->orderBy('id', 'asc')->get();
+
+        if ($dbCustomers->isNotEmpty()) {
+            return $dbCustomers->map(function ($c) {
+                $shortCode = strtoupper(preg_replace('/[^a-zA-Z0-9]/', '', explode(' ', str_replace(['PT.', 'PT', 'CV.'], '', $c->name))[0] ?? 'CORP'));
+                $shortCode = substr($shortCode ?: 'CORP', 0, 8);
+                return [
+                    'id' => $c->id,
+                    'customer_type' => 'perusahaan',
+                    'name' => $c->name,
+                    'code' => $c->code ?: $shortCode,
+                    'category' => $c->category ?: 'Mitra Korporat',
+                    'package' => $c->package ?: ($c->note ?: 'Dedicated Corporate Fiber'),
+                    'address' => $c->address ?: '-',
+                    'latitude' => $c->latitude ?? -6.208763,
+                    'longitude' => $c->longitude ?? 106.845599,
+                    'default_pic' => $c->pic_name ?: 'PIC Perusahaan',
+                    'default_email' => $c->email ?: '',
+                    'default_phone' => $c->phone ?: '',
+                    'username_prefix' => strtolower($shortCode) . '_',
+                ];
+            })->toArray();
+        }
+
+        return [
             [
                 'id' => 1,
                 'customer_type' => 'perusahaan',
@@ -109,34 +134,6 @@ class AccountController extends Controller
                 'username_prefix' => 'astra_',
             ],
         ];
-
-        // Sinkronisasi dengan Customer Perusahaan yang ditambahkan dari menu Customer Management
-        $sessionCorporate = session('nms_customers_perusahaan', []);
-        $existingNames = array_map('strtolower', array_column($defaults, 'name'));
-
-        foreach ($sessionCorporate as $sc) {
-            if (!in_array(strtolower($sc['name']), $existingNames, true)) {
-                $shortCode = strtoupper(preg_replace('/[^a-zA-Z0-9]/', '', explode(' ', str_replace(['PT.', 'PT', 'CV.'], '', $sc['name']))[0] ?? 'CORP'));
-                $shortCode = substr($shortCode ?: 'CORP', 0, 8);
-                $defaults[] = [
-                    'id' => (int) $sc['id'] + 50,
-                    'customer_type' => 'perusahaan',
-                    'name' => $sc['name'],
-                    'code' => $shortCode,
-                    'category' => 'Mitra Korporat',
-                    'package' => $sc['note'] ?: 'Dedicated Corporate Fiber',
-                    'address' => $sc['address'] ?? '-',
-                    'latitude' => $sc['latitude'] ?? -6.208763,
-                    'longitude' => $sc['longitude'] ?? 106.845599,
-                    'default_pic' => $sc['pic_name'] ?? 'PIC Perusahaan',
-                    'default_email' => $sc['email'] ?? '',
-                    'default_phone' => $sc['phone'] ?? '',
-                    'username_prefix' => strtolower($shortCode) . '_',
-                ];
-            }
-        }
-
-        return $defaults;
     }
 
     /**
@@ -144,7 +141,29 @@ class AccountController extends Controller
      */
     protected function getResidentialCustomerList(): array
     {
-        $defaults = [
+        $dbCustomers = Customer::where('customer_type', 'rumahan')->orderBy('id', 'asc')->get();
+
+        if ($dbCustomers->isNotEmpty()) {
+            return $dbCustomers->map(function ($c) {
+                return [
+                    'id' => $c->id,
+                    'customer_type' => 'rumahan',
+                    'name' => $c->name,
+                    'code' => $c->code ?: 'HOME',
+                    'category' => $c->category ?: 'Customer Rumahan',
+                    'package' => $c->package ?: ($c->note ?: 'Paket Home Fiber Unlimited'),
+                    'address' => $c->address ?: '-',
+                    'latitude' => $c->latitude ?? -6.250000,
+                    'longitude' => $c->longitude ?? 106.820000,
+                    'default_pic' => $c->name,
+                    'default_email' => $c->email ?: '',
+                    'default_phone' => $c->phone ?: '',
+                    'username_prefix' => 'home_',
+                ];
+            })->toArray();
+        }
+
+        return [
             [
                 'id' => 101,
                 'customer_type' => 'rumahan',
@@ -191,32 +210,6 @@ class AccountController extends Controller
                 'username_prefix' => 'home_',
             ],
         ];
-
-        // Sinkronisasi dengan Customer Rumahan yang ditambahkan dari menu Customer Management
-        $sessionResidential = session('nms_customers_rumahan', []);
-        $existingNames = array_map('strtolower', array_column($defaults, 'name'));
-
-        foreach ($sessionResidential as $sr) {
-            if (!in_array(strtolower($sr['name']), $existingNames, true)) {
-                $defaults[] = [
-                    'id' => (int) $sr['id'],
-                    'customer_type' => 'rumahan',
-                    'name' => $sr['name'],
-                    'code' => $sr['code'] ?? 'HOME',
-                    'category' => 'Customer Rumahan',
-                    'package' => $sr['note'] ?: 'Layanan Internet Rumahan NetFly',
-                    'address' => $sr['address'] ?? '-',
-                    'latitude' => $sr['latitude'] ?? -6.250000,
-                    'longitude' => $sr['longitude'] ?? 106.820000,
-                    'default_pic' => $sr['name'],
-                    'default_email' => $sr['email'] ?? '',
-                    'default_phone' => $sr['phone'] ?? '',
-                    'username_prefix' => 'home_',
-                ];
-            }
-        }
-
-        return $defaults;
     }
 
     /**

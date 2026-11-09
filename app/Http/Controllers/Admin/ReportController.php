@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
+use App\Models\MonitoringDevice;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,6 +23,24 @@ class ReportController extends Controller
         'xyz' => 'PT. XYZ Teknologi',
         'rs_medika' => 'RS Medika Center',
     ];
+
+    /**
+     * Sinkronisasi daftar customer dengan tabel database customers.
+     */
+    protected function getCustomerOptions(): array
+    {
+        $options = $this->customers;
+        $existingLabels = array_map('strtolower', array_values($options));
+
+        foreach (Customer::orderBy('id', 'asc')->get() as $cust) {
+            if (!in_array(strtolower($cust->company_name), $existingLabels, true)) {
+                $key = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', $cust->customer_code));
+                $options[$key] = $cust->company_name;
+            }
+        }
+
+        return $options;
+    }
 
     /**
      * Daftar nama bulan kalender Indonesia.
@@ -92,8 +112,10 @@ class ReportController extends Controller
      */
     protected function resolveReportData(Request $request): array
     {
+        $customerOptions = $this->getCustomerOptions();
+
         $selectedCustomer = $request->query('customer', 'all');
-        if (!array_key_exists($selectedCustomer, $this->customers)) {
+        if (!array_key_exists($selectedCustomer, $customerOptions)) {
             $selectedCustomer = 'all';
         }
 
@@ -227,7 +249,7 @@ class ReportController extends Controller
         } else {
             $filteredDevices = array_values(array_filter($allDevices, fn($d) => $d['customer_key'] === $selectedCustomer));
             $filteredTickets = array_values(array_filter($allTickets, fn($t) => $t['customer_key'] === $selectedCustomer));
-            $evaluatedPartner = $this->customers[$selectedCustomer];
+            $evaluatedPartner = $customerOptions[$selectedCustomer];
 
             // Kalkulasi dinamis per mitra
             if ($selectedCustomer === 'mandiri') {
@@ -281,7 +303,7 @@ class ReportController extends Controller
         $formattedPeriod = $selectedMonthName . ' ' . $selectedYear;
 
         return [
-            'customers' => $this->customers,
+            'customers' => $customerOptions,
             'months' => $this->months,
             'years' => $this->years,
             'selectedCustomer' => $selectedCustomer,

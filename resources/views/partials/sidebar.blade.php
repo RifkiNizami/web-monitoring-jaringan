@@ -27,6 +27,7 @@
         $isAdminBiasa = ($userRole === 'admin');
         $activeAnnouncementCount = \App\Models\Announcement::where('status', 'aktif')->count();
         $totalLandingClients = \App\Models\LandingClient::count();
+        $activeTicketCount = \App\Models\Ticket::whereNotIn('status', ['Resolved', 'Closed', 'Selesai'])->count();
     @endphp
 
     <!-- 2. Menu Navigation (Middle scrollable area ONLY - flex-1 min-h-0 overflow-y-auto) -->
@@ -184,10 +185,12 @@
                             </svg>
                             <span>Ticket & Insiden</span>
                         </div>
-                        <span
-                            class="inline-flex items-center justify-center min-w-4.5 h-4.5 px-1.5 text-[10px] font-bold rounded-full {{ $isTicketsActive ? 'bg-blue-100 text-netfly-blue' : 'bg-slate-100 text-slate-600' }}">
-                            3
-                        </span>
+                        @if($activeTicketCount > 0)
+                            <span
+                                class="inline-flex items-center justify-center min-w-4.5 h-4.5 px-1.5 text-[10px] font-bold rounded-full {{ $isTicketsActive ? 'bg-blue-100 text-netfly-blue' : 'bg-slate-100 text-slate-600' }}">
+                                {{ $activeTicketCount }}
+                            </span>
+                        @endif
                     </a>
                 </nav>
             </div>

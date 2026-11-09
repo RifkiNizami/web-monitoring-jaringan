@@ -33,51 +33,55 @@ class DashboardController extends Controller
 
         // 2. Metrik Utama Live Database
         $totalCustomers = Customer::count();
-        $activeCustomers = Customer::where('status', 'Active')->count();
-        $activeProjects = Project::whereIn('status', ['Planning', 'In Progress', 'In Review'])->count();
+        $activeCustomers = Customer::whereIn('status', ['Active', 'Aktif', 'Trial / PoC'])->count();
+        $corporateCustomers = Customer::where('customer_type', 'perusahaan')->count();
+        $residentialCustomers = Customer::where('customer_type', 'rumahan')->count();
+
+        $activeProjects = Project::whereIn('status', ['Planning', 'In Progress', 'In Review', 'Berjalan', 'Instalasi'])->count();
         $totalProjects = Project::count();
-        $onlineDevices = Device::where('status_state', 'online')->count();
-        $offlineDevices = Device::where('status_state', 'offline')->count();
+
+        $onlineDevices = Device::whereIn('status_state', ['online', 'available', 'in_use'])->count();
+        $offlineDevices = Device::whereIn('status_state', ['offline', 'out_of_stock'])->count();
         $totalDevices = Device::count();
 
         $metrics = [
             'customer_active' => [
                 'title' => 'CUSTOMER AKTIF',
                 'badge' => 'Terverifikasi',
-                'value' => number_format($activeCustomers ?: 1248),
-                'subvalue' => '+12 bln ini',
-                'footer_left' => 'Corporate & Retail',
-                'footer_right' => ($totalCustomers > 0 ? round(($activeCustomers / $totalCustomers) * 100, 1) : 99.4) . '% Aktif',
+                'value' => number_format($activeCustomers),
+                'subvalue' => "/ {$totalCustomers} terdaftar",
+                'footer_left' => "{$corporateCustomers} B2B • {$residentialCustomers} Rumahan",
+                'footer_right' => ($totalCustomers > 0 ? round(($activeCustomers / $totalCustomers) * 100, 1) : 0) . '% Aktif',
             ],
             'project_active' => [
                 'title' => 'PROJECT AKTIF',
                 'badge' => 'On Track',
-                'value' => number_format($activeProjects ?: 42),
-                'subvalue' => 'Instalasi Baru',
+                'value' => number_format($activeProjects),
+                'subvalue' => 'Instalasi & SLA',
                 'footer_left' => 'Total Portofolio',
-                'footer_right' => ($totalProjects ?: 52) . ' Total Proyek',
+                'footer_right' => $totalProjects . ' Total Proyek',
             ],
             'device_online' => [
-                'title' => 'PERANGKAT ONLINE',
-                'badge' => 'Online',
-                'value' => number_format($onlineDevices ?: 8432),
-                'subvalue' => '/ ' . number_format($totalDevices ?: 8444) . ' unit',
+                'title' => 'PERANGKAT TERSEDIA',
+                'badge' => 'Ready / In-Use',
+                'value' => number_format($onlineDevices),
+                'subvalue' => '/ ' . number_format($totalDevices) . ' item',
                 'footer_left' => 'Ketersediaan Fisik',
-                'footer_right' => ($totalDevices > 0 ? round(($onlineDevices / $totalDevices) * 100, 2) : 99.86) . '% Sehat',
+                'footer_right' => ($totalDevices > 0 ? round(($onlineDevices / $totalDevices) * 100, 1) : 0) . '% Siap',
             ],
             'device_offline' => [
-                'title' => 'PERANGKAT OFFLINE',
-                'badge' => 'Offline',
-                'value' => number_format($offlineDevices ?: 12),
-                'subvalue' => 'Unit Padam',
+                'title' => 'PERANGKAT HABIS / OFFLINE',
+                'badge' => 'Perlu Cek',
+                'value' => number_format($offlineDevices),
+                'subvalue' => 'Item Kosong/Offline',
                 'footer_left' => 'Status Tindakan',
-                'footer_right' => $offlineDevices > 0 ? 'Investigasi Aktif' : 'Semua Normal',
+                'footer_right' => $offlineDevices > 0 ? 'Perlu Restock / Cek' : 'Semua Normal',
             ],
         ];
 
-        // 3. Live Alerts Terbaru dari Database (dengan fallback mock jika database belum memiliki data)
+        // 3. Live Alerts Terbaru dari Database
         $dbAlerts = MonitoringAlert::latest()->take(4)->get();
-        $alerts = $dbAlerts->count() > 0 ? $dbAlerts->map(function ($alert) {
+        $alerts = $dbAlerts->map(function ($alert) {
             $badgeType = match ($alert->severity) {
                 'critical' => 'danger',
                 'warning' => 'warning',
@@ -91,37 +95,15 @@ class DashboardController extends Controller
             return [
                 'badge' => $badgeLabel,
                 'badge_type' => $badgeType,
-                'time' => $alert->created_at ? $alert->created_at->format('H:i:s') . ' WIB' : '10:45:00 WIB',
+                'time' => $alert->created_at ? $alert->created_at->format('H:i:s') . ' WIB' : now()->format('H:i:s') . ' WIB',
                 'title' => $alert->host . ' - ' . $alert->type,
                 'desc' => $alert->message,
             ];
-        })->toArray() : [
-            [
-                'badge' => 'PADAM',
-                'badge_type' => 'danger',
-                'time' => '10:42:32 WIB',
-                'title' => 'Switch Agg-Bks_04 Terputus',
-                'desc' => 'Koneksi padam di POP Bekasi. Indikasi kehilangan catu daya listrik AC.',
-            ],
-            [
-                'badge' => 'BEBAN TINGGI',
-                'badge_type' => 'warning',
-                'time' => '10:45:00 WIB',
-                'title' => 'Router Core-East_01 CPU 92%',
-                'desc' => 'Utilisasi CPU melebihi ambang batas aman selama lebih dari 5 menit.',
-            ],
-            [
-                'badge' => 'ANOMALI',
-                'badge_type' => 'info',
-                'time' => '09:32:45 WIB',
-                'title' => 'Backbone JKT-SBY Latensi Naik',
-                'desc' => 'RTT terdeteksi 120ms (Batas Normal transmisi: ≤15ms).',
-            ],
-        ];
+        })->toArray();
 
         // 4. Tiket Komplain Klien Terbaru dari Database
         $dbTickets = Ticket::with('customer')->latest()->take(3)->get();
-        $tickets = $dbTickets->count() > 0 ? $dbTickets->map(function ($t) {
+        $tickets = $dbTickets->map(function ($t) {
             $priorityType = match (strtolower($t->priority)) {
                 'critical', 'p1' => 'critical',
                 'high', 'p2' => 'high',
@@ -142,51 +124,11 @@ class DashboardController extends Controller
                 'priority_type' => $priorityType,
                 'status' => $t->status,
                 'status_color' => $statusColor,
-                'duration' => $t->created_at ? $t->created_at->diffForHumans(null, true) : '25m',
+                'duration' => $t->created_at ? $t->created_at->diffForHumans(null, true) : 'Baru saja',
                 'action_label' => $t->status === 'Open' ? 'Tangani' : 'Detail',
                 'action_type' => $t->status === 'Open' ? 'primary' : 'outline',
             ];
-        })->toArray() : [
-            [
-                'id' => 'INC-2026-1023',
-                'customer' => 'PT. XYZ Teknologi',
-                'package' => 'Dedicated Fiber 1Gbps',
-                'issue' => 'Link Down (Kabel Putus / FO Cut)',
-                'priority' => 'P1 - Critical',
-                'priority_type' => 'critical',
-                'status' => 'Menunggu Dispatch',
-                'status_color' => 'amber',
-                'duration' => '45m 12s',
-                'action_label' => 'Tangani',
-                'action_type' => 'primary',
-            ],
-            [
-                'id' => 'INC-2026-1024',
-                'customer' => 'Dinas Pendidikan Kota',
-                'package' => 'Project Smart City Jaringan FO',
-                'issue' => 'Packet Loss Tinggi (>15%)',
-                'priority' => 'P2 - High',
-                'priority_type' => 'high',
-                'status' => 'Dianalisis NOC',
-                'status_color' => 'blue',
-                'duration' => '12m 05s',
-                'action_label' => 'Detail',
-                'action_type' => 'outline',
-            ],
-            [
-                'id' => 'REQ-2026-0882',
-                'customer' => 'RS Medika Center',
-                'package' => 'Dedicated Internet Broadband',
-                'issue' => 'Permintaan Bandwidth On-Demand (+50M)',
-                'priority' => 'P3 - Medium',
-                'priority_type' => 'medium',
-                'status' => 'Menunggu Persetujuan',
-                'status_color' => 'slate',
-                'duration' => '2j 15m',
-                'action_label' => 'Proses',
-                'action_type' => 'outline',
-            ],
-        ];
+        })->toArray();
 
         return view('admin.dashboard', compact('metrics', 'alerts', 'tickets', 'uptimeStats'));
     }

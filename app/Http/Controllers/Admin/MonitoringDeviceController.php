@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\MonitoringDevice;
 use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -20,7 +21,7 @@ class MonitoringDeviceController extends Controller
     }
 
     /**
-     * Daftarkan target perangkat monitoring baru secara mandiri.
+     * Daftarkan target perangkat monitoring baru ke database.
      */
     public function store(Request $request): JsonResponse|RedirectResponse
     {
@@ -43,9 +44,6 @@ class MonitoringDeviceController extends Controller
             'ip_address.required' => 'IP Address target monitoring wajib diisi.',
             'customer.required' => 'Nama mitra/pelanggan target wajib diisi.',
         ]);
-
-        $devices = MonitoringController::getTelemetryDevicesList();
-        $newId = empty($devices) ? 1 : (max(array_keys($devices)) + 1);
 
         $status = $validated['status'] ?? 'online';
         $cpu = 0.0;
@@ -89,8 +87,7 @@ class MonitoringDeviceController extends Controller
             }
         }
 
-        $newDevice = [
-            'id' => $newId,
+        $deviceModel = MonitoringDevice::create([
             'hostname' => strtoupper(trim($validated['hostname'])),
             'unit_type' => $validated['unit_type'],
             'ip_address' => trim($validated['ip_address']),
@@ -110,21 +107,20 @@ class MonitoringDeviceController extends Controller
             'packet_loss' => $status === 'offline' ? 100.0 : 0.0,
             'last_ping_ms' => $latency,
             'connection_type' => $validated['connection_type'] ?? 'lan',
-            'api_port' => $validated['api_port'] ?? 8728,
+            'api_port' => (int) ($validated['api_port'] ?? 8728),
             'api_username' => $validated['api_username'] ?? 'admin',
             'api_password' => $validated['api_password'] ?? '',
             'interfaces' => $interfaces,
-        ];
+        ]);
 
-        $devices[$newId] = $newDevice;
-        MonitoringController::saveTelemetryDevicesList($devices);
+        $newDevice = MonitoringController::formatMonitoringDevice($deviceModel);
 
         ActivityLogger::log(
             'monitoring',
             'create',
             "Mendaftarkan perangkat monitoring '{$newDevice['hostname']}' ({$newDevice['ip_address']})",
             $newDevice['hostname'],
-            (string) $newId,
+            (string) $deviceModel->id,
             [
                 'hostname' => $newDevice['hostname'],
                 'unit_type' => $newDevice['unit_type'],
@@ -153,18 +149,18 @@ class MonitoringDeviceController extends Controller
      */
     public function edit(int $id): View
     {
-        $devices = MonitoringController::getTelemetryDevicesList();
+        $deviceModel = MonitoringDevice::find($id);
 
-        if (!isset($devices[$id])) {
+        if (!$deviceModel) {
             abort(404, 'Perangkat monitoring tidak ditemukan.');
         }
 
-        $device = $devices[$id];
+        $device = MonitoringController::formatMonitoringDevice($deviceModel);
         return view('admin.monitoring.edit', compact('device'));
     }
 
     /**
-     * Perbarui data perangkat monitoring.
+     * Perbarui data perangkat monitoring di database.
      */
     public function update(Request $request, int $id): JsonResponse|RedirectResponse
     {
@@ -188,76 +184,84 @@ class MonitoringDeviceController extends Controller
             'customer.required' => 'Nama mitra/pelanggan target wajib diisi.',
         ]);
 
-        $devices = MonitoringController::getTelemetryDevicesList();
+        $deviceModel = MonitoringDevice::find($id);
 
-        if (!isset($devices[$id])) {
+        if (!$deviceModel) {
             if ($request->wantsJson()) {
                 return response()->json(['success' => false, 'message' => 'Perangkat monitoring tidak ditemukan.'], 404);
             }
             return redirect()->route('monitoring.index')->with('error', 'Perangkat monitoring tidak ditemukan.');
         }
 
-        $status = $validated['status'] ?? $devices[$id]['status'] ?? 'online';
-        $devices[$id]['hostname'] = strtoupper(trim($validated['hostname']));
-        $devices[$id]['unit_type'] = $validated['unit_type'];
-        $devices[$id]['ip_address'] = trim($validated['ip_address']);
-        $devices[$id]['customer'] = trim($validated['customer']);
-        $devices[$id]['project'] = !empty($validated['project']) ? trim($validated['project']) : ($devices[$id]['project'] ?? 'Dedicated SLA Monitoring');
+        $status = $validated['status'] ?? $deviceModel->status ?? 'online';
+
+        $updates = [
+            'hostname' => strtoupper(trim($validated['hostname'])),
+            'unit_type' => $validated['unit_type'],
+            'ip_address' => trim($validated['ip_address']),
+            'customer' => trim($validated['customer']),
+            'project' => !empty($validated['project']) ? trim($validated['project']) : ($deviceModel->project ?: 'Dedicated SLA Monitoring'),
+            'connection_type' => $validated['connection_type'] ?? ($deviceModel->connection_type ?: 'lan'),
+            'api_port' => (int) ($validated['api_port'] ?? ($deviceModel->api_port ?: 8728)),
+            'status' => $status,
+            'status_label' => strtoupper($status),
+        ];
+
         if (array_key_exists('model', $validated) && !empty($validated['model'])) {
-            $devices[$id]['model'] = trim($validated['model']);
+            $updates['model'] = trim($validated['model']);
         }
         if (array_key_exists('rack_location', $validated) && !empty($validated['rack_location'])) {
-            $devices[$id]['rack_location'] = trim($validated['rack_location']);
+            $updates['rack_location'] = trim($validated['rack_location']);
         }
-        $devices[$id]['connection_type'] = $validated['connection_type'] ?? ($devices[$id]['connection_type'] ?? 'lan');
-        $devices[$id]['api_port'] = $validated['api_port'] ?? ($devices[$id]['api_port'] ?? 8728);
         if (!empty($validated['api_username'])) {
-            $devices[$id]['api_username'] = $validated['api_username'];
+            $updates['api_username'] = $validated['api_username'];
         }
-        $devices[$id]['status'] = $status;
-        $devices[$id]['status_label'] = strtoupper($status);
+        if (array_key_exists('api_password', $validated) && $validated['api_password'] !== null && $validated['api_password'] !== '') {
+            $updates['api_password'] = $validated['api_password'];
+        }
 
-        MonitoringController::saveTelemetryDevicesList($devices);
+        $deviceModel->update($updates);
+        $updatedDevice = MonitoringController::formatMonitoringDevice($deviceModel);
 
         ActivityLogger::log(
             'monitoring',
             'update',
-            "Memperbarui data perangkat monitoring '{$devices[$id]['hostname']}'",
-            $devices[$id]['hostname'],
+            "Memperbarui data perangkat monitoring '{$updatedDevice['hostname']}'",
+            $updatedDevice['hostname'],
             (string) $id,
             [
-                'hostname' => $devices[$id]['hostname'],
-                'unit_type' => $devices[$id]['unit_type'],
-                'ip_address' => $devices[$id]['ip_address'],
-                'customer' => $devices[$id]['customer'],
-                'status' => $devices[$id]['status'],
+                'hostname' => $updatedDevice['hostname'],
+                'unit_type' => $updatedDevice['unit_type'],
+                'ip_address' => $updatedDevice['ip_address'],
+                'customer' => $updatedDevice['customer'],
+                'status' => $updatedDevice['status'],
             ]
         );
 
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => "Perangkat monitoring '{$devices[$id]['hostname']}' berhasil diperbarui.",
-                'device' => $devices[$id],
+                'message' => "Perangkat monitoring '{$updatedDevice['hostname']}' berhasil diperbarui.",
+                'device' => $updatedDevice,
             ]);
         }
 
         return redirect()->route('monitoring.index')
-            ->with('success', "Perangkat monitoring '{$devices[$id]['hostname']}' berhasil diperbarui.");
+            ->with('success', "Perangkat monitoring '{$updatedDevice['hostname']}' berhasil diperbarui.");
     }
 
     /**
-     * Hapus perangkat dari target monitoring telemetri.
+     * Hapus perangkat dari target monitoring telemetri di database.
      */
     public function destroy(Request $request, int $id): JsonResponse|RedirectResponse
     {
-        $devices = MonitoringController::getTelemetryDevicesList();
+        $deviceModel = MonitoringDevice::find($id);
 
-        if (isset($devices[$id])) {
-            $hostname = $devices[$id]['hostname'];
-            $deleted = $devices[$id];
-            unset($devices[$id]);
-            MonitoringController::saveTelemetryDevicesList($devices);
+        if ($deviceModel) {
+            $hostname = $deviceModel->hostname;
+            $ipAddress = $deviceModel->ip_address;
+
+            $deviceModel->delete();
 
             ActivityLogger::log(
                 'monitoring',
@@ -267,7 +271,7 @@ class MonitoringDeviceController extends Controller
                 (string) $id,
                 [
                     'hostname' => $hostname,
-                    'ip_address' => $deleted['ip_address'] ?? null,
+                    'ip_address' => $ipAddress,
                 ]
             );
 
@@ -294,7 +298,7 @@ class MonitoringDeviceController extends Controller
     }
 
     /**
-     * Simpan / Perbarui Konfigurasi IP & Kredensial API MikroTik (API Ajax cepat)
+     * Simpan / Perbarui Konfigurasi IP & Kredensial API MikroTik (API Ajax cepat) ke database.
      */
     public function saveSettings(Request $request): JsonResponse
     {
@@ -307,21 +311,28 @@ class MonitoringDeviceController extends Controller
             'connection_type' => 'required|string',
         ]);
 
-        $devices = MonitoringController::getTelemetryDevicesList();
         $id = (int) $validated['device_id'];
+        $deviceModel = MonitoringDevice::find($id);
 
-        if (isset($devices[$id])) {
-            $devices[$id]['ip_address'] = $validated['ip_address'];
-            $devices[$id]['connection_type'] = $validated['connection_type'];
-            $devices[$id]['api_port'] = $validated['api_port'];
-            $devices[$id]['api_username'] = $validated['api_username'];
-            MonitoringController::saveTelemetryDevicesList($devices);
+        if ($deviceModel) {
+            $updates = [
+                'ip_address' => $validated['ip_address'],
+                'connection_type' => $validated['connection_type'],
+                'api_port' => (int) $validated['api_port'],
+                'api_username' => $validated['api_username'],
+            ];
+
+            if (!empty($validated['api_password'])) {
+                $updates['api_password'] = $validated['api_password'];
+            }
+
+            $deviceModel->update($updates);
 
             ActivityLogger::log(
                 'monitoring',
                 'update',
-                "Memperbarui konfigurasi API MikroTik perangkat '{$devices[$id]['hostname']}'",
-                $devices[$id]['hostname'] ?? "ID: {$id}",
+                "Memperbarui konfigurasi API MikroTik perangkat '{$deviceModel->hostname}'",
+                $deviceModel->hostname ?? "ID: {$id}",
                 (string) $id,
                 [
                     'ip_address' => $validated['ip_address'],
