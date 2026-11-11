@@ -35,7 +35,7 @@ class MonitoringDeviceController extends Controller
             'rack_location' => 'nullable|string|max:100',
             'connection_type' => 'nullable|string|max:50',
             'api_port' => 'nullable|numeric',
-            'api_username' => 'nullable|string|max:50',
+            'api_username' => 'required|string|max:50',
             'api_password' => 'nullable|string|max:100',
             'status' => 'nullable|string|in:online,warning,offline',
         ], [
@@ -43,6 +43,7 @@ class MonitoringDeviceController extends Controller
             'unit_type.required' => 'Jenis perangkat wajib dipilih.',
             'ip_address.required' => 'IP Address target monitoring wajib diisi.',
             'customer.required' => 'Nama mitra/pelanggan target wajib diisi.',
+            'api_username.required' => 'Username API MikroTik wajib diisi.',
         ]);
 
         $status = $validated['status'] ?? 'online';
@@ -174,7 +175,7 @@ class MonitoringDeviceController extends Controller
             'rack_location' => 'nullable|string|max:100',
             'connection_type' => 'nullable|string|max:50',
             'api_port' => 'nullable|numeric',
-            'api_username' => 'nullable|string|max:50',
+            'api_username' => 'required|string|max:50',
             'api_password' => 'nullable|string|max:100',
             'status' => 'nullable|string|in:online,warning,offline',
         ], [
@@ -182,6 +183,7 @@ class MonitoringDeviceController extends Controller
             'unit_type.required' => 'Jenis perangkat wajib dipilih.',
             'ip_address.required' => 'IP Address target monitoring wajib diisi.',
             'customer.required' => 'Nama mitra/pelanggan target wajib diisi.',
+            'api_username.required' => 'Username API MikroTik wajib diisi.',
         ]);
 
         $deviceModel = MonitoringDevice::find($id);
@@ -194,17 +196,23 @@ class MonitoringDeviceController extends Controller
         }
 
         $status = $validated['status'] ?? $deviceModel->status ?? 'online';
+        $ip = trim($validated['ip_address']);
+        $port = (int) ($validated['api_port'] ?? ($deviceModel->api_port ?: 8728));
+        $username = !empty($validated['api_username']) ? $validated['api_username'] : $deviceModel->api_username;
+        $password = (array_key_exists('api_password', $validated) && $validated['api_password'] !== null && $validated['api_password'] !== '')
+            ? $validated['api_password']
+            : $deviceModel->api_password;
 
         $updates = [
             'hostname' => strtoupper(trim($validated['hostname'])),
             'unit_type' => $validated['unit_type'],
-            'ip_address' => trim($validated['ip_address']),
+            'ip_address' => $ip,
             'customer' => trim($validated['customer']),
             'project' => !empty($validated['project']) ? trim($validated['project']) : ($deviceModel->project ?: 'Dedicated SLA Monitoring'),
             'connection_type' => $validated['connection_type'] ?? ($deviceModel->connection_type ?: 'lan'),
-            'api_port' => (int) ($validated['api_port'] ?? ($deviceModel->api_port ?: 8728)),
-            'status' => $status,
-            'status_label' => strtoupper($status),
+            'api_port' => $port,
+            'api_username' => $username,
+            'api_password' => $password,
         ];
 
         if (array_key_exists('model', $validated) && !empty($validated['model'])) {
@@ -213,12 +221,32 @@ class MonitoringDeviceController extends Controller
         if (array_key_exists('rack_location', $validated) && !empty($validated['rack_location'])) {
             $updates['rack_location'] = trim($validated['rack_location']);
         }
-        if (!empty($validated['api_username'])) {
-            $updates['api_username'] = $validated['api_username'];
+
+        $connectNotice = '';
+        if (!empty($ip) && !empty($username) && !app()->runningUnitTests()) {
+            $mikrotikService = new \App\Services\MikrotikService();
+            $telemetry = $mikrotikService->getDeviceTelemetry($ip, $username, (string) $password, $port, 2);
+
+            if ($telemetry) {
+                $status = 'online';
+                $updates['cpu_load'] = $telemetry['resource']['cpu_load'];
+                $updates['ram_load'] = $telemetry['resource']['ram_load'];
+                $updates['uptime'] = $telemetry['resource']['uptime'];
+                $updates['last_ping_ms'] = (int) $telemetry['latency_ms'];
+                $updates['packet_loss'] = 0.0;
+                if (!empty($telemetry['interfaces'])) {
+                    $updates['interfaces'] = $telemetry['interfaces'];
+                }
+                $connectNotice = " — Terhubung ke {$telemetry['resource']['board_name']} (RouterOS v{$telemetry['resource']['version']})";
+            } else {
+                $status = 'offline';
+                $updates['packet_loss'] = 100.0;
+                $connectNotice = ' — Peringatan: ' . ($mikrotikService->getLastError() ?: 'Koneksi API gagal');
+            }
         }
-        if (array_key_exists('api_password', $validated) && $validated['api_password'] !== null && $validated['api_password'] !== '') {
-            $updates['api_password'] = $validated['api_password'];
-        }
+
+        $updates['status'] = $status;
+        $updates['status_label'] = strtoupper($status);
 
         $deviceModel->update($updates);
         $updatedDevice = MonitoringController::formatMonitoringDevice($deviceModel);
@@ -241,13 +269,13 @@ class MonitoringDeviceController extends Controller
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => "Perangkat monitoring '{$updatedDevice['hostname']}' berhasil diperbarui.",
+                'message' => "Perangkat monitoring '{$updatedDevice['hostname']}' berhasil diperbarui{$connectNotice}.",
                 'device' => $updatedDevice,
             ]);
         }
 
         return redirect()->route('monitoring.index')
-            ->with('success', "Perangkat monitoring '{$updatedDevice['hostname']}' berhasil diperbarui.");
+            ->with('success', "Perangkat monitoring '{$updatedDevice['hostname']}' berhasil diperbarui{$connectNotice}.");
     }
 
     /**

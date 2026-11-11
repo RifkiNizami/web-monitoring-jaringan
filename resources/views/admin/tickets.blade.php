@@ -113,19 +113,9 @@
 
                     <!-- Top Action Buttons -->
                     <div class="flex items-center gap-2.5 shrink-0">
-                        <!-- Button 1: Lihat Laporan SLA -->
-                        <button 
-                            id="btnSlaReport" 
-                            class="inline-flex items-center gap-2 px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg border border-slate-200 shadow-2xs active:scale-95 transition-all cursor-pointer"
-                        >
-                            <svg class="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            <span>Lihat Laporan SLA</span>
-                        </button>
-
-                        <!-- Button 2: Buat Tiket Baru -->
-                        <button 
+                        <!-- Button: Buat Tiket Baru (Halaman Penuh) -->
+                        <a 
+                            href="{{ route('tickets.create') }}" 
                             id="btnCreateTicket" 
                             class="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-sm active:scale-95 transition-all cursor-pointer"
                         >
@@ -133,7 +123,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4" />
                             </svg>
                             <span>Buat Tiket Baru</span>
-                        </button>
+                        </a>
                     </div>
                 </div>
 
@@ -413,9 +403,9 @@
                                         </td>
 
                                         <!-- 7. AKSI -->
-                                        <td class="py-4 px-5 align-top text-center">
+                                        <td class="py-4 px-5 align-top text-center whitespace-nowrap">
                                             <div class="flex items-center justify-center gap-1.5">
-                                                <!-- Form Update Tiket (Per Row) -->
+                                                <!-- Form Quick Update Tiket (Per Row) -->
                                                 <form method="POST" action="{{ route('tickets.update', $ticket['id']) }}" class="inline form-update-ticket">
                                                     @csrf
                                                     @method('PUT')
@@ -424,7 +414,7 @@
                                                     <button 
                                                         type="submit" 
                                                         title="Verifikasi dan Simpan Update ke Database"
-                                                        class="btn-row-update inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-semibold shadow-2xs active:scale-95 transition-all cursor-pointer"
+                                                        class="btn-row-update inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-semibold shadow-2xs active:scale-95 transition-all cursor-pointer"
                                                     >
                                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5 13l4 4L19 7" />
@@ -433,20 +423,30 @@
                                                     </button>
                                                 </form>
 
-                                                <!-- Form Hapus Tiket -->
-                                                <form method="POST" action="{{ route('tickets.destroy', $ticket['id']) }}" class="inline delete-ticket-form">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button 
-                                                        type="submit" 
-                                                        title="Hapus / Batalkan Tiket"
-                                                        class="delete-btn inline-flex items-center justify-center w-7 h-7 rounded-lg border border-rose-200/90 text-rose-500 hover:text-rose-600 hover:bg-rose-50 active:scale-95 transition-all cursor-pointer"
-                                                    >
-                                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                        </svg>
-                                                    </button>
-                                                </form>
+                                                <!-- Tombol Edit (Halaman Mandiri) -->
+                                                <a 
+                                                    href="{{ route('tickets.edit', $ticket['id']) }}" 
+                                                    title="Edit Data & Eskalasi Tiket"
+                                                    class="inline-flex items-center justify-center w-7 h-7 rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100 active:scale-95 transition-all cursor-pointer"
+                                                >
+                                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                    </svg>
+                                                </a>
+
+                                                <!-- Tombol Hapus (Membuka Modal Konfirmasi) -->
+                                                <button 
+                                                    type="button" 
+                                                    title="Hapus / Batalkan Tiket"
+                                                    data-ticket-id="{{ $ticket['id'] }}"
+                                                    data-ticket-number="{{ $ticket['id'] }} ({{ $ticket['client_name'] }})"
+                                                    data-delete-url="{{ route('tickets.destroy', $ticket['id']) }}"
+                                                    class="btn-delete-ticket inline-flex items-center justify-center w-7 h-7 rounded-lg border border-rose-200/90 text-rose-500 hover:text-rose-600 hover:bg-rose-50 active:scale-95 transition-all cursor-pointer"
+                                                >
+                                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
+                                                </button>
                                             </div>
                                         </td>
 
@@ -476,136 +476,8 @@
 
     </div>
 
-    <!-- MODAL: BUAT TIKET BARU -->
-    <div id="createTicketModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs items-center justify-center p-4 hidden [&:not(.hidden)]:flex">
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                <div>
-                    <h3 class="text-sm font-bold text-slate-900">Buat Tiket Gangguan Baru</h3>
-                    <p class="text-xs text-slate-400">Input komplain gangguan jaringan klien untuk antrean NOC.</p>
-                </div>
-                <button id="closeCreateModal" class="text-slate-400 hover:text-slate-600 p-1 rounded-md cursor-pointer">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-
-            <form id="formNewTicket" method="POST" action="{{ route('tickets.store') }}" class="p-6 space-y-4">
-                @csrf
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Klien / Perusahaan <span class="text-rose-500">*</span></label>
-                    <input type="text" name="client_name" required placeholder="Contoh: PT. Mitra Sejahtera Mandiri" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:bg-white focus:border-blue-500">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Project / Layanan <span class="text-rose-500">*</span></label>
-                    <input type="text" name="project_name" required placeholder="Contoh: Dedicated Internet Broadband 100M" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:bg-white focus:border-blue-500">
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Node / Host Perangkat</label>
-                        <input type="text" name="node_code" placeholder="AP-OUTDOOR-01" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:bg-white focus:border-blue-500 font-mono">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Tingkat Prioritas <span class="text-rose-500">*</span></label>
-                        <select name="priority" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:bg-white focus:border-blue-500">
-                            <option value="critical">P1 - CRITICAL</option>
-                            <option value="high" selected>P2 - HIGH</option>
-                            <option value="medium">P3 - MEDIUM</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Tunjuk Teknisi Lapangan (Opsional)</label>
-                    <div class="relative">
-                        <select name="assigned_technician" class="w-full appearance-none pl-3 pr-8 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:bg-white focus:border-blue-500 cursor-pointer">
-                            <option value="">-- Pilih Teknisi (Opsional) --</option>
-                            @foreach ($technicians as $tech)
-                                @php
-                                    $techName = is_object($tech) ? $tech->nama : (is_array($tech) ? $tech['nama'] : $tech);
-                                    $techSpec = is_object($tech) ? ($tech->spesialisasi ?? null) : (is_array($tech) ? ($tech['spesialisasi'] ?? null) : null);
-                                @endphp
-                                <option value="{{ $techName }}">
-                                    {{ $techName }}{{ !empty($techSpec) ? ' (' . $techSpec . ')' : '' }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-slate-400">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Subjek / Masalah Singkat <span class="text-rose-500">*</span></label>
-                    <input type="text" name="subject" required placeholder="Contoh: Fluktuasi RTT & Packet Loss Tinggi" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:bg-white focus:border-blue-500">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Keterangan Tambahan Masalah <span class="text-rose-500">*</span></label>
-                    <textarea name="description" required rows="3" placeholder="Deskripsikan gejala awal kendala yang dialami pengguna..." class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:bg-white focus:border-blue-500"></textarea>
-                </div>
-
-                <div class="pt-2 flex items-center justify-end gap-2.5">
-                    <button type="button" id="cancelCreateModal" class="px-3.5 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 bg-slate-100 rounded-lg cursor-pointer">
-                        Batal
-                    </button>
-                    <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-sm cursor-pointer">
-                        Simpan ke Antrean
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL: LIHAT LAPORAN SLA -->
-    <div id="slaModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs items-center justify-center p-4 hidden [&:not(.hidden)]:flex">
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                <div>
-                    <h3 class="text-sm font-bold text-slate-900">Ringkasan SLA & Penanganan</h3>
-                    <p class="text-xs text-slate-400">Periode berjalan: Oktober {{ date('Y') }}</p>
-                </div>
-                <button id="closeSlaModal" class="text-slate-400 hover:text-slate-600 p-1 rounded-md cursor-pointer">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-
-            <div class="p-6 space-y-4 text-xs">
-                <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-2">
-                    <div class="flex justify-between items-center">
-                        <span class="text-slate-500 font-medium">SLA Ketersediaan Bulanan:</span>
-                        <span class="font-bold text-emerald-600">99.82% (Target: 99.5%)</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-slate-500 font-medium">MTTR (Mean Time to Resolve):</span>
-                        <span class="font-bold text-slate-800">1 Jam 42 Menit</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-slate-500 font-medium">MTTD (Mean Time to Detect):</span>
-                        <span class="font-bold text-slate-800">&lt; 35 Detik</span>
-                    </div>
-                </div>
-
-                <div class="text-[11px] text-slate-500 leading-relaxed">
-                    Seluruh penanganan insiden SLA P1 wajib diselesaikan maksimal 4 jam sejak tiket dibuat. Insiden P2 memiliki batas eskalasi 8 jam.
-                </div>
-
-                <div class="pt-2 flex justify-end">
-                    <button id="btnDismissSla" class="px-4 py-2 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-lg cursor-pointer">
-                        Tutup
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+    {{-- Modal Konfirmasi Hapus Tiket --}}
+    @include('admin.tickets.delete_modal')
 
 </body>
 </html>

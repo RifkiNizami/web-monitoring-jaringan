@@ -249,25 +249,27 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-100">
                             <div>
                                 <label for="inputApiUser" class="block text-xs font-semibold text-slate-700 mb-1.5">
-                                    Username API MikroTik (Opsional)
+                                    Username API MikroTik <span class="text-rose-500">*</span>
                                 </label>
                                 <input 
                                     id="inputApiUser"
                                     type="text" 
                                     name="api_username" 
-                                    value="{{ old('api_username', 'webmonitor') }}"
-                                    placeholder="webmonitor" 
+                                    value="{{ old('api_username') }}"
+                                    required
+                                    placeholder="Contoh: admin atau monitorbot" 
                                     class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
                                 >
                             </div>
                             <div>
                                 <label for="inputApiPass" class="block text-xs font-semibold text-slate-700 mb-1.5">
-                                    Password API MikroTik (Opsional)
+                                    Password API MikroTik <span class="text-rose-500">*</span>
                                 </label>
                                 <input 
                                     id="inputApiPass"
                                     type="password" 
                                     name="api_password" 
+                                    required
                                     placeholder="••••••••" 
                                     class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
                                 >

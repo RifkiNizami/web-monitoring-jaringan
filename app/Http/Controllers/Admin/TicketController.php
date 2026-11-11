@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
 use App\Models\Teknisi;
 use App\Models\Ticket;
 use App\Services\ActivityLogger;
@@ -83,8 +84,61 @@ class TicketController extends Controller
     }
 
     /**
-     * Verifikasi dan perbarui penugasan teknisi dan status tiket.
-     * Dipanggil secara eksplisit melalui tombol Update, bukan dari dropdown langsung.
+     * Tampilkan formulir pembuatan tiket gangguan baru (halaman mandiri).
+     */
+    public function create(): View
+    {
+        $technicians = Teknisi::orderBy('nama', 'asc')->get();
+
+        if ($technicians->isEmpty()) {
+            $technicians = collect([
+                (object)['nama' => 'Agus Prasetyo, S.T.', 'spesialisasi' => 'Fiber Optic & Splicing OTB'],
+                (object)['nama' => 'Budi Santoso', 'spesialisasi' => 'Wireless Microwave & Tower Climber'],
+                (object)['nama' => 'Dimas Nugroho', 'spesialisasi' => 'Troubleshooting Last Mile & ONT/CPE'],
+                (object)['nama' => 'Fajar Maulana', 'spesialisasi' => 'Emergency Response & Core NOC Support'],
+                (object)['nama' => 'Rahmat Hidayat', 'spesialisasi' => 'Routing & Switching Core (Cisco/Mikrotik)'],
+            ]);
+        }
+
+        $customers = Customer::orderBy('name', 'asc')->get();
+
+        return view('admin.tickets.create', compact('technicians', 'customers'));
+    }
+
+    /**
+     * Tampilkan halaman edit data & eskalasi penanganan tiket (halaman mandiri).
+     */
+    public function edit(string $id): View
+    {
+        $ticket = Ticket::where('ticket_number', $id)->orWhere('id', $id)->firstOrFail();
+
+        $technicians = Teknisi::orderBy('nama', 'asc')->get();
+
+        if ($technicians->isEmpty()) {
+            $technicians = collect([
+                (object)['nama' => 'Agus Prasetyo, S.T.', 'spesialisasi' => 'Fiber Optic & Splicing OTB'],
+                (object)['nama' => 'Budi Santoso', 'spesialisasi' => 'Wireless Microwave & Tower Climber'],
+                (object)['nama' => 'Dimas Nugroho', 'spesialisasi' => 'Troubleshooting Last Mile & ONT/CPE'],
+                (object)['nama' => 'Fajar Maulana', 'spesialisasi' => 'Emergency Response & Core NOC Support'],
+                (object)['nama' => 'Rahmat Hidayat', 'spesialisasi' => 'Routing & Switching Core (Cisco/Mikrotik)'],
+            ]);
+        }
+
+        $statusOptions = [
+            '1. Open (Baru)',
+            '2. Assigned (Ditugaskan)',
+            '3. In Progress (Sedang Dikerjakan)',
+            '4. Resolved (Terselesaikan)',
+            '5. Closed (Ditutup)',
+        ];
+
+        $customers = Customer::orderBy('name', 'asc')->get();
+
+        return view('admin.tickets.edit', compact('ticket', 'technicians', 'statusOptions', 'customers'));
+    }
+
+    /**
+     * Verifikasi dan perbarui penugasan teknisi, status, maupun data detail tiket.
      */
     public function update(Request $request, string $id): RedirectResponse|JsonResponse
     {
@@ -98,16 +152,67 @@ class TicketController extends Controller
         }
 
         $validated = $request->validate([
+            'client_name' => ['nullable', 'string', 'max:200'],
+            'project_name' => ['nullable', 'string', 'max:200'],
+            'node_code' => ['nullable', 'string', 'max:100'],
+            'priority' => ['nullable', 'string', 'max:50'],
+            'subject' => ['nullable', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
             'assigned_technician' => ['nullable', 'string', 'max:150'],
             'status' => ['nullable', 'string', 'max:100'],
+            'status_note' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $assignedTech = !empty($validated['assigned_technician']) ? trim($validated['assigned_technician']) : null;
-        $ticket->assigned_technician = $assignedTech;
+        if (isset($validated['client_name']) && filled($validated['client_name'])) {
+            $ticket->client_name = trim($validated['client_name']);
+        }
 
-        // Jika teknisi sudah ditunjuk, hilangkan warning wajib teknisi
-        if (!empty($assignedTech)) {
-            $ticket->is_tech_warning = false;
+        if (isset($validated['project_name']) && filled($validated['project_name'])) {
+            $ticket->project_name = trim($validated['project_name']);
+        }
+
+        if (array_key_exists('node_code', $validated)) {
+            $ticket->node_code = !empty($validated['node_code']) ? trim($validated['node_code']) : null;
+        }
+
+        if (isset($validated['subject']) && filled($validated['subject'])) {
+            $ticket->subject = trim($validated['subject']);
+        }
+
+        if (isset($validated['description']) && filled($validated['description'])) {
+            $ticket->description = trim($validated['description']);
+        }
+
+        if (array_key_exists('status_note', $validated)) {
+            $ticket->status_note = !empty($validated['status_note']) ? trim($validated['status_note']) : null;
+        }
+
+        if (!empty($validated['priority'])) {
+            $prio = strtolower($validated['priority']);
+            $priorityLevel = match (true) {
+                str_contains($prio, 'critical') || str_contains($prio, 'p1') => 'critical',
+                str_contains($prio, 'high') || str_contains($prio, 'p2') => 'high',
+                default => 'medium',
+            };
+            $priorityFormatted = match ($priorityLevel) {
+                'critical' => 'P1 - CRITICAL',
+                'high' => 'P2 - HIGH',
+                default => 'P3 - MEDIUM',
+            };
+            $ticket->priority = $priorityFormatted;
+            $ticket->priority_level = $priorityLevel;
+        }
+
+        $assignedTech = null;
+        if ($request->has('assigned_technician')) {
+            $assignedTech = !empty($validated['assigned_technician']) ? trim($validated['assigned_technician']) : null;
+            $ticket->assigned_technician = $assignedTech;
+
+            if (!empty($assignedTech)) {
+                $ticket->is_tech_warning = false;
+            } else {
+                $ticket->is_tech_warning = in_array($ticket->priority_level, ['high', 'critical'], true);
+            }
         }
 
         if (!empty($validated['status'])) {
@@ -122,7 +227,9 @@ class TicketController extends Controller
                 $ticket->status_type = 'resolved';
                 if (!$ticket->resolved_at) {
                     $ticket->resolved_at = now();
-                    $ticket->status_note = 'Selesai: ' . now()->format('d/m H:i');
+                    if (empty($ticket->status_note)) {
+                        $ticket->status_note = 'Selesai: ' . now()->format('d/m H:i');
+                    }
                 }
             } elseif (str_contains($validated['status'], 'Closed')) {
                 $ticket->status_type = 'closed';
@@ -138,7 +245,7 @@ class TicketController extends Controller
         ActivityLogger::log(
             'tiket',
             'update',
-            "Memperbarui tiket {$ticket->ticket_number}: status '{$ticket->status}'" . ($assignedTech ? ", teknisi: '{$assignedTech}'" : ''),
+            "Memperbarui tiket {$ticket->ticket_number}: status '{$ticket->status}'" . ($ticket->assigned_technician ? ", teknisi: '{$ticket->assigned_technician}'" : ''),
             $ticket->ticket_number,
             (string) $ticket->id,
             [
@@ -146,12 +253,11 @@ class TicketController extends Controller
                 'status' => $ticket->status,
                 'status_type' => $ticket->status_type,
                 'assigned_technician' => $ticket->assigned_technician,
+                'priority' => $ticket->priority,
             ]
         );
 
-        $message = $assignedTech 
-            ? "Teknisi '{$assignedTech}' berhasil ditugaskan untuk tiket {$ticket->ticket_number}."
-            : "Data tiket {$ticket->ticket_number} berhasil diperbarui.";
+        $message = "Data tiket {$ticket->ticket_number} berhasil diperbarui.";
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -197,7 +303,12 @@ class TicketController extends Controller
         $status = !empty($assignedTech) ? '2. Assigned (Ditugaskan)' : '1. Open (Baru)';
         $statusType = !empty($assignedTech) ? 'assigned' : 'open';
 
-        $ticketNumber = 'INC-' . date('Y') . '-' . str_pad((string)(Ticket::count() + 1025), 4, '0', STR_PAD_LEFT);
+        $nextId = (Ticket::max('id') ?? 0) + 1025;
+        $ticketNumber = 'INC-' . date('Y') . '-' . str_pad((string)$nextId, 4, '0', STR_PAD_LEFT);
+        while (Ticket::where('ticket_number', $ticketNumber)->exists()) {
+            $nextId++;
+            $ticketNumber = 'INC-' . date('Y') . '-' . str_pad((string)$nextId, 4, '0', STR_PAD_LEFT);
+        }
 
         $ticket = Ticket::create([
             'ticket_number' => $ticketNumber,

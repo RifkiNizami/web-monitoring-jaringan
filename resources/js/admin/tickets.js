@@ -33,7 +33,7 @@ export function initAdminTickets() {
         prioritySelect.addEventListener('change', filterRows);
     }
 
-    // Sinkronisasi nilai dropdown ke hidden input form update tiket
+    // Sinkronisasi nilai dropdown ke hidden input form quick update tiket
     document.querySelectorAll('.ticket-row').forEach(row => {
         const techSelect = row.querySelector('.technician-select');
         const statusSelect = row.querySelector('.status-select');
@@ -53,7 +53,7 @@ export function initAdminTickets() {
         }
     });
 
-    // Submit form update tiket ke database ketika tombol Update ditekan
+    // Submit form quick update tiket ke database ketika tombol Update ditekan
     document.querySelectorAll('.form-update-ticket').forEach(form => {
         form.addEventListener('submit', function (e) {
             const row = this.closest('tr');
@@ -85,48 +85,42 @@ export function initAdminTickets() {
         });
     });
 
-    // Delete ticket form confirmation
-    document.querySelectorAll('.delete-ticket-form').forEach(form => {
-        form.addEventListener('submit', function (e) {
-            const row = this.closest('tr');
-            const ticketId = row ? row.getAttribute('data-id') : '';
-            if (!confirm(`Apakah Anda yakin ingin membatalkan/menghapus tiket ${ticketId}?`)) {
-                e.preventDefault();
-            }
+    // Modal Konfirmasi Hapus Tiket
+    const deleteModal = document.getElementById('deleteTicketModal');
+    const deleteTicketNumberEl = document.getElementById('deleteTicketNumber');
+    const deleteForm = document.getElementById('formConfirmDeleteTicket');
+
+    function closeDeleteModal() {
+        if (deleteModal) deleteModal.classList.add('hidden');
+    }
+
+    document.querySelectorAll('.btn-delete-ticket').forEach(btn => {
+        btn.addEventListener('click', e => {
+            e.preventDefault();
+            const ticketNumber = btn.getAttribute('data-ticket-number') || '--';
+            const deleteUrl = btn.getAttribute('data-delete-url') || '';
+
+            if (deleteTicketNumberEl) deleteTicketNumberEl.textContent = ticketNumber;
+            if (deleteForm && deleteUrl) deleteForm.setAttribute('action', deleteUrl);
+            if (deleteModal) deleteModal.classList.remove('hidden');
         });
     });
 
-    // Modals: SLA
-    const btnSla = document.getElementById('btnSlaReport');
-    const slaModal = document.getElementById('slaModal');
-    const closeSla = document.getElementById('closeSlaModal');
-    const dismissSla = document.getElementById('btnDismissSla');
+    document.querySelectorAll('.close-delete-ticket-modal').forEach(btn => {
+        btn.addEventListener('click', closeDeleteModal);
+    });
 
-    if (btnSla && slaModal) {
-        btnSla.addEventListener('click', () => slaModal.classList.remove('hidden'));
-    }
-    if (closeSla && slaModal) {
-        closeSla.addEventListener('click', () => slaModal.classList.add('hidden'));
-    }
-    if (dismissSla && slaModal) {
-        dismissSla.addEventListener('click', () => slaModal.classList.add('hidden'));
+    if (deleteModal) {
+        deleteModal.addEventListener('click', e => {
+            if (e.target === deleteModal) closeDeleteModal();
+        });
     }
 
-    // Modals: Create Ticket
-    const btnCreate = document.getElementById('btnCreateTicket');
-    const createModal = document.getElementById('createTicketModal');
-    const closeCreate = document.getElementById('closeCreateModal');
-    const cancelCreate = document.getElementById('cancelCreateModal');
-
-    if (btnCreate && createModal) {
-        btnCreate.addEventListener('click', () => createModal.classList.remove('hidden'));
-    }
-    if (closeCreate && createModal) {
-        closeCreate.addEventListener('click', () => createModal.classList.add('hidden'));
-    }
-    if (cancelCreate && createModal) {
-        cancelCreate.addEventListener('click', () => createModal.classList.add('hidden'));
-    }
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && deleteModal && !deleteModal.classList.contains('hidden')) {
+            closeDeleteModal();
+        }
+    });
 }
 
 function showToastNotification(message) {
@@ -150,4 +144,3 @@ function showToastNotification(message) {
         }
     }, 4500);
 }
-

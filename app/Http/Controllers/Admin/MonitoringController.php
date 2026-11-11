@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\MonitoringAlert;
 use App\Models\MonitoringDevice;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -101,6 +102,43 @@ class MonitoringController extends Controller
      */
     public function index(Request $request): View
     {
+        // Jalankan polling update real-time jika perangkat MikroTik memiliki IP & username
+        if (!app()->runningUnitTests()) {
+            $mikrotikService = new \App\Services\MikrotikService();
+            $nodesToPoll = MonitoringDevice::whereNotNull('ip_address')
+                ->whereNotNull('api_username')
+                ->get();
+
+            foreach ($nodesToPoll as $node) {
+                $telemetry = $mikrotikService->getDeviceTelemetry(
+                    $node->ip_address,
+                    $node->api_username,
+                    (string) ($node->api_password ?? ''),
+                    (int) ($node->api_port ?? 8728),
+                    1
+                );
+
+                if ($telemetry) {
+                    $node->update([
+                        'status' => 'online',
+                        'status_label' => 'ONLINE',
+                        'cpu_load' => $telemetry['resource']['cpu_load'],
+                        'ram_load' => $telemetry['resource']['ram_load'],
+                        'uptime' => $telemetry['resource']['uptime'],
+                        'last_ping_ms' => (int) $telemetry['latency_ms'],
+                        'packet_loss' => 0.0,
+                        'interfaces' => $telemetry['interfaces'] ?? $node->interfaces,
+                    ]);
+                } else {
+                    $node->update([
+                        'status' => 'offline',
+                        'status_label' => 'OFFLINE',
+                        'packet_loss' => 100.0,
+                    ]);
+                }
+            }
+        }
+
         $telemetryDevices = array_values(self::getTelemetryDevicesList());
         $deviceCollection = collect($telemetryDevices);
 
@@ -146,8 +184,20 @@ class MonitoringController extends Controller
             ],
         ];
 
-        // Papan Live Alert (Log Insiden Otomatis)
-        $alerts = [];
+        // Papan Live Alert (Log Insiden Otomatis dari Database)
+        $alerts = MonitoringAlert::latest()->take(10)->get()->map(function ($alert) {
+            return [
+                'id' => $alert->id,
+                'host' => $alert->host,
+                'customer' => $alert->customer_name ?? 'Infrastruktur Jaringan',
+                'severity' => $alert->severity,
+                'type' => $alert->type,
+                'message' => $alert->message,
+                'is_resolved' => (bool) $alert->is_resolved,
+                'time_ago' => $alert->created_at ? $alert->created_at->diffForHumans(null, true) : 'Baru saja',
+                'time_wib' => $alert->created_at ? $alert->created_at->format('H:i:s') . ' WIB' : now()->format('H:i:s') . ' WIB',
+            ];
+        })->toArray();
 
         return view('admin.monitoring.index', compact('summary', 'alerts', 'telemetryDevices'));
     }
@@ -250,6 +300,14 @@ class MonitoringController extends Controller
      */
     public function resolveAlert(Request $request, int $id): JsonResponse
     {
+        $alert = MonitoringAlert::find($id);
+        if ($alert) {
+            $alert->update([
+                'is_resolved' => true,
+                'resolved_at' => now(),
+            ]);
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Insiden telemetri berhasil ditandai selesai (Resolved).',

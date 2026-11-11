@@ -84,6 +84,7 @@ class MonitoringAlertTest extends TestCase
     public function test_monitoring_page_renders_empty_state_cleanly(): void
     {
         \App\Http\Controllers\Admin\MonitoringController::saveTelemetryDevicesList([]);
+        \App\Models\MonitoringAlert::query()->delete();
         $response = $this->actingAs($this->adminUser)->get('/monitoring');
 
         $response->assertStatus(200);
@@ -174,6 +175,7 @@ class MonitoringAlertTest extends TestCase
             'unit_type' => 'Access Point',
             'ip_address' => '10.200.120.99',
             'customer' => 'Dinas Pendidikan Provinsi DKI Jakarta',
+            'api_username' => 'admin',
             'status' => 'online',
         ]);
 
@@ -202,6 +204,7 @@ class MonitoringAlertTest extends TestCase
             'ip_address' => '10.200.99.1',
             'customer' => 'PT Mitra Baru Mandiri',
             'project' => 'Dedicated Core Interconnect',
+            'api_username' => 'admin',
             'status' => 'online',
         ]);
 

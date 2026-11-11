@@ -282,28 +282,30 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-100">
                             <div>
                                 <label for="editApiUser" class="block text-xs font-semibold text-slate-700 mb-1.5">
-                                    Username API MikroTik (Opsional)
+                                    Username API MikroTik <span class="text-rose-500">*</span>
                                 </label>
                                 <input 
                                     id="editApiUser"
                                     type="text" 
                                     name="api_username" 
-                                    value="{{ old('api_username', $device['api_username'] ?? 'webmonitor') }}"
-                                    placeholder="webmonitor" 
+                                    value="{{ old('api_username', $device['api_username'] ?? '') }}"
+                                    required
+                                    placeholder="Contoh: admin atau monitorbot" 
                                     class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
                                 >
                             </div>
                             <div>
                                 <label for="editApiPass" class="block text-xs font-semibold text-slate-700 mb-1.5">
-                                    Password API MikroTik (Opsional)
+                                    Password API MikroTik
                                 </label>
                                 <input 
                                     id="editApiPass"
                                     type="password" 
                                     name="api_password" 
-                                    placeholder="Kosongkan jika tidak diubah" 
+                                    placeholder="Kosongkan jika tidak ingin mengubah password" 
                                     class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
                                 >
+                                <p class="text-[10px] text-slate-400 mt-1">Biarkan kosong jika tetap menggunakan kata sandi saat ini.</p>
                             </div>
                         </div>
 
