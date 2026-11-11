@@ -78,11 +78,17 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:admin')->group(function () {
         // Customer & Project Management (Kemitraan & Infrastruktur)
         Route::get('/customers', [CustomerProjectController::class, 'index'])->name('customers.index');
+        Route::get('/customers/rumahan/create', [CustomerProjectController::class, 'createRumahan'])->name('customers.rumahan.create');
+        Route::get('/customers/rumahan/{id}/edit', [CustomerProjectController::class, 'editRumahan'])->name('customers.rumahan.edit');
+        Route::get('/customers/perusahaan/create', [CustomerProjectController::class, 'createPerusahaan'])->name('customers.perusahaan.create');
+        Route::get('/customers/perusahaan/{id}/edit', [CustomerProjectController::class, 'editPerusahaan'])->name('customers.perusahaan.edit');
         Route::post('/customers', [CustomerProjectController::class, 'storeCustomer'])->name('customers.store');
         Route::match(['post', 'put'], '/customers/{id}', [CustomerProjectController::class, 'updateCustomer'])->name('customers.update');
         Route::delete('/customers/{id}', [CustomerProjectController::class, 'destroyCustomer'])->name('customers.destroy');
 
         Route::get('/projects', [CustomerProjectController::class, 'index'])->name('projects.index');
+        Route::get('/projects/create', [CustomerProjectController::class, 'createPerusahaan'])->name('projects.create');
+        Route::get('/projects/{id}/edit', [CustomerProjectController::class, 'editPerusahaan'])->name('projects.edit');
         Route::post('/projects', [CustomerProjectController::class, 'storeProject'])->name('projects.store');
         Route::match(['post', 'put'], '/projects/{id}', [CustomerProjectController::class, 'updateProject'])->name('projects.update');
         Route::delete('/projects/{id}', [CustomerProjectController::class, 'destroyProject'])->name('projects.destroy');

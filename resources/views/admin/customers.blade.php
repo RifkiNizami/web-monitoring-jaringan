@@ -70,24 +70,24 @@
                     <!-- Top 2 Action Buttons -->
                     <div class="flex flex-wrap items-center gap-2.5 shrink-0">
                         <!-- 1. Tambah Customer Rumahan (Dark Button) -->
-                        <button type="button" id="btnOpenCreateCustomer"
+                        <a href="{{ route('customers.rumahan.create') }}"
                             class="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg shadow-sm active:scale-95 transition-all cursor-pointer">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 4v16m8-8H4" />
                             </svg>
                             <span>Tambah Customer Rumahan</span>
-                        </button>
+                        </a>
 
                         <!-- 2. Tambah Customer Perusahaan (White Border Button) -->
-                        <button type="button" id="btnOpenCreateProject"
+                        <a href="{{ route('customers.perusahaan.create') }}"
                             class="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 text-xs font-bold rounded-lg shadow-2xs active:scale-95 transition-all cursor-pointer">
                             <svg class="w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 4v16m8-8H4" />
                             </svg>
                             <span>Tambah Customer Perusahaan</span>
-                        </button>
+                        </a>
                     </div>
                 </div>
 
@@ -283,19 +283,15 @@
                                             <td class="py-4 px-5 align-middle text-right whitespace-nowrap">
                                                 <div class="flex items-center justify-end gap-1.5">
                                                     <!-- Edit Button (Blue Border Pencil) -->
-                                                    <button type="button" title="Edit Data Customer Rumahan"
-                                                        class="btn-edit-customer inline-flex items-center justify-center w-7 h-7 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 active:scale-95 transition-all cursor-pointer"
-                                                        data-id="{{ $c['id'] }}" data-name="{{ $c['name'] }}"
-                                                        data-phone="{{ $c['phone'] }}" data-email="{{ $c['email'] }}"
-                                                        data-address="{{ $c['address'] }}" data-note="{{ $c['note'] }}"
-                                                        data-status="{{ $c['status'] }}">
+                                                    <a href="{{ route('customers.rumahan.edit', $c['id']) }}" title="Edit Data Customer Rumahan"
+                                                        class="inline-flex items-center justify-center w-7 h-7 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 active:scale-95 transition-all cursor-pointer">
                                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
                                                             stroke="currentColor">
                                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                                 stroke-width="1.8"
                                                                 d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                                         </svg>
-                                                    </button>
+                                                    </a>
 
                                                     <!-- Delete Button (Red Border Trash) -->
                                                     <button type="button" title="Hapus Customer Rumahan"
@@ -428,19 +424,15 @@
                                             <td class="py-4 px-5 align-middle text-right whitespace-nowrap">
                                                 <div class="flex items-center justify-end gap-1.5">
                                                     <!-- Edit Button (Blue Border Pencil) -->
-                                                    <button type="button" title="Edit Data Customer Perusahaan"
-                                                        class="btn-edit-project inline-flex items-center justify-center w-7 h-7 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 active:scale-95 transition-all cursor-pointer"
-                                                        data-id="{{ $p['id'] }}" data-name="{{ $p['name'] }}"
-                                                        data-pic="{{ $p['pic_name'] }}" data-phone="{{ $p['phone'] }}"
-                                                        data-email="{{ $p['email'] }}" data-address="{{ $p['address'] }}"
-                                                        data-note="{{ $p['note'] }}" data-status="{{ $p['status'] }}">
+                                                    <a href="{{ route('customers.perusahaan.edit', $p['id']) }}" title="Edit Data Customer Perusahaan"
+                                                        class="inline-flex items-center justify-center w-7 h-7 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 active:scale-95 transition-all cursor-pointer">
                                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
                                                             stroke="currentColor">
                                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                                 stroke-width="1.8"
                                                                 d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                                         </svg>
-                                                    </button>
+                                                    </a>
 
                                                     <!-- Delete Button (Red Border Trash) -->
                                                     <button type="button" title="Hapus Customer Perusahaan"
@@ -480,448 +472,13 @@
         </div>
     </div>
 
-    <!-- ========================================================================= -->
-    <!-- MODAL 1: TAMBAH CUSTOMER RUMAHAN                                          -->
-    <!-- (Nama Perusahaan/PT -> Nama Customer, Nama PIC Dihilangkan,               -->
-    <!--  Alamat Kantor -> Alamat Rumah, Kontak WA & Catatan Layanan Tetap)        -->
-    <!-- ========================================================================= -->
-    <div id="modalCreateCustomer"
-        class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs items-center justify-center p-4 hidden [&:not(.hidden)]:flex">
-        <div
-            class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-lg w-full overflow-hidden transform transition-all animate-in fade-in zoom-in duration-200 my-8">
-            <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
-                <h3 class="text-sm font-bold text-slate-900">Tambah Customer Rumahan</h3>
-                <button type="button"
-                    class="close-customer-modal text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-            <form id="formCreateCustomer" action="{{ route('customers.store') }}" method="POST">
-                @csrf
-                <div class="p-6 space-y-4 max-h-[72vh] overflow-y-auto">
-                    <!-- NAMA CUSTOMER * -->
-                    <div>
-                        <label for="create_cust_name" class="block text-xs font-bold text-slate-700 mb-1">
-                            NAMA CUSTOMER <span class="text-rose-500">*</span>
-                        </label>
-                        <input type="text" id="create_cust_name" name="name" required placeholder="Contoh: Budi Santoso"
-                            class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs">
-                    </div>
 
-                    <!-- STATUS KONTRAK * (Nama PIC Dihilangkan sesuai instruksi) -->
-                    <div>
-                        <label for="create_cust_status" class="block text-xs font-bold text-slate-700 mb-1">
-                            STATUS KONTRAK <span class="text-rose-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <select id="create_cust_status" name="status" required
-                                class="w-full appearance-none pl-3 pr-8 py-2 text-xs font-medium bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs cursor-pointer">
-                                <option value="Aktif" selected>Aktif</option>
-                                <option value="Negosiasi">Negosiasi</option>
-                                <option value="Nonaktif">Nonaktif</option>
-                            </select>
-                            <div
-                                class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-slate-400">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- ROW: EMAIL RESMI & KONTAK TELEPON / WA -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label for="create_cust_email" class="block text-xs font-bold text-slate-700 mb-1">
-                                EMAIL RESMI <span class="text-rose-500">*</span>
-                            </label>
-                            <input type="email" id="create_cust_email" name="email" required
-                                placeholder="pelanggan@email.com"
-                                class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs">
-                        </div>
-                        <div>
-                            <label for="create_cust_phone" class="block text-xs font-bold text-slate-700 mb-1">
-                                KONTAK TELEPON / WA <span class="text-rose-500">*</span>
-                            </label>
-                            <input type="text" id="create_cust_phone" name="phone" required
-                                placeholder="021-xxxx atau 0812xxxx"
-                                class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs">
-                        </div>
-                    </div>
 
-                    <!-- ALAMAT RUMAH * -->
-                    <div>
-                        <label for="create_cust_address" class="block text-xs font-bold text-slate-700 mb-1">
-                            ALAMAT RUMAH <span class="text-rose-500">*</span>
-                        </label>
-                        <textarea id="create_cust_address" name="address" rows="2" required
-                            placeholder="Alamat lengkap lokasi rumah..."
-                            class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs"></textarea>
-                    </div>
-
-                    <!-- CATATAN TAMBAHAN SLA / LAYANAN -->
-                    <div>
-                        <label for="create_cust_note" class="block text-xs font-bold text-slate-700 mb-1">
-                            CATATAN TAMBAHAN SLA / LAYANAN
-                        </label>
-                        <input type="text" id="create_cust_note" name="note"
-                            placeholder="Catatan internal tim NOC terkait layanan..."
-                            class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs">
-                    </div>
-                </div>
-
-                <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2.5">
-                    <button type="button"
-                        class="close-customer-modal px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">
-                        Batal
-                    </button>
-                    <button type="submit"
-                        class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg shadow-sm active:scale-95 transition-all cursor-pointer">
-                        Simpan Customer Rumahan
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
 
     <!-- ========================================================================= -->
-    <!-- MODAL 2: EDIT DATA CUSTOMER RUMAHAN                                       -->
+    <!-- MODAL KONFIRMASI HAPUS                                                    -->
     <!-- ========================================================================= -->
-    <div id="modalEditCustomer"
-        class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs items-center justify-center p-4 hidden [&:not(.hidden)]:flex">
-        <div
-            class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-lg w-full overflow-hidden transform transition-all animate-in fade-in zoom-in duration-200 my-8">
-            <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
-                <h3 class="text-sm font-bold text-slate-900">Edit Data Customer Rumahan</h3>
-                <button type="button"
-                    class="close-customer-edit-modal text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-            <form id="formEditCustomer" method="POST">
-                @csrf
-                <input type="hidden" id="edit_cust_id">
-                <div class="p-6 space-y-4 max-h-[72vh] overflow-y-auto">
-                    <!-- NAMA CUSTOMER * -->
-                    <div>
-                        <label for="edit_cust_name" class="block text-xs font-bold text-slate-700 mb-1">
-                            NAMA CUSTOMER <span class="text-rose-500">*</span>
-                        </label>
-                        <input type="text" id="edit_cust_name" name="name" required
-                            class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs">
-                    </div>
-
-                    <!-- STATUS KONTRAK * -->
-                    <div>
-                        <label for="edit_cust_status" class="block text-xs font-bold text-slate-700 mb-1">
-                            STATUS KONTRAK <span class="text-rose-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <select id="edit_cust_status" name="status" required
-                                class="w-full appearance-none pl-3 pr-8 py-2 text-xs font-medium bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs cursor-pointer">
-                                <option value="Aktif">Aktif</option>
-                                <option value="Negosiasi">Negosiasi</option>
-                                <option value="Nonaktif">Nonaktif</option>
-                            </select>
-                            <div
-                                class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-slate-400">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ROW: EMAIL RESMI & KONTAK TELEPON / WA -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label for="edit_cust_email" class="block text-xs font-bold text-slate-700 mb-1">
-                                EMAIL RESMI <span class="text-rose-500">*</span>
-                            </label>
-                            <input type="email" id="edit_cust_email" name="email" required
-                                class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs">
-                        </div>
-                        <div>
-                            <label for="edit_cust_phone" class="block text-xs font-bold text-slate-700 mb-1">
-                                KONTAK TELEPON / WA <span class="text-rose-500">*</span>
-                            </label>
-                            <input type="text" id="edit_cust_phone" name="phone" required
-                                class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs">
-                        </div>
-                    </div>
-
-                    <!-- ALAMAT RUMAH * -->
-                    <div>
-                        <label for="edit_cust_address" class="block text-xs font-bold text-slate-700 mb-1">
-                            ALAMAT RUMAH <span class="text-rose-500">*</span>
-                        </label>
-                        <textarea id="edit_cust_address" name="address" rows="2" required
-                            class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs"></textarea>
-                    </div>
-
-                    <!-- CATATAN TAMBAHAN SLA / LAYANAN -->
-                    <div>
-                        <label for="edit_cust_note" class="block text-xs font-bold text-slate-700 mb-1">
-                            CATATAN TAMBAHAN SLA / LAYANAN
-                        </label>
-                        <input type="text" id="edit_cust_note" name="note"
-                            class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs">
-                    </div>
-                </div>
-
-                <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2.5">
-                    <button type="button"
-                        class="close-customer-edit-modal px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">
-                        Batal
-                    </button>
-                    <button type="submit"
-                        class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg shadow-sm active:scale-95 transition-all cursor-pointer">
-                        Perbarui Customer Rumahan
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- ========================================================================= -->
-    <!-- MODAL 3: TAMBAH CUSTOMER PERUSAHAAN                                       -->
-    <!-- (Sesuai customer rumahan namun untuk perusahaan: Nama Perusahaan / PT,    -->
-    <!--  Nama PIC (Penanggung Jawab) tidak dihilangkan, dan Alamat Kantor Pusat   -->
-    <!--  / Cabang ada)                                                            -->
-    <!-- ========================================================================= -->
-    <div id="modalCreateProject"
-        class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs items-center justify-center p-4 hidden [&:not(.hidden)]:flex">
-        <div
-            class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-lg w-full overflow-hidden transform transition-all animate-in fade-in zoom-in duration-200 my-8">
-            <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
-                <h3 class="text-sm font-bold text-slate-900">Tambah Customer Perusahaan</h3>
-                <button type="button"
-                    class="close-project-modal text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-            <form id="formCreateProject" action="{{ route('projects.store') }}" method="POST">
-                @csrf
-                <div class="p-6 space-y-4 max-h-[72vh] overflow-y-auto">
-                    <!-- NAMA PERUSAHAAN / PT * -->
-                    <div>
-                        <label for="create_proj_name" class="block text-xs font-bold text-slate-700 mb-1">
-                            NAMA PERUSAHAAN / PT <span class="text-rose-500">*</span>
-                        </label>
-                        <input type="text" id="create_proj_name" name="name" required
-                            placeholder="Contoh: PT. Bank Mandiri (Persero) Tbk"
-                            class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs">
-                    </div>
-
-                    <!-- ROW: NAMA PIC (PENANGGUNG JAWAB) & STATUS KONTRAK -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label for="create_proj_pic" class="block text-xs font-bold text-slate-700 mb-1">
-                                NAMA PIC (PENANGGUNG JAWAB) <span class="text-rose-500">*</span>
-                            </label>
-                            <input type="text" id="create_proj_pic" name="pic_name" required
-                                placeholder="Contoh: Bambang Pratama"
-                                class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs">
-                        </div>
-                        <div>
-                            <label for="create_proj_status" class="block text-xs font-bold text-slate-700 mb-1">
-                                STATUS KONTRAK <span class="text-rose-500">*</span>
-                            </label>
-                            <div class="relative">
-                                <select id="create_proj_status" name="status" required
-                                    class="w-full appearance-none pl-3 pr-8 py-2 text-xs font-medium bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs cursor-pointer">
-                                    <option value="Aktif" selected>Aktif</option>
-                                    <option value="Negosiasi">Negosiasi</option>
-                                    <option value="Nonaktif">Nonaktif</option>
-                                </select>
-                                <div
-                                    class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-slate-400">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ROW: EMAIL RESMI & KONTAK TELEPON / WA -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label for="create_proj_email" class="block text-xs font-bold text-slate-700 mb-1">
-                                EMAIL RESMI <span class="text-rose-500">*</span>
-                            </label>
-                            <input type="email" id="create_proj_email" name="email" required
-                                placeholder="pic@perusahaan.co.id"
-                                class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs">
-                        </div>
-                        <div>
-                            <label for="create_proj_phone" class="block text-xs font-bold text-slate-700 mb-1">
-                                KONTAK TELEPON / WA <span class="text-rose-500">*</span>
-                            </label>
-                            <input type="text" id="create_proj_phone" name="phone" required
-                                placeholder="021-xxxx atau 0812xxxx"
-                                class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs">
-                        </div>
-                    </div>
-
-                    <!-- ALAMAT KANTOR PUSAT / CABANG * -->
-                    <div>
-                        <label for="create_proj_address" class="block text-xs font-bold text-slate-700 mb-1">
-                            ALAMAT KANTOR PUSAT / CABANG <span class="text-rose-500">*</span>
-                        </label>
-                        <textarea id="create_proj_address" name="address" rows="2" required
-                            placeholder="Alamat lengkap lokasi gedung/kantor pusat atau cabang..."
-                            class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs"></textarea>
-                    </div>
-
-                    <!-- CATATAN TAMBAHAN SLA / LAYANAN -->
-                    <div>
-                        <label for="create_proj_note" class="block text-xs font-bold text-slate-700 mb-1">
-                            CATATAN TAMBAHAN SLA / LAYANAN
-                        </label>
-                        <input type="text" id="create_proj_note" name="note"
-                            placeholder="Catatan internal tim NOC terkait kontrak..."
-                            class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs">
-                    </div>
-                </div>
-
-                <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2.5">
-                    <button type="button"
-                        class="close-project-modal px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">
-                        Batal
-                    </button>
-                    <button type="submit"
-                        class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg shadow-sm active:scale-95 transition-all cursor-pointer">
-                        Simpan Customer Perusahaan
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- ========================================================================= -->
-    <!-- MODAL 4: EDIT DATA CUSTOMER PERUSAHAAN                                    -->
-    <!-- ========================================================================= -->
-    <div id="modalEditProject"
-        class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs items-center justify-center p-4 hidden [&:not(.hidden)]:flex">
-        <div
-            class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-lg w-full overflow-hidden transform transition-all animate-in fade-in zoom-in duration-200 my-8">
-            <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
-                <h3 class="text-sm font-bold text-slate-900">Edit Data Customer Perusahaan</h3>
-                <button type="button"
-                    class="close-project-edit-modal text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-            <form id="formEditProject" method="POST">
-                @csrf
-                <input type="hidden" id="edit_proj_id">
-                <div class="p-6 space-y-4 max-h-[72vh] overflow-y-auto">
-                    <!-- NAMA PERUSAHAAN / PT * -->
-                    <div>
-                        <label for="edit_proj_name" class="block text-xs font-bold text-slate-700 mb-1">
-                            NAMA PERUSAHAAN / PT <span class="text-rose-500">*</span>
-                        </label>
-                        <input type="text" id="edit_proj_name" name="name" required
-                            class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs">
-                    </div>
-
-                    <!-- ROW: NAMA PIC & STATUS KONTRAK -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label for="edit_proj_pic" class="block text-xs font-bold text-slate-700 mb-1">
-                                NAMA PIC (PENANGGUNG JAWAB) <span class="text-rose-500">*</span>
-                            </label>
-                            <input type="text" id="edit_proj_pic" name="pic_name" required
-                                class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs">
-                        </div>
-                        <div>
-                            <label for="edit_proj_status" class="block text-xs font-bold text-slate-700 mb-1">
-                                STATUS KONTRAK <span class="text-rose-500">*</span>
-                            </label>
-                            <div class="relative">
-                                <select id="edit_proj_status" name="status" required
-                                    class="w-full appearance-none pl-3 pr-8 py-2 text-xs font-medium bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs cursor-pointer">
-                                    <option value="Aktif">Aktif</option>
-                                    <option value="Negosiasi">Negosiasi</option>
-                                    <option value="Nonaktif">Nonaktif</option>
-                                </select>
-                                <div
-                                    class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-slate-400">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ROW: EMAIL RESMI & KONTAK TELEPON / WA -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label for="edit_proj_email" class="block text-xs font-bold text-slate-700 mb-1">
-                                EMAIL RESMI <span class="text-rose-500">*</span>
-                            </label>
-                            <input type="email" id="edit_proj_email" name="email" required
-                                class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs">
-                        </div>
-                        <div>
-                            <label for="edit_proj_phone" class="block text-xs font-bold text-slate-700 mb-1">
-                                KONTAK TELEPON / WA <span class="text-rose-500">*</span>
-                            </label>
-                            <input type="text" id="edit_proj_phone" name="phone" required
-                                class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs">
-                        </div>
-                    </div>
-
-                    <!-- ALAMAT KANTOR PUSAT / CABANG * -->
-                    <div>
-                        <label for="edit_proj_address" class="block text-xs font-bold text-slate-700 mb-1">
-                            ALAMAT KANTOR PUSAT / CABANG <span class="text-rose-500">*</span>
-                        </label>
-                        <textarea id="edit_proj_address" name="address" rows="2" required
-                            class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs"></textarea>
-                    </div>
-
-                    <!-- CATATAN TAMBAHAN SLA / LAYANAN -->
-                    <div>
-                        <label for="edit_proj_note" class="block text-xs font-bold text-slate-700 mb-1">
-                            CATATAN TAMBAHAN SLA / LAYANAN
-                        </label>
-                        <input type="text" id="edit_proj_note" name="note"
-                            class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs">
-                    </div>
-                </div>
-
-                <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2.5">
-                    <button type="button"
-                        class="close-project-edit-modal px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">
-                        Batal
-                    </button>
-                    <button type="submit"
-                        class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg shadow-sm active:scale-95 transition-all cursor-pointer">
-                        Perbarui Customer Perusahaan
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
 
     <!-- ========================================================================= -->
     <!-- MODAL 5: HAPUS CUSTOMER RUMAHAN                                           -->

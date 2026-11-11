@@ -32,6 +32,54 @@ class CustomerProjectController extends Controller
     }
 
     /**
+     * Tampilkan halaman formulir tambah customer rumahan baru.
+     */
+    public function createRumahan(): View
+    {
+        $statusOptions = ['Aktif', 'Negosiasi', 'Nonaktif'];
+
+        return view('admin.customers.rumahan_create', compact('statusOptions'));
+    }
+
+    /**
+     * Tampilkan halaman formulir edit customer rumahan.
+     */
+    public function editRumahan(int|string $id): View
+    {
+        $customer = Customer::where('id', $id)
+            ->where('customer_type', 'rumahan')
+            ->firstOrFail();
+
+        $statusOptions = ['Aktif', 'Negosiasi', 'Nonaktif'];
+
+        return view('admin.customers.rumahan_edit', compact('customer', 'statusOptions'));
+    }
+
+    /**
+     * Tampilkan halaman formulir tambah customer perusahaan baru.
+     */
+    public function createPerusahaan(): View
+    {
+        $statusOptions = ['Aktif', 'Negosiasi', 'Nonaktif'];
+
+        return view('admin.customers.perusahaan_create', compact('statusOptions'));
+    }
+
+    /**
+     * Tampilkan halaman formulir edit customer perusahaan.
+     */
+    public function editPerusahaan(int|string $id): View
+    {
+        $project = Customer::where('id', $id)
+            ->where('customer_type', 'perusahaan')
+            ->firstOrFail();
+
+        $statusOptions = ['Aktif', 'Negosiasi', 'Nonaktif'];
+
+        return view('admin.customers.perusahaan_edit', compact('project', 'statusOptions'));
+    }
+
+    /**
      * Simpan Customer Rumahan Baru ke database.
      */
     public function storeCustomer(Request $request): JsonResponse|RedirectResponse

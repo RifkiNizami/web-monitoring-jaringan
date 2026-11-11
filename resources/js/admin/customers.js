@@ -102,64 +102,9 @@ export function initAdminCustomers() {
     if (statusFilter) statusFilter.addEventListener('change', filterCurrentTable);
 
     // ==========================================
-    // MODAL 1: TAMBAH CUSTOMER RUMAHAN
+    // ACTION BUTTONS BINDING (DELETE KONFIRMASI)
     // ==========================================
-    const modalCreateCust = document.getElementById('modalCreateCustomer');
-    const btnOpenCreateCust = document.getElementById('btnOpenCreateCustomer');
-
-    if (btnOpenCreateCust && modalCreateCust) {
-        btnOpenCreateCust.addEventListener('click', () => modalCreateCust.classList.remove('hidden'));
-    }
-    document.querySelectorAll('.close-customer-modal').forEach(b => {
-        b.addEventListener('click', () => {
-            if (modalCreateCust) modalCreateCust.classList.add('hidden');
-        });
-    });
-
-    // ==========================================
-    // MODAL 2: EDIT CUSTOMER RUMAHAN
-    // ==========================================
-    const modalEditCust = document.getElementById('modalEditCustomer');
-    const formEditCust = document.getElementById('formEditCustomer');
-
-    document.querySelectorAll('.close-customer-edit-modal').forEach(b => {
-        b.addEventListener('click', () => {
-            if (modalEditCust) modalEditCust.classList.add('hidden');
-        });
-    });
-
     function bindCustomerActionButtons() {
-        document.querySelectorAll('.btn-edit-customer').forEach(btn => {
-            btn.onclick = function () {
-                const id = this.getAttribute('data-id');
-                const name = this.getAttribute('data-name');
-                const phone = this.getAttribute('data-phone');
-                const email = this.getAttribute('data-email');
-                const address = this.getAttribute('data-address');
-                const note = this.getAttribute('data-note');
-                const status = this.getAttribute('data-status');
-
-                const elId = document.getElementById('edit_cust_id');
-                const elName = document.getElementById('edit_cust_name');
-                const elPhone = document.getElementById('edit_cust_phone');
-                const elEmail = document.getElementById('edit_cust_email');
-                const elAddress = document.getElementById('edit_cust_address');
-                const elNote = document.getElementById('edit_cust_note');
-                const elStatus = document.getElementById('edit_cust_status');
-
-                if (elId) elId.value = id || '';
-                if (elName) elName.value = name || '';
-                if (elPhone) elPhone.value = phone || '';
-                if (elEmail) elEmail.value = email || '';
-                if (elAddress) elAddress.value = address || '';
-                if (elNote) elNote.value = note || '';
-                if (elStatus) elStatus.value = status || '';
-
-                if (formEditCust) formEditCust.action = `/customers/${id}`;
-                if (modalEditCust) modalEditCust.classList.remove('hidden');
-            };
-        });
-
         document.querySelectorAll('.btn-delete-customer').forEach(btn => {
             btn.onclick = function () {
                 targetDeleteCustId = this.getAttribute('data-id');
@@ -171,68 +116,7 @@ export function initAdminCustomers() {
         });
     }
 
-    // ==========================================
-    // MODAL 3: TAMBAH CUSTOMER PERUSAHAAN
-    // ==========================================
-    const modalCreateProj = document.getElementById('modalCreateProject');
-    const btnOpenCreateProj = document.getElementById('btnOpenCreateProject');
-
-    if (btnOpenCreateProj && modalCreateProj) {
-        btnOpenCreateProj.addEventListener('click', () => modalCreateProj.classList.remove('hidden'));
-    }
-    document.querySelectorAll('.close-project-modal').forEach(b => {
-        b.addEventListener('click', () => {
-            if (modalCreateProj) modalCreateProj.classList.add('hidden');
-        });
-    });
-
-    // ==========================================
-    // MODAL 4: EDIT CUSTOMER PERUSAHAAN
-    // ==========================================
-    const modalEditProj = document.getElementById('modalEditProject');
-    const formEditProj = document.getElementById('formEditProject');
-
-    document.querySelectorAll('.close-project-edit-modal').forEach(b => {
-        b.addEventListener('click', () => {
-            if (modalEditProj) modalEditProj.classList.add('hidden');
-        });
-    });
-
     function bindProjectActionButtons() {
-        document.querySelectorAll('.btn-edit-project').forEach(btn => {
-            btn.onclick = function () {
-                const id = this.getAttribute('data-id');
-                const name = this.getAttribute('data-name');
-                const pic = this.getAttribute('data-pic');
-                const phone = this.getAttribute('data-phone');
-                const email = this.getAttribute('data-email');
-                const address = this.getAttribute('data-address');
-                const note = this.getAttribute('data-note');
-                const status = this.getAttribute('data-status');
-
-                const elId = document.getElementById('edit_proj_id');
-                const elName = document.getElementById('edit_proj_name');
-                const elPic = document.getElementById('edit_proj_pic');
-                const elPhone = document.getElementById('edit_proj_phone');
-                const elEmail = document.getElementById('edit_proj_email');
-                const elAddr = document.getElementById('edit_proj_address');
-                const elNote = document.getElementById('edit_proj_note');
-                const elStat = document.getElementById('edit_proj_status');
-
-                if (elId) elId.value = id || '';
-                if (elName) elName.value = name || '';
-                if (elPic) elPic.value = pic || '';
-                if (elPhone) elPhone.value = phone || '';
-                if (elEmail) elEmail.value = email || '';
-                if (elAddr) elAddr.value = address || '';
-                if (elNote) elNote.value = note || '';
-                if (elStat) elStat.value = status || '';
-
-                if (formEditProj) formEditProj.action = `/projects/${id}`;
-                if (modalEditProj) modalEditProj.classList.remove('hidden');
-            };
-        });
-
         document.querySelectorAll('.btn-delete-project').forEach(btn => {
             btn.onclick = function () {
                 targetDeleteProjId = this.getAttribute('data-id');

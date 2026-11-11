@@ -255,4 +255,69 @@ class CustomerCrudTest extends TestCase
 
         $response->assertSessionHasErrors(['name', 'email', 'phone', 'address', 'status']);
     }
+
+    public function test_admin_can_view_create_residential_customer_page(): void
+    {
+        $response = $this->actingAs($this->admin)->get(route('customers.rumahan.create'));
+
+        $response->assertStatus(200);
+        $response->assertViewIs('admin.customers.rumahan_create');
+        $response->assertSee('Tambah Customer Rumahan Baru');
+        $response->assertSee('Customer Rumahan');
+    }
+
+    public function test_admin_can_view_edit_residential_customer_page(): void
+    {
+        $customer = Customer::create([
+            'customer_type' => 'rumahan',
+            'code' => 'HOME-7777',
+            'name' => 'Customer Tes Edit',
+            'pic_name' => '-',
+            'email' => 'edit.rumahan@test.com',
+            'phone' => '0812-7777-8888',
+            'address' => 'Jl. Merpati No. 12',
+            'status' => 'Aktif',
+            'note' => 'Paket Home 50Mbps',
+        ]);
+
+        $response = $this->actingAs($this->admin)->get(route('customers.rumahan.edit', $customer->id));
+
+        $response->assertStatus(200);
+        $response->assertViewIs('admin.customers.rumahan_edit');
+        $response->assertSee('Customer Tes Edit');
+        $response->assertSee('HOME-7777');
+    }
+
+    public function test_admin_can_view_create_corporate_customer_page(): void
+    {
+        $response = $this->actingAs($this->admin)->get(route('customers.perusahaan.create'));
+
+        $response->assertStatus(200);
+        $response->assertViewIs('admin.customers.perusahaan_create');
+        $response->assertSee('Tambah Customer Perusahaan Baru');
+        $response->assertSee('Customer Perusahaan');
+    }
+
+    public function test_admin_can_view_edit_corporate_customer_page(): void
+    {
+        $corporate = Customer::create([
+            'customer_type' => 'perusahaan',
+            'code' => 'CUST-7777',
+            'name' => 'PT. Mitra Tes Edit',
+            'pic_name' => 'Rahmat Hidayat',
+            'email' => 'rahmat@mitrates.com',
+            'phone' => '021-99887766',
+            'address' => 'Gedung Cyber Lantai 8',
+            'status' => 'Aktif',
+            'note' => 'SLA 99.8%',
+        ]);
+
+        $response = $this->actingAs($this->admin)->get(route('customers.perusahaan.edit', $corporate->id));
+
+        $response->assertStatus(200);
+        $response->assertViewIs('admin.customers.perusahaan_edit');
+        $response->assertSee('PT. Mitra Tes Edit');
+        $response->assertSee('Rahmat Hidayat');
+        $response->assertSee('CUST-7777');
+    }
 }
