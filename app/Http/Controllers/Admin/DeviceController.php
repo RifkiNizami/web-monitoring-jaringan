@@ -138,10 +138,13 @@ class DeviceController extends Controller
             }
         }
 
-        return Device::orderBy('id', 'asc')
-            ->get()
-            ->mapWithKeys(fn ($device) => [$device->id => self::formatDeviceModel($device)])
-            ->all();
+        $deviceModels = Device::orderBy('id', 'asc')->get();
+        $devices = [];
+        foreach ($deviceModels as $device) {
+            $devices[$device->id] = self::formatDeviceModel($device);
+        }
+
+        return $devices;
     }
 
     /**
