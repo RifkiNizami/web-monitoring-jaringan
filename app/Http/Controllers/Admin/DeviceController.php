@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Exports\InventoryDeviceExport;
 use App\Models\Device;
 use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
@@ -11,6 +12,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\Response;
 
 class DeviceController extends Controller
 {
@@ -428,5 +431,15 @@ class DeviceController extends Controller
         }
 
         return redirect()->route('devices.index')->with('error', 'Data barang inventaris tidak ditemukan.');
+    }
+
+    /**
+     * Ekspor seluruh data inventaris perangkat ke Excel (.xlsx).
+     */
+    public function exportExcel(): Response
+    {
+        $filename = 'NetFly_Inventaris_Perangkat_' . date('Ymd_His') . '.xlsx';
+
+        return Excel::download(new InventoryDeviceExport(), $filename);
     }
 }

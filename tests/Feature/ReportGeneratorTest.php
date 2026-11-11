@@ -93,4 +93,41 @@ class ReportGeneratorTest extends TestCase
         $response->assertHeader('content-type', 'application/pdf');
         $this->assertStringContainsString('inline', $response->headers->get('content-disposition'));
     }
+
+    /**
+     * Uji ekspor Excel perangkat pada Executive Report Generator.
+     */
+    public function test_export_excel_in_report_generator_downloads_valid_xlsx(): void
+    {
+        $response = $this->actingAs($this->adminUser)->get(route('reports.exportExcel', [
+            'customer' => 'mandiri',
+            'month' => 10,
+            'year' => 2026,
+        ]));
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('attachment', $response->headers->get('content-disposition'));
+        $this->assertStringContainsString('.xlsx', $response->headers->get('content-disposition'));
+    }
+
+    /**
+     * Uji proteksi keamanan route export excel (wajib auth role admin).
+     */
+    public function test_guest_cannot_export_excel(): void
+    {
+        $response = $this->get(route('reports.exportExcel'));
+        $response->assertRedirect(route('login'));
+    }
+
+    /**
+     * Uji ekspor Excel pada halaman inventaris perangkat.
+     */
+    public function test_devices_inventory_export_excel_downloads_valid_xlsx(): void
+    {
+        $response = $this->actingAs($this->adminUser)->get(route('devices.exportExcel'));
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('attachment', $response->headers->get('content-disposition'));
+        $this->assertStringContainsString('.xlsx', $response->headers->get('content-disposition'));
+    }
 }

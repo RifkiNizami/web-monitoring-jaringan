@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Exports\DevicesReportExport;
 use App\Models\Customer;
 use App\Models\MonitoringDevice;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ReportController extends Controller
 {
@@ -105,6 +107,31 @@ class ReportController extends Controller
         }
 
         return $pdf->download($filename);
+    }
+
+    /**
+     * Ekspor data perangkat laporan ke format spreadsheet Excel (.xlsx).
+     */
+    public function exportExcel(Request $request): Response
+    {
+        $reportData = $this->resolveReportData($request);
+
+        $customerSlug = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', $reportData['evaluatedPartner']));
+        $filename = sprintf(
+            'NetFly_Device_Report_%s_%s_%s.xlsx',
+            $customerSlug,
+            $reportData['selectedMonthName'],
+            $reportData['selectedYear']
+        );
+
+        return Excel::download(
+            new DevicesReportExport(
+                $reportData['devices'],
+                $reportData['evaluatedPartner'],
+                $reportData['formattedPeriod']
+            ),
+            $filename
+        );
     }
 
     /**

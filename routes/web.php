@@ -111,6 +111,7 @@ Route::middleware('auth')->group(function () {
 
         // Inventaris Perangkat Jaringan (Network Devices Management)
         Route::get('/devices', [DeviceController::class, 'index'])->name('devices.index');
+        Route::get('/devices/export-excel', [DeviceController::class, 'exportExcel'])->name('devices.exportExcel');
         Route::get('/devices/create', [DeviceController::class, 'create'])->name('devices.create');
         Route::post('/devices', [DeviceController::class, 'store'])->name('devices.store');
         Route::get('/devices/{id}/edit', [DeviceController::class, 'edit'])->name('devices.edit');
@@ -130,9 +131,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/monitoring/alerts/{id}/resolve', [MonitoringController::class, 'resolveAlert'])->name('monitoring.alerts.resolve');
         Route::post('/monitoring/settings', [MonitoringDeviceController::class, 'saveSettings'])->name('monitoring.settings.save');
 
-        // Laporan Kinerja SLA & Audit (Executive Report Generator & PDF Export)
+        // Laporan Kinerja SLA & Audit (Executive Report Generator & PDF/Excel Export)
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
         Route::get('/reports/export-pdf', [ReportController::class, 'exportPdf'])->name('reports.exportPdf');
+        Route::get('/reports/export-excel', [ReportController::class, 'exportExcel'])->name('reports.exportExcel');
 
         // Log Aktivitas Sistem (Activity Log Audit Trail)
         Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
