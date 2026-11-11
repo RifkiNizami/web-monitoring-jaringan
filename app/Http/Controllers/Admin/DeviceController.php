@@ -59,7 +59,7 @@ class DeviceController extends Controller
     /**
      * Format instance Model Device menjadi struktur array untuk view & JSON.
      */
-    public static function formatDeviceModel(Device $device): array
+    public static function formatDeviceModel(Device|object $device): array
     {
         $status = in_array($device->status, self::getStatusOptions(), true)
             ? $device->status
@@ -440,6 +440,6 @@ class DeviceController extends Controller
     {
         $filename = 'NetFly_Inventaris_Perangkat_' . date('Ymd_His') . '.xlsx';
 
-        return Excel::download(new InventoryDeviceExport(), $filename);
+        return Excel::download(new \App\Exports\InventoryDeviceExport(), $filename);
     }
 }

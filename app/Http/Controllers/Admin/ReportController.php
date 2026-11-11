@@ -35,9 +35,11 @@ class ReportController extends Controller
         $existingLabels = array_map('strtolower', array_values($options));
 
         foreach (Customer::orderBy('id', 'asc')->get() as $cust) {
-            if (!in_array(strtolower($cust->company_name), $existingLabels, true)) {
-                $key = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', $cust->customer_code));
-                $options[$key] = $cust->company_name;
+            $custName = $cust->name ?? $cust->company_name ?? '';
+            $custCode = $cust->code ?? $cust->customer_code ?? (string) $cust->id;
+            if (!empty($custName) && !in_array(strtolower($custName), $existingLabels, true)) {
+                $key = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', $custCode));
+                $options[$key] = $custName;
             }
         }
 
@@ -125,7 +127,7 @@ class ReportController extends Controller
         );
 
         return Excel::download(
-            new DevicesReportExport(
+            new \App\Exports\DevicesReportExport(
                 $reportData['devices'],
                 $reportData['evaluatedPartner'],
                 $reportData['formattedPeriod']
