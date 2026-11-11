@@ -58,8 +58,10 @@ class DeviceController extends Controller
 
     /**
      * Format instance Model Device menjadi struktur array untuk view & JSON.
+     *
+     * @param Device|object $device
      */
-    public static function formatDeviceModel(Device|object $device): array
+    public static function formatDeviceModel(object $device): array
     {
         $status = in_array($device->status, self::getStatusOptions(), true)
             ? $device->status
