@@ -138,7 +138,7 @@ class DeviceController extends Controller
 
         return Device::orderBy('id', 'asc')
             ->get()
-            ->mapWithKeys(fn (Device $device) => [$device->id => self::formatDeviceModel($device)])
+            ->mapWithKeys(fn ($device) => [$device->id => self::formatDeviceModel($device)])
             ->all();
     }
 
