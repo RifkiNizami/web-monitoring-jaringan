@@ -24,6 +24,7 @@ class AccountController extends Controller
             return $dbCustomers->map(function ($c) {
                 $shortCode = strtoupper(preg_replace('/[^a-zA-Z0-9]/', '', explode(' ', str_replace(['PT.', 'PT', 'CV.'], '', $c->name))[0] ?? 'CORP'));
                 $shortCode = substr($shortCode ?: 'CORP', 0, 8);
+
                 return [
                     'id' => $c->id,
                     'customer_type' => 'perusahaan',
@@ -37,7 +38,7 @@ class AccountController extends Controller
                     'default_pic' => $c->pic_name ?: 'PIC Perusahaan',
                     'default_email' => $c->email ?: '',
                     'default_phone' => $c->phone ?: '',
-                    'username_prefix' => strtolower($shortCode) . '_',
+                    'username_prefix' => strtolower($shortCode).'_',
                 ];
             })->toArray();
         }
@@ -371,7 +372,7 @@ class AccountController extends Controller
         if ($sessionAccounts !== null) {
             $customersMap = collect($this->getCustomerList())->keyBy('id');
             foreach ($sessionAccounts as $idx => $acc) {
-                if (!isset($acc['latitude']) || !isset($acc['longitude']) || !isset($acc['address'])) {
+                if (! isset($acc['latitude']) || ! isset($acc['longitude']) || ! isset($acc['address'])) {
                     $matched = $customersMap->get($acc['customer_id'] ?? 1);
                     $sessionAccounts[$idx]['address'] = $acc['address'] ?? ($matched['address'] ?? '-');
                     $sessionAccounts[$idx]['latitude'] = $acc['latitude'] ?? ($matched['latitude'] ?? -6.208763);
@@ -379,6 +380,7 @@ class AccountController extends Controller
                 }
             }
             session(['customer_accounts' => $sessionAccounts]);
+
             return $sessionAccounts;
         }
 
@@ -405,7 +407,7 @@ class AccountController extends Controller
                         }
                     }
 
-                    if (!$alreadyExists) {
+                    if (! $alreadyExists) {
                         $custType = $matchedCustomer['customer_type'] ?? 'perusahaan';
                         $accounts[] = [
                             'id' => $dbUser->id,
@@ -418,7 +420,7 @@ class AccountController extends Controller
                             'latitude' => $matchedCustomer['latitude'] ?? -6.208763,
                             'longitude' => $matchedCustomer['longitude'] ?? 106.845599,
                             'name' => $dbUser->name,
-                            'username' => $dbUser->username ?? ('user_' . $dbUser->id),
+                            'username' => $dbUser->username ?? ('user_'.$dbUser->id),
                             'email' => $dbUser->email,
                             'phone' => $dbUser->phone ?? '-',
                             'role' => $dbUser->role ?? 'customer_representative',
@@ -433,10 +435,11 @@ class AccountController extends Controller
                 }
             }
         } catch (\Throwable $e) {
-            Log::info('Database query fallback in AccountController: ' . $e->getMessage());
+            Log::info('Database query fallback in AccountController: '.$e->getMessage());
         }
 
         session(['customer_accounts' => $accounts]);
+
         return $accounts;
     }
 
@@ -452,7 +455,7 @@ class AccountController extends Controller
 
         // Hitung Summary Metrics
         $totalAccounts = count($accounts);
-        $activeAccounts = count(array_filter($accounts, fn($a) => !empty($a['is_active'])));
+        $activeAccounts = count(array_filter($accounts, fn ($a) => ! empty($a['is_active'])));
         $inactiveAccounts = $totalAccounts - $activeAccounts;
         $totalCustomers = count($customers);
 
@@ -472,6 +475,18 @@ class AccountController extends Controller
             'residentialCustomers',
             'accounts'
         ));
+    }
+
+    /**
+     * Tampilkan formulir pembuatan akun customer baru di halaman penuh (dedicated page).
+     */
+    public function create(): View
+    {
+        $corporateCustomers = $this->getCorporateCustomerList();
+        $residentialCustomers = $this->getResidentialCustomerList();
+        $customers = array_merge($corporateCustomers, $residentialCustomers);
+
+        return view('admin.accounts.create', compact('customers', 'corporateCustomers', 'residentialCustomers'));
     }
 
     /**
@@ -514,7 +529,7 @@ class AccountController extends Controller
         $customerPackage = $selectedCustomer['package'] ?? ($resolvedType === 'rumahan' ? 'Home Fiber Broadband' : 'Dedicated Link');
 
         // Untuk customer rumahan tanpa PIC terpisah, gunakan nama customer langsung
-        $accountHolderName = !empty($validated['name']) ? $validated['name'] : $customerName;
+        $accountHolderName = ! empty($validated['name']) ? $validated['name'] : $customerName;
 
         $isActive = $request->has('is_active') ? $request->boolean('is_active') : true;
         $mustChange = $request->has('must_change_password') ? $request->boolean('must_change_password') : true;
@@ -535,7 +550,7 @@ class AccountController extends Controller
             ]);
             $newId = $user->id;
         } catch (\Throwable $e) {
-            Log::info('Store User DB Fallback: ' . $e->getMessage());
+            Log::info('Store User DB Fallback: '.$e->getMessage());
         }
 
         $newAccount = [
@@ -545,7 +560,7 @@ class AccountController extends Controller
             'customer_name' => $customerName,
             'customer_code' => $customerCode,
             'package' => $customerPackage,
-            'address' => !empty($validated['address']) ? $validated['address'] : ($selectedCustomer['address'] ?? '-'),
+            'address' => ! empty($validated['address']) ? $validated['address'] : ($selectedCustomer['address'] ?? '-'),
             'latitude' => isset($validated['latitude']) && $validated['latitude'] !== '' ? (float) $validated['latitude'] : ($selectedCustomer['latitude'] ?? -6.208763),
             'longitude' => isset($validated['longitude']) && $validated['longitude'] !== '' ? (float) $validated['longitude'] : ($selectedCustomer['longitude'] ?? 106.845599),
             'name' => $accountHolderName,
@@ -595,6 +610,151 @@ class AccountController extends Controller
     }
 
     /**
+     * Tampilkan halaman formulir ubah data akun customer.
+     */
+    public function edit($id): View
+    {
+        $accounts = $this->getActiveAccounts();
+        $account = null;
+        foreach ($accounts as $item) {
+            if ((string) $item['id'] === (string) $id) {
+                $account = $item;
+                break;
+            }
+        }
+
+        if (! $account) {
+            abort(404, 'Akun customer tidak ditemukan.');
+        }
+
+        $corporateCustomers = $this->getCorporateCustomerList();
+        $residentialCustomers = $this->getResidentialCustomerList();
+        $customers = array_merge($corporateCustomers, $residentialCustomers);
+
+        return view('admin.accounts.edit', compact('account', 'customers', 'corporateCustomers', 'residentialCustomers'));
+    }
+
+    /**
+     * Perbarui data akun customer di session dan database.
+     */
+    public function update(Request $request, $id)
+    {
+        $customerType = $request->input('customer_type', 'perusahaan');
+
+        $validated = $request->validate([
+            'customer_type' => 'nullable|string|in:perusahaan,rumahan',
+            'customer_id' => 'required|integer',
+            'name' => $customerType === 'rumahan' ? 'nullable|string|max:150' : 'required|string|max:150',
+            'username' => 'required|string|min:3|max:50|regex:/^[a-zA-Z0-9_.]+$/',
+            'email' => 'required|email|max:150',
+            'password' => 'nullable|string|min:6',
+            'phone' => 'nullable|string|max:30',
+            'address' => 'nullable|string',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
+            'is_active' => 'nullable|boolean',
+            'must_change_password' => 'nullable|boolean',
+        ], [
+            'customer_id.required' => 'Wajib memilih Customer.',
+            'name.required' => 'Nama lengkap perwakilan (PIC) wajib diisi.',
+            'username.required' => 'Username akun wajib ditentukan.',
+            'username.regex' => 'Username hanya boleh memuat huruf, angka, titik, atau garis bawah (_).',
+            'email.required' => 'Alamat email resmi wajib diisi.',
+            'email.email' => 'Format alamat email tidak valid.',
+            'password.min' => 'Password minimal 6 karakter jika ingin diubah.',
+        ]);
+
+        $customers = collect($this->getCustomerList())->keyBy('id');
+        $selectedCustomer = $customers->get((int) $validated['customer_id']);
+
+        $resolvedType = $selectedCustomer['customer_type'] ?? $customerType;
+        $customerName = $selectedCustomer['name'] ?? ($resolvedType === 'rumahan' ? 'Customer Rumahan' : 'Mitra Korporat');
+        $customerCode = $resolvedType === 'rumahan' ? 'RUMAHAN' : ($selectedCustomer['code'] ?? 'CUST');
+        $customerPackage = $selectedCustomer['package'] ?? ($resolvedType === 'rumahan' ? 'Home Fiber Broadband' : 'Dedicated Link');
+
+        $accountHolderName = ! empty($validated['name']) ? $validated['name'] : $customerName;
+        $isActive = $request->has('is_active') ? $request->boolean('is_active') : true;
+
+        $accounts = $this->getActiveAccounts();
+        $targetFound = false;
+
+        foreach ($accounts as $k => $acc) {
+            if ((string) $acc['id'] === (string) $id) {
+                $accounts[$k]['customer_id'] = (int) $validated['customer_id'];
+                $accounts[$k]['customer_type'] = $resolvedType;
+                $accounts[$k]['customer_name'] = $customerName;
+                $accounts[$k]['customer_code'] = $customerCode;
+                $accounts[$k]['package'] = $customerPackage;
+                $accounts[$k]['address'] = ! empty($validated['address']) ? $validated['address'] : ($selectedCustomer['address'] ?? $acc['address'] ?? '-');
+                $accounts[$k]['latitude'] = isset($validated['latitude']) && $validated['latitude'] !== '' ? (float) $validated['latitude'] : ($selectedCustomer['latitude'] ?? $acc['latitude'] ?? -6.208763);
+                $accounts[$k]['longitude'] = isset($validated['longitude']) && $validated['longitude'] !== '' ? (float) $validated['longitude'] : ($selectedCustomer['longitude'] ?? $acc['longitude'] ?? 106.845599);
+                $accounts[$k]['name'] = $accountHolderName;
+                $accounts[$k]['username'] = $validated['username'];
+                $accounts[$k]['email'] = $validated['email'];
+                $accounts[$k]['phone'] = $validated['phone'] ?? '-';
+                $accounts[$k]['role'] = $resolvedType === 'rumahan' ? 'customer_residential' : 'customer_representative';
+                $accounts[$k]['role_label'] = $resolvedType === 'rumahan' ? 'Customer Rumahan' : 'PIC Perwakilan Customer';
+                $accounts[$k]['is_active'] = $isActive;
+                if ($request->has('must_change_password')) {
+                    $accounts[$k]['must_change_password'] = $request->boolean('must_change_password');
+                }
+                $targetFound = true;
+                break;
+            }
+        }
+
+        if ($targetFound) {
+            session(['customer_accounts' => $accounts]);
+        }
+
+        // Try DB update
+        try {
+            $user = User::find($id);
+            if ($user) {
+                $userUpdate = [
+                    'name' => $accountHolderName,
+                    'customer_id' => $validated['customer_id'],
+                    'username' => $validated['username'],
+                    'email' => $validated['email'],
+                    'phone' => $validated['phone'] ?? null,
+                    'is_active' => $isActive,
+                ];
+                if (! empty($validated['password'])) {
+                    $userUpdate['password'] = Hash::make($validated['password']);
+                }
+                $user->update($userUpdate);
+            }
+        } catch (\Throwable $e) {
+            Log::info('Update User DB Fallback: '.$e->getMessage());
+        }
+
+        ActivityLogger::log(
+            'akun',
+            'update',
+            "Memperbarui akun customer '{$accountHolderName}' ({$validated['username']})",
+            $validated['username'],
+            (string) $id,
+            [
+                'name' => $accountHolderName,
+                'username' => $validated['username'],
+                'email' => $validated['email'],
+                'customer_id' => $validated['customer_id'],
+                'customer_name' => $customerName,
+                'is_active' => $isActive,
+            ]
+        );
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Data akun customer '{$validated['username']}' berhasil diperbarui!",
+            ]);
+        }
+
+        return redirect()->route('accounts.index')->with('success', "Data akun customer '{$validated['username']}' berhasil diperbarui!");
+    }
+
+    /**
      * 2. Kontrol status akun: Toggle tombol Aktif / Nonaktifkan akun.
      */
     public function toggleStatus(Request $request, $id)
@@ -605,7 +765,7 @@ class AccountController extends Controller
 
         foreach ($accounts as $k => $account) {
             if ((string) $account['id'] === (string) $id) {
-                $newStatus = !$account['is_active'];
+                $newStatus = ! $account['is_active'];
                 $accounts[$k]['is_active'] = $newStatus;
                 $targetAccount = $accounts[$k];
                 break;
@@ -622,7 +782,7 @@ class AccountController extends Controller
                 $user->save();
             }
         } catch (\Throwable $e) {
-            Log::info('Toggle Status DB Fallback: ' . $e->getMessage());
+            Log::info('Toggle Status DB Fallback: '.$e->getMessage());
         }
 
         $statusText = $newStatus ? 'diaktifkan' : 'dinonaktifkan';
@@ -631,7 +791,7 @@ class AccountController extends Controller
         ActivityLogger::log(
             'akun',
             'update',
-            "Mengubah status akun '{$username}' menjadi " . ($newStatus ? 'Aktif' : 'Nonaktif'),
+            "Mengubah status akun '{$username}' menjadi ".($newStatus ? 'Aktif' : 'Nonaktif'),
             $username,
             (string) $id,
             [
@@ -684,7 +844,7 @@ class AccountController extends Controller
                 $user->save();
             }
         } catch (\Throwable $e) {
-            Log::info('Reset Password DB Fallback: ' . $e->getMessage());
+            Log::info('Reset Password DB Fallback: '.$e->getMessage());
         }
 
         $username = $targetAccount['username'] ?? 'User';
@@ -737,7 +897,7 @@ class AccountController extends Controller
                 $user->delete();
             }
         } catch (\Throwable $e) {
-            Log::info('Destroy User DB Fallback: ' . $e->getMessage());
+            Log::info('Destroy User DB Fallback: '.$e->getMessage());
         }
 
         ActivityLogger::log(
