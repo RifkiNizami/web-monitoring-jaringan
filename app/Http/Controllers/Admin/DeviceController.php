@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Exports\InventoryDeviceExport;
+use App\Http\Controllers\Controller;
 use App\Models\Device;
 use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
@@ -59,7 +59,7 @@ class DeviceController extends Controller
     /**
      * Format instance Model Device menjadi struktur array untuk view & JSON.
      *
-     * @param Device|object $device
+     * @param  Device|object  $device
      */
     public static function formatDeviceModel(object $device): array
     {
@@ -214,15 +214,15 @@ class DeviceController extends Controller
                 'size_kb' => round($file->getSize() / 1024, 2),
                 'mime_type' => $file->getClientMimeType(),
             ];
-            $filename = 'device_' . time() . '_' . Str::slug($validated['hostname']) . '.' . $file->getClientOriginalExtension();
+            $filename = 'device_'.time().'_'.Str::slug($validated['hostname']).'.'.$file->getClientOriginalExtension();
             $destination = public_path('uploads/devices');
 
-            if (!File::exists($destination)) {
+            if (! File::exists($destination)) {
                 File::makeDirectory($destination, 0755, true);
             }
 
             $file->move($destination, $filename);
-            $photoUrl = asset('uploads/devices/' . $filename);
+            $photoUrl = asset('uploads/devices/'.$filename);
         }
 
         $deviceModel = Device::create([
@@ -278,7 +278,7 @@ class DeviceController extends Controller
     {
         $deviceModel = Device::find($id);
 
-        if (!$deviceModel) {
+        if (! $deviceModel) {
             abort(404, 'Data barang inventaris tidak ditemukan.');
         }
 
@@ -316,10 +316,11 @@ class DeviceController extends Controller
 
         $deviceModel = Device::find($id);
 
-        if (!$deviceModel) {
+        if (! $deviceModel) {
             if ($request->wantsJson()) {
                 return response()->json(['success' => false, 'message' => 'Data barang inventaris tidak ditemukan.'], 404);
             }
+
             return redirect()->route('devices.index')->with('error', 'Data barang inventaris tidak ditemukan.');
         }
 
@@ -332,15 +333,15 @@ class DeviceController extends Controller
                 'size_kb' => round($file->getSize() / 1024, 2),
                 'mime_type' => $file->getClientMimeType(),
             ];
-            $filename = 'device_' . time() . '_' . Str::slug($validated['hostname']) . '.' . $file->getClientOriginalExtension();
+            $filename = 'device_'.time().'_'.Str::slug($validated['hostname']).'.'.$file->getClientOriginalExtension();
             $destination = public_path('uploads/devices');
 
-            if (!File::exists($destination)) {
+            if (! File::exists($destination)) {
                 File::makeDirectory($destination, 0755, true);
             }
 
             $file->move($destination, $filename);
-            $photoUrl = asset('uploads/devices/' . $filename);
+            $photoUrl = asset('uploads/devices/'.$filename);
         }
 
         $deviceModel->update([
@@ -443,8 +444,8 @@ class DeviceController extends Controller
      */
     public function exportExcel(): Response
     {
-        $filename = 'NetFly_Inventaris_Perangkat_' . date('Ymd_His') . '.xlsx';
+        $filename = 'NetFly_Inventaris_Perangkat_'.date('Ymd_His').'.xlsx';
 
-        return Excel::download(new \App\Exports\InventoryDeviceExport(), $filename);
+        return Excel::download(new InventoryDeviceExport, $filename);
     }
 }

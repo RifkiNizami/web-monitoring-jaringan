@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Exports\DevicesReportExport;
+use App\Http\Controllers\Controller;
 use App\Models\Customer;
-use App\Models\MonitoringDevice;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Symfony\Component\HttpFoundation\Response;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\Response;
 
 class ReportController extends Controller
 {
@@ -37,7 +36,7 @@ class ReportController extends Controller
         foreach (Customer::orderBy('id', 'asc')->get() as $cust) {
             $custName = $cust->name ?? $cust->company_name ?? '';
             $custCode = $cust->code ?? $cust->customer_code ?? (string) $cust->id;
-            if (!empty($custName) && !in_array(strtolower($custName), $existingLabels, true)) {
+            if (! empty($custName) && ! in_array(strtolower($custName), $existingLabels, true)) {
                 $key = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', $custCode));
                 $options[$key] = $custName;
             }
@@ -127,7 +126,7 @@ class ReportController extends Controller
         );
 
         return Excel::download(
-            new \App\Exports\DevicesReportExport(
+            new DevicesReportExport(
                 $reportData['devices'],
                 $reportData['evaluatedPartner'],
                 $reportData['formattedPeriod']
@@ -144,17 +143,17 @@ class ReportController extends Controller
         $customerOptions = $this->getCustomerOptions();
 
         $selectedCustomer = $request->query('customer', 'all');
-        if (!array_key_exists($selectedCustomer, $customerOptions)) {
+        if (! array_key_exists($selectedCustomer, $customerOptions)) {
             $selectedCustomer = 'all';
         }
 
         $selectedMonth = (int) $request->query('month', 10);
-        if (!array_key_exists($selectedMonth, $this->months)) {
+        if (! array_key_exists($selectedMonth, $this->months)) {
             $selectedMonth = 10;
         }
 
         $selectedYear = (int) $request->query('year', 2026);
-        if (!in_array($selectedYear, $this->years)) {
+        if (! in_array($selectedYear, $this->years)) {
             $selectedYear = 2026;
         }
 
@@ -276,8 +275,8 @@ class ReportController extends Controller
             $slaCommitmentText = 'Memenuhi Komitmen Kontrak SLA';
             $avgResolutionTime = '38 Menit';
         } else {
-            $filteredDevices = array_values(array_filter($allDevices, fn($d) => $d['customer_key'] === $selectedCustomer));
-            $filteredTickets = array_values(array_filter($allTickets, fn($t) => $t['customer_key'] === $selectedCustomer));
+            $filteredDevices = array_values(array_filter($allDevices, fn ($d) => $d['customer_key'] === $selectedCustomer));
+            $filteredTickets = array_values(array_filter($allTickets, fn ($t) => $t['customer_key'] === $selectedCustomer));
             $evaluatedPartner = $customerOptions[$selectedCustomer];
 
             // Kalkulasi dinamis per mitra
@@ -313,12 +312,12 @@ class ReportController extends Controller
         }
 
         $totalDevices = count($filteredDevices);
-        $normalDevices = count(array_filter($filteredDevices, fn($d) => $d['status_state'] === 'online'));
-        $warningDevices = count(array_filter($filteredDevices, fn($d) => $d['status_state'] === 'warning'));
-        $offlineDevices = count(array_filter($filteredDevices, fn($d) => $d['status_state'] === 'offline'));
+        $normalDevices = count(array_filter($filteredDevices, fn ($d) => $d['status_state'] === 'online'));
+        $warningDevices = count(array_filter($filteredDevices, fn ($d) => $d['status_state'] === 'warning'));
+        $offlineDevices = count(array_filter($filteredDevices, fn ($d) => $d['status_state'] === 'offline'));
 
         $totalTickets = count($filteredTickets);
-        $resolvedTickets = count(array_filter($filteredTickets, fn($t) => in_array($t['status_type'], ['resolved', 'closed'])));
+        $resolvedTickets = count(array_filter($filteredTickets, fn ($t) => in_array($t['status_type'], ['resolved', 'closed'])));
 
         // Nomor Registrasi Dokumen Resmi
         $reportDocumentNumber = sprintf(
@@ -329,7 +328,7 @@ class ReportController extends Controller
         );
 
         $selectedMonthName = $this->months[$selectedMonth];
-        $formattedPeriod = $selectedMonthName . ' ' . $selectedYear;
+        $formattedPeriod = $selectedMonthName.' '.$selectedYear;
 
         return [
             'customers' => $customerOptions,
@@ -356,7 +355,7 @@ class ReportController extends Controller
             'offlineDevices' => $offlineDevices,
             'devices' => $filteredDevices,
             'tickets' => $filteredTickets,
-            'generatedAt' => now()->format('d F Y, H:i:s') . ' WIB',
+            'generatedAt' => now()->format('d F Y, H:i:s').' WIB',
         ];
     }
 }
