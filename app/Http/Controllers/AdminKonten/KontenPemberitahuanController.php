@@ -24,27 +24,29 @@ class KontenPemberitahuanController extends Controller
 
         $query = Announcement::with('creator')->latest();
 
-        if (!empty($search)) {
+        if (! empty($search)) {
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('message', 'like', "%{$search}%");
+                    ->orWhere('message', 'like', "%{$search}%");
             });
         }
 
-        if (!empty($category) && $category !== 'all') {
+        if (! empty($category) && $category !== 'all') {
             $query->where('category', $category);
         }
 
-        if (!empty($status) && $status !== 'all') {
+        if (! empty($status) && $status !== 'all') {
             $query->where('status', $status);
         }
 
         $announcements = $query->paginate(12)->withQueryString();
 
         $totalCount = Announcement::count();
-        $maintenanceCount = Announcement::where('category', 'maintenance')->where('status', 'aktif')->count();
+        $maintenanceCount = Announcement::where('category', 'maintenance')->count();
         $activeCount = Announcement::where('status', 'aktif')->count();
-        $systemUpdateCount = Announcement::where('category', 'pembaruan')->where('status', 'aktif')->count();
+        $systemUpdateCount = Announcement::where('category', 'pembaruan')->count();
+        $gangguanCount = Announcement::where('category', 'gangguan')->count();
+        $infoCount = Announcement::where('category', 'info')->count();
 
         // Tampilan khusus sesuai peran pengguna
         if (Auth::user()->role === 'admin_konten') {
@@ -54,6 +56,8 @@ class KontenPemberitahuanController extends Controller
                 'activeCount',
                 'maintenanceCount',
                 'systemUpdateCount',
+                'gangguanCount',
+                'infoCount',
                 'search',
                 'category',
                 'status'
@@ -67,6 +71,8 @@ class KontenPemberitahuanController extends Controller
             'activeCount',
             'maintenanceCount',
             'systemUpdateCount',
+            'gangguanCount',
+            'infoCount',
             'search',
             'category',
             'status'
