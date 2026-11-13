@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\AdminKonten\KontenDashboardController;
+use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Device;
-use App\Models\LandingClient;
-use App\Models\Announcement;
 use App\Models\MonitoringAlert;
 use App\Models\NetworkSlaMetric;
 use App\Models\Project;
@@ -51,7 +49,7 @@ class DashboardController extends Controller
                 'value' => number_format($activeCustomers),
                 'subvalue' => "/ {$totalCustomers} terdaftar",
                 'footer_left' => "{$corporateCustomers} B2B • {$residentialCustomers} Rumahan",
-                'footer_right' => ($totalCustomers > 0 ? round(($activeCustomers / $totalCustomers) * 100, 1) : 0) . '% Aktif',
+                'footer_right' => ($totalCustomers > 0 ? round(($activeCustomers / $totalCustomers) * 100, 1) : 0).'% Aktif',
             ],
             'project_active' => [
                 'title' => 'PROJECT AKTIF',
@@ -59,15 +57,15 @@ class DashboardController extends Controller
                 'value' => number_format($activeProjects),
                 'subvalue' => 'Instalasi & SLA',
                 'footer_left' => 'Total Portofolio',
-                'footer_right' => $totalProjects . ' Total Proyek',
+                'footer_right' => $totalProjects.' Total Proyek',
             ],
             'device_online' => [
                 'title' => 'PERANGKAT TERSEDIA',
                 'badge' => 'Ready / In-Use',
                 'value' => number_format($onlineDevices),
-                'subvalue' => '/ ' . number_format($totalDevices) . ' item',
+                'subvalue' => '/ '.number_format($totalDevices).' item',
                 'footer_left' => 'Ketersediaan Fisik',
-                'footer_right' => ($totalDevices > 0 ? round(($onlineDevices / $totalDevices) * 100, 1) : 0) . '% Siap',
+                'footer_right' => ($totalDevices > 0 ? round(($onlineDevices / $totalDevices) * 100, 1) : 0).'% Siap',
             ],
             'device_offline' => [
                 'title' => 'PERANGKAT HABIS / OFFLINE',
@@ -92,11 +90,12 @@ class DashboardController extends Controller
                 'warning' => 'BEBAN TINGGI',
                 default => 'ANOMALI',
             };
+
             return [
                 'badge' => $badgeLabel,
                 'badge_type' => $badgeType,
-                'time' => $alert->created_at ? $alert->created_at->format('H:i:s') . ' WIB' : now()->format('H:i:s') . ' WIB',
-                'title' => $alert->host . ' - ' . $alert->type,
+                'time' => $alert->created_at ? $alert->created_at->format('H:i:s').' WIB' : now()->format('H:i:s').' WIB',
+                'title' => $alert->host.' - '.$alert->type,
                 'desc' => $alert->message,
             ];
         })->toArray();
@@ -115,12 +114,13 @@ class DashboardController extends Controller
                 'resolved' => 'emerald',
                 default => 'slate',
             };
+
             return [
-                'id' => $t->ticket_number ?? 'INC-' . $t->id,
+                'id' => $t->ticket_number ?? 'INC-'.$t->id,
                 'customer' => $t->customer ? $t->customer->company_name : ($t->customer_name ?? 'Pelanggan Enterprise'),
                 'package' => $t->service_package ?? 'Dedicated Fiber Connection',
                 'issue' => $t->subject ?? 'Insiden Gangguan Transmisi',
-                'priority' => ucfirst($t->priority) . ($t->priority === 'Critical' ? ' - P1' : ''),
+                'priority' => ucfirst($t->priority).($t->priority === 'Critical' ? ' - P1' : ''),
                 'priority_type' => $priorityType,
                 'status' => $t->status,
                 'status_color' => $statusColor,
@@ -150,10 +150,10 @@ class DashboardController extends Controller
 
         // Fallback jika belum terisi 30 hari penuh
         if ($records->count() < 30) {
-            $existingDates = $records->pluck('date')->map(fn($d) => Carbon::parse($d)->toDateString())->toArray();
+            $existingDates = $records->pluck('date')->map(fn ($d) => Carbon::parse($d)->toDateString())->toArray();
             for ($i = 29; $i >= 0; $i--) {
                 $curDate = $today->copy()->subDays($i)->toDateString();
-                if (!in_array($curDate, $existingDates)) {
+                if (! in_array($curDate, $existingDates)) {
                     $uptime = ($i === 15) ? 99.50 : (($i === 14) ? 99.65 : 99.90 + (sin($i) * 0.08));
                     $uptime = min(100.0, max(99.4, round($uptime, 2)));
                     NetworkSlaMetric::create([
@@ -200,7 +200,7 @@ class DashboardController extends Controller
             $yPos = $plotTop + ($k / $tickSteps) * $plotHeight;
             $yTicks[] = [
                 'value' => round($val, 2),
-                'label' => number_format($val, 1) . '%',
+                'label' => number_format($val, 1).'%',
                 'y' => round($yPos, 1),
             ];
         }
@@ -234,7 +234,7 @@ class DashboardController extends Controller
         }
 
         // Hitung kurva Bezier halus (Cubic Spline)
-        $strokePath = "M " . $points[0]['x'] . "," . $points[0]['y'];
+        $strokePath = 'M '.$points[0]['x'].','.$points[0]['y'];
         for ($i = 0; $i < count($points) - 1; $i++) {
             $p0 = $points[$i > 0 ? $i - 1 : $i];
             $p1 = $points[$i];
@@ -246,10 +246,10 @@ class DashboardController extends Controller
             $cp2x = round($p2['x'] - ($p3['x'] - $p1['x']) / 6, 1);
             $cp2y = round($p2['y'] - ($p3['y'] - $p1['y']) / 6, 1);
 
-            $strokePath .= " C " . $cp1x . "," . $cp1y . " " . $cp2x . "," . $cp2y . " " . $p2['x'] . "," . $p2['y'];
+            $strokePath .= ' C '.$cp1x.','.$cp1y.' '.$cp2x.','.$cp2y.' '.$p2['x'].','.$p2['y'];
         }
 
-        $areaPath = $strokePath . " L " . end($points)['x'] . ",{$plotBottom} L " . $points[0]['x'] . ",{$plotBottom} Z";
+        $areaPath = $strokePath.' L '.end($points)['x'].",{$plotBottom} L ".$points[0]['x'].",{$plotBottom} Z";
 
         // Sample 7 titik milestone untuk label sumbu X
         $samplePoints = [];
@@ -261,10 +261,10 @@ class DashboardController extends Controller
 
         return [
             'average' => number_format($avgUptime, 2),
-            'highest' => number_format($maxUptime, 1) === '100.0' ? '100.0%' : number_format($maxUptime, 2) . '%',
-            'lowest' => number_format($minUptime, 2) . '%',
+            'highest' => number_format($maxUptime, 1) === '100.0' ? '100.0%' : number_format($maxUptime, 2).'%',
+            'lowest' => number_format($minUptime, 2).'%',
             'is_sla_met' => $isSlaMet,
-            'sla_target' => number_format($slaTarget, 1) . '%',
+            'sla_target' => number_format($slaTarget, 1).'%',
             'sla_target_y' => $slaTargetY,
             'scale_min' => $scaleMin,
             'scale_max' => $scaleMax,

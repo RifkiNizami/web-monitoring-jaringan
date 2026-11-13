@@ -12,7 +12,7 @@ class MikrotikServiceTest extends TestCase
      */
     public function test_service_instantiates(): void
     {
-        $service = new MikrotikService();
+        $service = new MikrotikService;
         $this->assertInstanceOf(MikrotikService::class, $service);
         $this->assertNull($service->getLastError());
         $this->assertEquals(0.0, $service->getLatencyMs());
@@ -23,7 +23,7 @@ class MikrotikServiceTest extends TestCase
      */
     public function test_connection_fails_gracefully_on_unreachable_ip(): void
     {
-        $service = new MikrotikService();
+        $service = new MikrotikService;
         // Coba konek ke IP reserved TEST-NET yang dijamin timeout / unreachable
         $result = $service->testConnection('192.0.2.1', 'admin', 'password', 8728, 1);
 

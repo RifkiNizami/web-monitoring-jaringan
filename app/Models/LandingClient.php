@@ -52,6 +52,6 @@ class LandingClient extends Model
             return asset($this->logo);
         }
 
-        return asset('uploads/clients/' . ltrim($this->logo, '/'));
+        return asset('uploads/clients/'.ltrim($this->logo, '/'));
     }
 }

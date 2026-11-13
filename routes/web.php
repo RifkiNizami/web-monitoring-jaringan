@@ -1,20 +1,20 @@
 <?php
 
-use App\Http\Controllers\LandingPageController;
-use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\TicketController;
-use App\Http\Controllers\Admin\DeviceController;
-use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\AccountController;
+use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\CustomerProjectController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DeviceController;
 use App\Http\Controllers\Admin\MonitoringController;
 use App\Http\Controllers\Admin\MonitoringDeviceController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\TeknisiController;
-use App\Http\Controllers\Admin\ActivityLogController;
+use App\Http\Controllers\Admin\TicketController;
 use App\Http\Controllers\AdminKonten\KontenDashboardController;
 use App\Http\Controllers\AdminKonten\KontenKlienController;
 use App\Http\Controllers\AdminKonten\KontenPemberitahuanController;
+use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\LandingPageController;
 use Illuminate\Support\Facades\Route;
 
 // Landing page publik

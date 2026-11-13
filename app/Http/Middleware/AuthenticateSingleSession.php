@@ -83,8 +83,8 @@ class AuthenticateSingleSession extends AuthenticateSession
         }
 
         $authManager = auth();
-        $defaultDriver = $authManager instanceof AuthManager 
-            ? $authManager->getDefaultDriver() 
+        $defaultDriver = $authManager instanceof AuthManager
+            ? $authManager->getDefaultDriver()
             : config('auth.defaults.guard', 'web');
 
         $request->session()->put(

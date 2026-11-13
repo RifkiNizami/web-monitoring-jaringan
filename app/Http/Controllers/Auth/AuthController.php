@@ -8,7 +8,6 @@ use App\Models\User;
 use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -54,7 +53,7 @@ class AuthController extends Controller
             $user = Auth::user();
 
             // Proteksi Role Web Portal: Akun Pelanggan (customer_representative) hanya untuk Mobile App
-            if (!in_array($user->role, ['admin', 'admin_konten'], true)) {
+            if (! in_array($user->role, ['admin', 'admin_konten'], true)) {
                 ActivityLogger::log(
                     'auth',
                     'login_failed',
@@ -81,7 +80,7 @@ class AuthController extends Controller
             }
 
             // Proteksi Status Akun Aktif
-            if (isset($user->is_active) && !$user->is_active) {
+            if (isset($user->is_active) && ! $user->is_active) {
                 ActivityLogger::log(
                     'auth',
                     'login_failed',

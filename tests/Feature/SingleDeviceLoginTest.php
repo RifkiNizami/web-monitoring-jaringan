@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Http\Middleware\AuthenticateSingleSession;
+use App\Models\ActivityLog;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Testing\TestResponse;
@@ -134,7 +135,7 @@ class SingleDeviceLoginTest extends TestCase
 
         $this->loginFromNewDevice($user);
 
-        $log = \App\Models\ActivityLog::where('action', 'login')
+        $log = ActivityLog::where('action', 'login')
             ->where('subject_id', (string) $user->id)
             ->latest('id')
             ->first();

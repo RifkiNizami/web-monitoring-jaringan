@@ -24,15 +24,15 @@ class KontenKlienController extends Controller
 
         $query = LandingClient::query();
 
-        if (!empty($search)) {
+        if (! empty($search)) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('category', 'like', "%{$search}%")
-                  ->orWhere('location', 'like', "%{$search}%");
+                    ->orWhere('category', 'like', "%{$search}%")
+                    ->orWhere('location', 'like', "%{$search}%");
             });
         }
 
-        if (!empty($category) && $category !== 'all') {
+        if (! empty($category) && $category !== 'all') {
             $query->where('category', $category);
         }
 
@@ -83,15 +83,15 @@ class KontenKlienController extends Controller
         $logoPath = null;
         if ($request->hasFile('logo')) {
             $file = $request->file('logo');
-            $filename = 'client_' . time() . '_' . Str::slug($request->name) . '.' . $file->getClientOriginalExtension();
+            $filename = 'client_'.time().'_'.Str::slug($request->name).'.'.$file->getClientOriginalExtension();
             $destination = public_path('uploads/clients');
 
-            if (!File::exists($destination)) {
+            if (! File::exists($destination)) {
                 File::makeDirectory($destination, 0755, true);
             }
 
             $file->move($destination, $filename);
-            $logoPath = 'uploads/clients/' . $filename;
+            $logoPath = 'uploads/clients/'.$filename;
         }
 
         $client = LandingClient::create([
@@ -157,10 +157,10 @@ class KontenKlienController extends Controller
 
         if ($request->hasFile('logo')) {
             $file = $request->file('logo');
-            $filename = 'client_' . time() . '_' . Str::slug($request->name) . '.' . $file->getClientOriginalExtension();
+            $filename = 'client_'.time().'_'.Str::slug($request->name).'.'.$file->getClientOriginalExtension();
             $destination = public_path('uploads/clients');
 
-            if (!File::exists($destination)) {
+            if (! File::exists($destination)) {
                 File::makeDirectory($destination, 0755, true);
             }
 
@@ -173,7 +173,7 @@ class KontenKlienController extends Controller
             }
 
             $file->move($destination, $filename);
-            $data['logo'] = 'uploads/clients/' . $filename;
+            $data['logo'] = 'uploads/clients/'.$filename;
         }
 
         $client->update($data);
@@ -236,13 +236,13 @@ class KontenKlienController extends Controller
     public function toggleStatus(Request $request, $id)
     {
         $client = LandingClient::findOrFail($id);
-        $client->is_active = !$client->is_active;
+        $client->is_active = ! $client->is_active;
         $client->save();
 
         ActivityLogger::log(
             'konten',
             'update',
-            "Mengubah status klien '{$client->name}' menjadi " . ($client->is_active ? 'Aktif' : 'Nonaktif'),
+            "Mengubah status klien '{$client->name}' menjadi ".($client->is_active ? 'Aktif' : 'Nonaktif'),
             $client->name,
             (string) $client->id,
             ['is_active' => $client->is_active]

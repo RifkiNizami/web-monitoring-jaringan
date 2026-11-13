@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\AuthenticateSingleSession;
+use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -14,11 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // Single Device Login: verifikasi hash sesi di setiap request
         // (turunan \Illuminate\Session\Middleware\AuthenticateSession)
         $middleware->web(append: [
-            \App\Http\Middleware\AuthenticateSingleSession::class,
+            AuthenticateSingleSession::class,
         ]);
 
         $middleware->alias([
-            'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'role' => RoleMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

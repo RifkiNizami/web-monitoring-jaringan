@@ -3,18 +3,18 @@
 namespace App\Exports;
 
 use App\Models\Device;
+use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithStyles;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
-use Illuminate\Support\Collection;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class InventoryDeviceExport implements FromCollection, WithHeadings, WithMapping, WithColumnWidths, WithStyles
+class InventoryDeviceExport implements FromCollection, WithColumnWidths, WithHeadings, WithMapping, WithStyles
 {
     /**
      * Mengambil koleksi data Device dari database Eloquent
@@ -67,10 +67,10 @@ class InventoryDeviceExport implements FromCollection, WithHeadings, WithMapping
             $device->rack_location ?? '-',
             $device->status ?? '-',
             $device->uptime ?? '-',
-            ($device->last_ping_ms ?? 0) . ' ms',
-            number_format((float) ($device->packet_loss ?? 0), 2) . '%',
-            number_format((float) ($device->cpu_load ?? 0), 1) . '%',
-            number_format((float) ($device->ram_load ?? 0), 1) . '%',
+            ($device->last_ping_ms ?? 0).' ms',
+            number_format((float) ($device->packet_loss ?? 0), 2).'%',
+            number_format((float) ($device->cpu_load ?? 0), 1).'%',
+            number_format((float) ($device->ram_load ?? 0), 1).'%',
             $device->created_at ? $device->created_at->format('d/m/Y H:i') : '-',
         ];
     }
@@ -112,13 +112,13 @@ class InventoryDeviceExport implements FromCollection, WithHeadings, WithMapping
         $sheet->getRowDimension(1)->setRowHeight(28);
 
         // Alignment kolom numerik dan kode
-        $sheet->getStyle('A1:A' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('C2:E' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('K2:N' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('O2:O' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A1:A'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('C2:E'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('K2:N'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('O2:O'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
         // Border grid
-        $sheet->getStyle('A1:O' . $lastRow)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)->getColor()->setARGB('FFE2E8F0');
+        $sheet->getStyle('A1:O'.$lastRow)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)->getColor()->setARGB('FFE2E8F0');
 
         return [
             1 => [

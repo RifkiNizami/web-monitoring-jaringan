@@ -10,4 +10,3 @@ Artisan::command('inspire', function () {
 
 // Jadwal pembersihan log aktivitas harian (retensi 90 hari)
 Schedule::command('activity-logs:prune --days=90')->daily();
-

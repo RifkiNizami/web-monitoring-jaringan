@@ -70,7 +70,7 @@ class ReportGeneratorTest extends TestCase
         $response->assertHeader('content-type', 'application/pdf');
         $this->assertStringContainsString('attachment', $response->headers->get('content-disposition'));
         $this->assertStringContainsString('.pdf', $response->headers->get('content-disposition'));
-        
+
         // Memastikan payload PDF tidak kosong dan diawali marker standar %PDF
         $content = $response->getContent();
         $this->assertNotEmpty($content);

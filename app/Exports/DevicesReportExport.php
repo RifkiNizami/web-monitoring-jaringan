@@ -2,28 +2,25 @@
 
 namespace App\Exports;
 
+use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithStyles;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
-use Illuminate\Support\Collection;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class DevicesReportExport implements FromCollection, WithHeadings, WithMapping, WithColumnWidths, WithStyles
+class DevicesReportExport implements FromCollection, WithColumnWidths, WithHeadings, WithMapping, WithStyles
 {
     protected Collection $devices;
+
     protected string $customerName;
+
     protected string $period;
 
-    /**
-     * @param array $devices
-     * @param string $customerName
-     * @param string $period
-     */
     public function __construct(array $devices, string $customerName = 'Semua Mitra', string $period = '')
     {
         $this->devices = collect($devices);
@@ -78,9 +75,9 @@ class DevicesReportExport implements FromCollection, WithHeadings, WithMapping, 
             $device['location'] ?? ($device['rack_location'] ?? '-'),
             $device['rack_position'] ?? ($device['rack_location'] ?? '-'),
             $device['status'] ?? 'Online',
-            isset($device['uptime_percent']) ? number_format((float) $device['uptime_percent'], 2) . '%' : '-',
+            isset($device['uptime_percent']) ? number_format((float) $device['uptime_percent'], 2).'%' : '-',
             $device['uptime_text'] ?? ($device['uptime'] ?? '-'),
-            isset($device['rtt_ms']) ? $device['rtt_ms'] . ' ms' : (isset($device['last_ping_ms']) ? $device['last_ping_ms'] . ' ms' : '-'),
+            isset($device['rtt_ms']) ? $device['rtt_ms'].' ms' : (isset($device['last_ping_ms']) ? $device['last_ping_ms'].' ms' : '-'),
         ];
     }
 
@@ -118,13 +115,13 @@ class DevicesReportExport implements FromCollection, WithHeadings, WithMapping, 
         $sheet->getRowDimension(1)->setRowHeight(28);
 
         // Center align kolom No, Tipe, IP, Status, Uptime %, Latensi
-        $sheet->getStyle('A1:A' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('C2:D' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('H2:I' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('K2:K' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A1:A'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('C2:D'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('H2:I'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('K2:K'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
         // Border tipis untuk semua data
-        $sheet->getStyle('A1:K' . $lastRow)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)->getColor()->setARGB('FFE2E8F0');
+        $sheet->getStyle('A1:K'.$lastRow)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)->getColor()->setARGB('FFE2E8F0');
 
         return [
             1 => [

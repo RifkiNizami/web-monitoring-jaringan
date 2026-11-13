@@ -15,22 +15,22 @@ return new class extends Migration
             // Drop unique constraint on hostname if exists to allow flexible inventory batch entries
             try {
                 $table->dropUnique('devices_hostname_unique');
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // Ignore if already dropped
             }
 
             $table->string('ip_address', 45)->nullable()->change();
 
-            if (!Schema::hasColumn('devices', 'brand_model')) {
+            if (! Schema::hasColumn('devices', 'brand_model')) {
                 $table->string('brand_model', 150)->nullable()->after('type');
             }
-            if (!Schema::hasColumn('devices', 'serial_number')) {
+            if (! Schema::hasColumn('devices', 'serial_number')) {
                 $table->string('serial_number', 100)->nullable()->after('brand_model');
             }
-            if (!Schema::hasColumn('devices', 'quantity')) {
+            if (! Schema::hasColumn('devices', 'quantity')) {
                 $table->integer('quantity')->default(1)->after('serial_number');
             }
-            if (!Schema::hasColumn('devices', 'photo')) {
+            if (! Schema::hasColumn('devices', 'photo')) {
                 $table->string('photo', 255)->nullable()->after('status_state');
             }
         });
@@ -48,7 +48,7 @@ return new class extends Migration
                     $columnsToDrop[] = $col;
                 }
             }
-            if (!empty($columnsToDrop)) {
+            if (! empty($columnsToDrop)) {
                 $table->dropColumn($columnsToDrop);
             }
         });

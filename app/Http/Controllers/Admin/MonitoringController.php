@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\MonitoringAlert;
 use App\Models\MonitoringDevice;
+use App\Services\MikrotikService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -25,7 +26,7 @@ class MonitoringController extends Controller
             'ip_address' => $device->ip_address,
             'customer' => $device->customer,
             'project' => $device->project ?: 'Dedicated SLA Monitoring',
-            'model' => $device->model ?: ($device->unit_type . ' Node'),
+            'model' => $device->model ?: ($device->unit_type.' Node'),
             'rack_location' => $device->rack_location ?: 'POP Distribusi',
             'status' => $status,
             'status_label' => $device->status_label ?: strtoupper($status),
@@ -75,7 +76,7 @@ class MonitoringController extends Controller
                 'ip_address' => $dev['ip_address'] ?? '127.0.0.1',
                 'customer' => $dev['customer'] ?? '-',
                 'project' => $dev['project'] ?? 'Dedicated SLA Monitoring',
-                'model' => $dev['model'] ?? (($dev['unit_type'] ?? 'Router') . ' Node'),
+                'model' => $dev['model'] ?? (($dev['unit_type'] ?? 'Router').' Node'),
                 'rack_location' => $dev['rack_location'] ?? 'POP Distribusi',
                 'status' => $status,
                 'status_label' => $dev['status_label'] ?? strtoupper($status),
@@ -103,8 +104,8 @@ class MonitoringController extends Controller
     public function index(Request $request): View
     {
         // Jalankan polling update real-time jika perangkat MikroTik memiliki IP & username
-        if (!app()->runningUnitTests()) {
-            $mikrotikService = new \App\Services\MikrotikService();
+        if (! app()->runningUnitTests()) {
+            $mikrotikService = new MikrotikService;
             $nodesToPoll = MonitoringDevice::whereNotNull('ip_address')
                 ->whereNotNull('api_username')
                 ->get();
@@ -180,7 +181,7 @@ class MonitoringController extends Controller
             ],
             'incidents' => [
                 'active_count' => $warningNodes + $offlineNodes,
-                'subtext' => ($warningNodes + $offlineNodes) > 0 ? ($warningNodes + $offlineNodes) . ' node membutuhkan perhatian' : 'Tidak ada insiden aktif',
+                'subtext' => ($warningNodes + $offlineNodes) > 0 ? ($warningNodes + $offlineNodes).' node membutuhkan perhatian' : 'Tidak ada insiden aktif',
             ],
         ];
 
@@ -195,7 +196,7 @@ class MonitoringController extends Controller
                 'message' => $alert->message,
                 'is_resolved' => (bool) $alert->is_resolved,
                 'time_ago' => $alert->created_at ? $alert->created_at->diffForHumans(null, true) : 'Baru saja',
-                'time_wib' => $alert->created_at ? $alert->created_at->format('H:i:s') . ' WIB' : now()->format('H:i:s') . ' WIB',
+                'time_wib' => $alert->created_at ? $alert->created_at->format('H:i:s').' WIB' : now()->format('H:i:s').' WIB',
             ];
         })->toArray();
 
@@ -209,7 +210,7 @@ class MonitoringController extends Controller
     {
         $deviceModel = MonitoringDevice::find($id);
 
-        if (!$deviceModel) {
+        if (! $deviceModel) {
             abort(404, 'Perangkat jaringan tidak ditemukan.');
         }
 
@@ -227,8 +228,8 @@ class MonitoringController extends Controller
                 'severity' => 'info',
                 'time' => '08:00:00 WIB',
                 'title' => 'Diagnostic Poller Otomatis Selesai',
-                'desc' => 'Hasil ping latency rata-rata ' . $device['last_ping_ms'] . ' ms dengan packet loss ' . $device['packet_loss'] . '%.',
-            ]
+                'desc' => 'Hasil ping latency rata-rata '.$device['last_ping_ms'].' ms dengan packet loss '.$device['packet_loss'].'%.',
+            ],
         ];
 
         return view('admin.monitoring.detail', compact('device', 'alerts'));
@@ -241,13 +242,13 @@ class MonitoringController extends Controller
     {
         $deviceModel = MonitoringDevice::find($id);
 
-        if (!$deviceModel) {
+        if (! $deviceModel) {
             return response()->json(['error' => 'Device not found'], 404);
         }
 
         // Ambil data telemetri langsung dari RouterOS MikroTik jika terdaftar
-        if (!empty($deviceModel->ip_address) && !empty($deviceModel->api_username) && !app()->runningUnitTests()) {
-            $mikrotikService = new \App\Services\MikrotikService();
+        if (! empty($deviceModel->ip_address) && ! empty($deviceModel->api_username) && ! app()->runningUnitTests()) {
+            $mikrotikService = new MikrotikService;
             $telemetry = $mikrotikService->getDeviceTelemetry(
                 $deviceModel->ip_address,
                 $deviceModel->api_username,
@@ -265,7 +266,7 @@ class MonitoringController extends Controller
                     'status' => 'online',
                     'status_label' => 'ONLINE',
                 ];
-                if (!empty($telemetry['interfaces'])) {
+                if (! empty($telemetry['interfaces'])) {
                     $updates['interfaces'] = $telemetry['interfaces'];
                 }
                 $deviceModel->update($updates);
@@ -291,7 +292,7 @@ class MonitoringController extends Controller
                 'rx_mbps' => $device['rx_mbps'] ?? '0 Mbps',
                 'tx_mbps' => $device['tx_mbps'] ?? '0 Mbps',
                 'packet_loss' => (float) ($device['packet_loss'] ?? 0.0),
-            ]
+            ],
         ]);
     }
 
@@ -323,15 +324,15 @@ class MonitoringController extends Controller
         $deviceModel = MonitoringDevice::find($id);
         $device = $deviceModel ? self::formatMonitoringDevice($deviceModel) : null;
 
-        $hostname = $device['hostname'] ?? ('Node Perangkat #' . $id);
+        $hostname = $device['hostname'] ?? ('Node Perangkat #'.$id);
         $ip = $device['ip_address'] ?? '127.0.0.1';
         $status = $device['status'] ?? 'online';
         $ping = (float) ($device['last_ping_ms'] ?? 0.0);
-        $snmpStatus = 'Status Link: ' . strtoupper($status);
+        $snmpStatus = 'Status Link: '.strtoupper($status);
         $quality = $status === 'offline' ? 'Offline / Unreachable' : 'Normal / Ready';
 
-        if ($deviceModel && !empty($deviceModel->api_username) && !app()->runningUnitTests()) {
-            $mikrotikService = new \App\Services\MikrotikService();
+        if ($deviceModel && ! empty($deviceModel->api_username) && ! app()->runningUnitTests()) {
+            $mikrotikService = new MikrotikService;
             $test = $mikrotikService->testConnection(
                 $deviceModel->ip_address,
                 $deviceModel->api_username,
@@ -343,7 +344,7 @@ class MonitoringController extends Controller
             if ($test['success']) {
                 $ping = $test['latency_ms'];
                 $snmpStatus = "RouterOS v{$test['resource']['version']} ({$test['resource']['board_name']}) OK";
-                $quality = 'Connected via Port ' . ($deviceModel->api_port ?? 8728);
+                $quality = 'Connected via Port '.($deviceModel->api_port ?? 8728);
                 $status = 'online';
                 $deviceModel->update([
                     'status' => 'online',
@@ -351,7 +352,7 @@ class MonitoringController extends Controller
                     'last_ping_ms' => (int) $ping,
                 ]);
             } else {
-                $snmpStatus = 'API Unreachable: ' . $test['message'];
+                $snmpStatus = 'API Unreachable: '.$test['message'];
                 $quality = 'Port 8728 Timeout';
                 $status = 'offline';
             }
@@ -374,7 +375,7 @@ class MonitoringController extends Controller
             'success' => true,
             'device_id' => $id,
             'data' => $data,
-            'timestamp' => now()->format('H:i:s') . ' WIB',
+            'timestamp' => now()->format('H:i:s').' WIB',
         ]);
     }
 }

@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
 use Illuminate\Support\Facades\RateLimiter;
 use Tests\TestCase;
 

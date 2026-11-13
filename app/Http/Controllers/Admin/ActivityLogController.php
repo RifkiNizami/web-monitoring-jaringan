@@ -41,7 +41,7 @@ class ActivityLogController extends Controller
 
         $query = ActivityLog::query();
 
-        if (!empty($search)) {
+        if (! empty($search)) {
             $query->where(function ($q) use ($search) {
                 $q->where('description', 'like', "%{$search}%")
                     ->orWhere('subject_label', 'like', "%{$search}%")
@@ -50,20 +50,20 @@ class ActivityLogController extends Controller
             });
         }
 
-        if (!empty($module) && $module !== 'all') {
+        if (! empty($module) && $module !== 'all') {
             $query->where('module', $module);
         }
 
-        if (!empty($action) && $action !== 'all') {
+        if (! empty($action) && $action !== 'all') {
             $query->where('action', $action);
         }
 
-        if (!empty($userId) && $userId !== 'all') {
+        if (! empty($userId) && $userId !== 'all') {
             $query->where('user_id', $userId);
         }
 
         // Filter Rentang Tanggal (diurai berdasarkan zona waktu Indonesia WIB / Asia/Jakarta)
-        if (!empty($dateFrom)) {
+        if (! empty($dateFrom)) {
             try {
                 $startUtc = Carbon::parse($dateFrom, 'Asia/Jakarta')->startOfDay()->setTimezone('UTC');
                 $query->where('created_at', '>=', $startUtc);
@@ -72,7 +72,7 @@ class ActivityLogController extends Controller
             }
         }
 
-        if (!empty($dateTo)) {
+        if (! empty($dateTo)) {
             try {
                 $endUtc = Carbon::parse($dateTo, 'Asia/Jakarta')->endOfDay()->setTimezone('UTC');
                 $query->where('created_at', '<=', $endUtc);

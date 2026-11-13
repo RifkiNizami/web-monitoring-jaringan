@@ -2,10 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\Announcement;
 use App\Models\LandingClient;
 use App\Models\User;
-use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 class AdminKontenTest extends TestCase

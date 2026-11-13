@@ -25,9 +25,9 @@ class Teknisi extends Model
         $phone = preg_replace('/[^0-9]/', '', $this->nomor_hp ?? '');
 
         if (str_starts_with($phone, '0')) {
-            $phone = '62' . substr($phone, 1);
+            $phone = '62'.substr($phone, 1);
         } elseif (str_starts_with($phone, '8')) {
-            $phone = '62' . $phone;
+            $phone = '62'.$phone;
         }
 
         return $phone;
@@ -44,6 +44,7 @@ class Teknisi extends Model
         }
 
         $message = urlencode("Halo {$this->nama}, kami dari tim NOC NetFly ingin menginformasikan koordinasi tugas teknis.");
+
         return "https://wa.me/{$phone}?text={$message}";
     }
 }

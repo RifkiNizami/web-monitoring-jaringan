@@ -3,12 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Customer;
-use App\Models\Device;
-use App\Models\MonitoringAlert;
-use App\Models\Project;
-use App\Models\Ticket;
-use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class DatabaseMigrationTest extends TestCase

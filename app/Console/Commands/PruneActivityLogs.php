@@ -30,6 +30,7 @@ class PruneActivityLogs extends Command
 
         if ($days <= 0) {
             $this->error('Parameter --days harus berupa angka bulat positif lebih dari 0.');
+
             return self::FAILURE;
         }
 

@@ -108,7 +108,7 @@ class CustomerProjectController extends Controller
             'phone' => trim($validated['phone']),
             'email' => trim($validated['email']),
             'address' => trim($validated['address']),
-            'note' => !empty($validated['note']) ? trim($validated['note']) : 'Layanan Internet Rumahan NetFly',
+            'note' => ! empty($validated['note']) ? trim($validated['note']) : 'Layanan Internet Rumahan NetFly',
             'status' => $validated['status'],
             'category' => 'Customer Rumahan',
         ]);
@@ -167,7 +167,7 @@ class CustomerProjectController extends Controller
             'email' => trim($validated['email']),
             'phone' => trim($validated['phone']),
             'address' => trim($validated['address']),
-            'note' => !empty($validated['note']) ? trim($validated['note']) : $customer->note,
+            'note' => ! empty($validated['note']) ? trim($validated['note']) : $customer->note,
         ]);
 
         ActivityLogger::log(
@@ -228,7 +228,8 @@ class CustomerProjectController extends Controller
             $sessionAccounts = array_values(array_filter($sessionAccounts, function ($acc) use ($id, $targetNameLower) {
                 $isSameRumahanId = (($acc['customer_type'] ?? '') === 'rumahan') && ((string) ($acc['customer_id'] ?? '') === (string) $id);
                 $isSameName = strtolower(trim($acc['customer_name'] ?? '')) === $targetNameLower;
-                return !($isSameRumahanId || $isSameName);
+
+                return ! ($isSameRumahanId || $isSameName);
             }));
             session(['customer_accounts' => $sessionAccounts]);
         }
@@ -275,7 +276,7 @@ class CustomerProjectController extends Controller
             'phone' => trim($validated['phone']),
             'email' => trim($validated['email']),
             'address' => trim($validated['address']),
-            'note' => !empty($validated['note']) ? trim($validated['note']) : 'Kemitraan Jaringan Korporat NetFly',
+            'note' => ! empty($validated['note']) ? trim($validated['note']) : 'Kemitraan Jaringan Korporat NetFly',
             'status' => $validated['status'],
             'category' => 'Mitra Korporat',
         ]);
@@ -338,7 +339,7 @@ class CustomerProjectController extends Controller
             'email' => trim($validated['email']),
             'phone' => trim($validated['phone']),
             'address' => trim($validated['address']),
-            'note' => !empty($validated['note']) ? trim($validated['note']) : $corporate->note,
+            'note' => ! empty($validated['note']) ? trim($validated['note']) : $corporate->note,
         ]);
 
         ActivityLogger::log(
@@ -400,7 +401,8 @@ class CustomerProjectController extends Controller
             $sessionAccounts = array_values(array_filter($sessionAccounts, function ($acc) use ($id, $targetNameLower) {
                 $isSameCorpId = (($acc['customer_type'] ?? 'perusahaan') === 'perusahaan') && ((string) ($acc['customer_id'] ?? '') === (string) $id);
                 $isSameName = strtolower(trim($acc['customer_name'] ?? '')) === $targetNameLower;
-                return !($isSameCorpId || $isSameName);
+
+                return ! ($isSameCorpId || $isSameName);
             }));
             session(['customer_accounts' => $sessionAccounts]);
         }

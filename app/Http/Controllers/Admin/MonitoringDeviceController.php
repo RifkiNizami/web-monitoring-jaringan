@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\MonitoringDevice;
 use App\Services\ActivityLogger;
+use App\Services\MikrotikService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -51,15 +52,15 @@ class MonitoringDeviceController extends Controller
         $ram = 0.0;
         $uptime = 'Siap Pantau';
         $latency = 0;
-        $model = !empty($validated['model']) ? trim($validated['model']) : ($validated['unit_type'] . ' Node');
+        $model = ! empty($validated['model']) ? trim($validated['model']) : ($validated['unit_type'].' Node');
         $interfaces = [
             ['name' => 'ether1', 'status' => 'up', 'speed' => '1 Gbps', 'rx' => '0 Mbps', 'tx' => '0 Mbps'],
         ];
         $connectNotice = '';
 
         // Hubungi router MikroTik secara real jika IP & kredensial diberikan
-        if (!empty($validated['ip_address']) && !empty($validated['api_username']) && !app()->runningUnitTests()) {
-            $mikrotikService = new \App\Services\MikrotikService();
+        if (! empty($validated['ip_address']) && ! empty($validated['api_username']) && ! app()->runningUnitTests()) {
+            $mikrotikService = new MikrotikService;
             $telemetry = $mikrotikService->getDeviceTelemetry(
                 trim($validated['ip_address']),
                 trim($validated['api_username']),
@@ -75,16 +76,16 @@ class MonitoringDeviceController extends Controller
                 $uptime = $telemetry['resource']['uptime'];
                 $latency = (int) $telemetry['latency_ms'];
                 if (empty($validated['model'])) {
-                    $model = $telemetry['resource']['board_name'] . ' (v' . $telemetry['resource']['version'] . ')';
+                    $model = $telemetry['resource']['board_name'].' (v'.$telemetry['resource']['version'].')';
                 }
-                if (!empty($telemetry['interfaces'])) {
+                if (! empty($telemetry['interfaces'])) {
                     $interfaces = $telemetry['interfaces'];
                 }
                 $connectNotice = " — Berhasil terhubung ke {$telemetry['resource']['board_name']} (RouterOS v{$telemetry['resource']['version']}).";
             } else {
                 $status = 'offline';
                 $uptime = 'Gagal Konek (Timeout)';
-                $connectNotice = ' — Perangkat disimpan (Belum dapat terhubung ke port API 8728: ' . ($mikrotikService->getLastError() ?: 'Periksa IP/Kredensial') . ').';
+                $connectNotice = ' — Perangkat disimpan (Belum dapat terhubung ke port API 8728: '.($mikrotikService->getLastError() ?: 'Periksa IP/Kredensial').').';
             }
         }
 
@@ -93,9 +94,9 @@ class MonitoringDeviceController extends Controller
             'unit_type' => $validated['unit_type'],
             'ip_address' => trim($validated['ip_address']),
             'customer' => trim($validated['customer']),
-            'project' => !empty($validated['project']) ? trim($validated['project']) : 'Dedicated SLA Monitoring',
+            'project' => ! empty($validated['project']) ? trim($validated['project']) : 'Dedicated SLA Monitoring',
             'model' => $model,
-            'rack_location' => !empty($validated['rack_location']) ? trim($validated['rack_location']) : 'POP Distribusi',
+            'rack_location' => ! empty($validated['rack_location']) ? trim($validated['rack_location']) : 'POP Distribusi',
             'status' => $status,
             'status_label' => strtoupper($status),
             'uptime' => $uptime,
@@ -152,11 +153,12 @@ class MonitoringDeviceController extends Controller
     {
         $deviceModel = MonitoringDevice::find($id);
 
-        if (!$deviceModel) {
+        if (! $deviceModel) {
             abort(404, 'Perangkat monitoring tidak ditemukan.');
         }
 
         $device = MonitoringController::formatMonitoringDevice($deviceModel);
+
         return view('admin.monitoring.edit', compact('device'));
     }
 
@@ -188,17 +190,18 @@ class MonitoringDeviceController extends Controller
 
         $deviceModel = MonitoringDevice::find($id);
 
-        if (!$deviceModel) {
+        if (! $deviceModel) {
             if ($request->wantsJson()) {
                 return response()->json(['success' => false, 'message' => 'Perangkat monitoring tidak ditemukan.'], 404);
             }
+
             return redirect()->route('monitoring.index')->with('error', 'Perangkat monitoring tidak ditemukan.');
         }
 
         $status = $validated['status'] ?? $deviceModel->status ?? 'online';
         $ip = trim($validated['ip_address']);
         $port = (int) ($validated['api_port'] ?? ($deviceModel->api_port ?: 8728));
-        $username = !empty($validated['api_username']) ? $validated['api_username'] : $deviceModel->api_username;
+        $username = ! empty($validated['api_username']) ? $validated['api_username'] : $deviceModel->api_username;
         $password = (array_key_exists('api_password', $validated) && $validated['api_password'] !== null && $validated['api_password'] !== '')
             ? $validated['api_password']
             : $deviceModel->api_password;
@@ -208,23 +211,23 @@ class MonitoringDeviceController extends Controller
             'unit_type' => $validated['unit_type'],
             'ip_address' => $ip,
             'customer' => trim($validated['customer']),
-            'project' => !empty($validated['project']) ? trim($validated['project']) : ($deviceModel->project ?: 'Dedicated SLA Monitoring'),
+            'project' => ! empty($validated['project']) ? trim($validated['project']) : ($deviceModel->project ?: 'Dedicated SLA Monitoring'),
             'connection_type' => $validated['connection_type'] ?? ($deviceModel->connection_type ?: 'lan'),
             'api_port' => $port,
             'api_username' => $username,
             'api_password' => $password,
         ];
 
-        if (array_key_exists('model', $validated) && !empty($validated['model'])) {
+        if (array_key_exists('model', $validated) && ! empty($validated['model'])) {
             $updates['model'] = trim($validated['model']);
         }
-        if (array_key_exists('rack_location', $validated) && !empty($validated['rack_location'])) {
+        if (array_key_exists('rack_location', $validated) && ! empty($validated['rack_location'])) {
             $updates['rack_location'] = trim($validated['rack_location']);
         }
 
         $connectNotice = '';
-        if (!empty($ip) && !empty($username) && !app()->runningUnitTests()) {
-            $mikrotikService = new \App\Services\MikrotikService();
+        if (! empty($ip) && ! empty($username) && ! app()->runningUnitTests()) {
+            $mikrotikService = new MikrotikService;
             $telemetry = $mikrotikService->getDeviceTelemetry($ip, $username, (string) $password, $port, 2);
 
             if ($telemetry) {
@@ -234,14 +237,14 @@ class MonitoringDeviceController extends Controller
                 $updates['uptime'] = $telemetry['resource']['uptime'];
                 $updates['last_ping_ms'] = (int) $telemetry['latency_ms'];
                 $updates['packet_loss'] = 0.0;
-                if (!empty($telemetry['interfaces'])) {
+                if (! empty($telemetry['interfaces'])) {
                     $updates['interfaces'] = $telemetry['interfaces'];
                 }
                 $connectNotice = " — Terhubung ke {$telemetry['resource']['board_name']} (RouterOS v{$telemetry['resource']['version']})";
             } else {
                 $status = 'offline';
                 $updates['packet_loss'] = 100.0;
-                $connectNotice = ' — Peringatan: ' . ($mikrotikService->getLastError() ?: 'Koneksi API gagal');
+                $connectNotice = ' — Peringatan: '.($mikrotikService->getLastError() ?: 'Koneksi API gagal');
             }
         }
 
@@ -350,7 +353,7 @@ class MonitoringDeviceController extends Controller
                 'api_username' => $validated['api_username'],
             ];
 
-            if (!empty($validated['api_password'])) {
+            if (! empty($validated['api_password'])) {
                 $updates['api_password'] = $validated['api_password'];
             }
 

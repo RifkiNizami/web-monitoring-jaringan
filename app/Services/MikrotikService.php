@@ -4,7 +4,7 @@ namespace App\Services;
 
 /**
  * Class MikrotikService
- * 
+ *
  * Service komunikasi langsung dengan router MikroTik RouterOS (v6 & v7)
  * melalui RouterOS API binary protocol (TCP Port 8728 / SSL 8729).
  */
@@ -12,6 +12,7 @@ class MikrotikService
 {
     /**
      * Resource socket connection.
+     *
      * @var resource|null
      */
     protected $socket = null;
@@ -50,7 +51,7 @@ class MikrotikService
             ],
         ]);
 
-        set_error_handler(static fn() => true);
+        set_error_handler(static fn () => true);
         try {
             $socket = stream_socket_client(
                 "tcp://{$ip}:{$port}",
@@ -64,8 +65,9 @@ class MikrotikService
             restore_error_handler();
         }
 
-        if (!$socket) {
-            $this->lastError = "Gagal terhubung ke {$ip}:{$port}. " . ($errstr ? "({$errstr})" : 'Koneksi timeout / port tertutup.');
+        if (! $socket) {
+            $this->lastError = "Gagal terhubung ke {$ip}:{$port}. ".($errstr ? "({$errstr})" : 'Koneksi timeout / port tertutup.');
+
             return false;
         }
 
@@ -74,12 +76,14 @@ class MikrotikService
         $this->latencyMs = round((microtime(true) - $startTime) * 1000, 1);
 
         // Lakukan autentikasi /login
-        if (!$this->login($username, $password)) {
+        if (! $this->login($username, $password)) {
             $this->disconnect();
+
             return false;
         }
 
         $this->connected = true;
+
         return true;
     }
 
@@ -119,36 +123,38 @@ class MikrotikService
         // 1. Coba login metode RouterOS modern (v6.43+ & v7.x)
         $this->writeSentence([
             '/login',
-            '=name=' . $username,
-            '=password=' . $password,
+            '=name='.$username,
+            '=password='.$password,
         ]);
 
         $response = $this->readSentence();
 
         if (empty($response)) {
             $this->lastError = 'Tidak ada respon dari router saat proses autentikasi.';
+
             return false;
         }
 
         // Jika berhasil login langsung (!done)
-        if (isset($response['!done']) && !isset($response['!trap'])) {
+        if (isset($response['!done']) && ! isset($response['!trap'])) {
             // Cek apakah router meminta challenge legacy pre-v6.43 (=ret=xxx)
             if (isset($response['=ret'])) {
                 $challenge = $response['=ret'];
-                $hashed = '00' . md5(chr(0) . $password . hex2bin($challenge));
+                $hashed = '00'.md5(chr(0).$password.hex2bin($challenge));
 
                 $this->writeSentence([
                     '/login',
-                    '=name=' . $username,
-                    '=response=' . $hashed,
+                    '=name='.$username,
+                    '=response='.$hashed,
                 ]);
 
                 $response2 = $this->readSentence();
-                if (isset($response2['!done']) && !isset($response2['!trap'])) {
+                if (isset($response2['!done']) && ! isset($response2['!trap'])) {
                     return true;
                 }
 
                 $this->lastError = $response2['=message'] ?? 'Login legacy gagal ditolak.';
+
                 return false;
             }
 
@@ -159,10 +165,12 @@ class MikrotikService
         if (isset($response['!trap'])) {
             $msg = $response['=message'] ?? 'Username atau password API salah.';
             $this->lastError = "Autentikasi gagal: {$msg}";
+
             return false;
         }
 
         $this->lastError = 'Respon autentikasi router tidak dikenali.';
+
         return false;
     }
 
@@ -171,14 +179,15 @@ class MikrotikService
      */
     public function comm(string $command, array $params = []): array
     {
-        if (!$this->connected || !is_resource($this->socket)) {
+        if (! $this->connected || ! is_resource($this->socket)) {
             $this->lastError = 'Socket belum terkoneksi.';
+
             return [];
         }
 
         $sentence = [$command];
         foreach ($params as $key => $value) {
-            $sentence[] = '=' . $key . '=' . $value;
+            $sentence[] = '='.$key.'='.$value;
         }
 
         $this->writeSentence($sentence);
@@ -227,15 +236,15 @@ class MikrotikService
             fwrite($this->socket, chr($length));
         } elseif ($length < 0x4000) {
             $length |= 0x8000;
-            fwrite($this->socket, chr(($length >> 8) & 0xFF) . chr($length & 0xFF));
+            fwrite($this->socket, chr(($length >> 8) & 0xFF).chr($length & 0xFF));
         } elseif ($length < 0x200000) {
             $length |= 0xC00000;
-            fwrite($this->socket, chr(($length >> 16) & 0xFF) . chr(($length >> 8) & 0xFF) . chr($length & 0xFF));
+            fwrite($this->socket, chr(($length >> 16) & 0xFF).chr(($length >> 8) & 0xFF).chr($length & 0xFF));
         } elseif ($length < 0x10000000) {
             $length |= 0xE0000000;
-            fwrite($this->socket, chr(($length >> 24) & 0xFF) . chr(($length >> 16) & 0xFF) . chr(($length >> 8) & 0xFF) . chr($length & 0xFF));
+            fwrite($this->socket, chr(($length >> 24) & 0xFF).chr(($length >> 16) & 0xFF).chr(($length >> 8) & 0xFF).chr($length & 0xFF));
         } else {
-            fwrite($this->socket, chr(0xF0) . chr(($length >> 24) & 0xFF) . chr(($length >> 16) & 0xFF) . chr(($length >> 8) & 0xFF) . chr($length & 0xFF));
+            fwrite($this->socket, chr(0xF0).chr(($length >> 24) & 0xFF).chr(($length >> 16) & 0xFF).chr(($length >> 8) & 0xFF).chr($length & 0xFF));
         }
 
         fwrite($this->socket, $word);
@@ -257,7 +266,7 @@ class MikrotikService
      */
     protected function readWord(): string
     {
-        if (!$this->socket || feof($this->socket)) {
+        if (! $this->socket || feof($this->socket)) {
             return '';
         }
 
@@ -311,7 +320,7 @@ class MikrotikService
                 $sentence[$word] = true;
             } elseif (str_starts_with($word, '=')) {
                 $parts = explode('=', substr($word, 1), 2);
-                $key = '=' . $parts[0];
+                $key = '='.$parts[0];
                 $val = $parts[1] ?? '';
                 $sentence[$key] = $val;
             } else {
@@ -329,7 +338,7 @@ class MikrotikService
     {
         $connected = $this->connect($ip, $username, $password, $port, $timeout);
 
-        if (!$connected) {
+        if (! $connected) {
             return [
                 'success' => false,
                 'message' => $this->getLastError() ?: 'Gagal terhubung ke router MikroTik.',
@@ -343,7 +352,7 @@ class MikrotikService
 
         return [
             'success' => true,
-            'message' => 'Terhubung ke ' . ($resource['board_name'] ?? 'MikroTik RouterOS') . " (RouterOS v{$resource['version']})",
+            'message' => 'Terhubung ke '.($resource['board_name'] ?? 'MikroTik RouterOS')." (RouterOS v{$resource['version']})",
             'latency_ms' => $this->latencyMs,
             'resource' => $resource,
         ];
@@ -373,7 +382,7 @@ class MikrotikService
             'version' => $item['version'] ?? 'RouterOS',
             'board_name' => $item['board-name'] ?? ($item['platform'] ?? 'MikroTik'),
             'cpu_count' => (int) ($item['cpu-count'] ?? 1),
-            'cpu_frequency' => ($item['cpu-frequency'] ?? '') . ' MHz',
+            'cpu_frequency' => ($item['cpu-frequency'] ?? '').' MHz',
         ];
     }
 
@@ -386,7 +395,7 @@ class MikrotikService
         $interfaces = [];
 
         foreach ($raw as $row) {
-            if (!is_array($row) || empty($row['name'])) {
+            if (! is_array($row) || empty($row['name'])) {
                 continue;
             }
 
@@ -399,8 +408,8 @@ class MikrotikService
                 'type' => $row['type'] ?? 'ether',
                 'status' => $isRunning ? 'up' : 'down',
                 'speed' => $row['actual-mtu'] ?? '1500',
-                'rx' => $this->formatBytes($rxBytes) . ' total',
-                'tx' => $this->formatBytes($txBytes) . ' total',
+                'rx' => $this->formatBytes($rxBytes).' total',
+                'tx' => $this->formatBytes($txBytes).' total',
                 'rx_bytes' => $rxBytes,
                 'tx_bytes' => $txBytes,
             ];
@@ -414,7 +423,7 @@ class MikrotikService
      */
     public function getDeviceTelemetry(string $ip, string $username, string $password = '', int $port = 8728, int $timeout = 2): ?array
     {
-        if (!$this->connect($ip, $username, $password, $port, $timeout)) {
+        if (! $this->connect($ip, $username, $password, $port, $timeout)) {
             return null;
         }
 
@@ -437,15 +446,16 @@ class MikrotikService
     protected function formatBytes(float|int $bytes): string
     {
         if ($bytes >= 1073741824) {
-            return round($bytes / 1073741824, 1) . ' GB';
+            return round($bytes / 1073741824, 1).' GB';
         }
         if ($bytes >= 1048576) {
-            return round($bytes / 1048576, 1) . ' MB';
+            return round($bytes / 1048576, 1).' MB';
         }
         if ($bytes >= 1024) {
-            return round($bytes / 1024, 1) . ' KB';
+            return round($bytes / 1024, 1).' KB';
         }
-        return $bytes . ' B';
+
+        return $bytes.' B';
     }
 
     public function __destruct()

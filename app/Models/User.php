@@ -3,13 +3,16 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
     /**
@@ -55,7 +58,7 @@ class User extends Authenticatable
     /**
      * Relationship with Customer
      */
-    public function customer(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
@@ -63,7 +66,7 @@ class User extends Authenticatable
     /**
      * Relationship with Announcements
      */
-    public function announcements(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function announcements(): HasMany
     {
         return $this->hasMany(Announcement::class, 'created_by');
     }
@@ -71,7 +74,7 @@ class User extends Authenticatable
     /**
      * Relationship with Landing Clients
      */
-    public function landingClients(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function landingClients(): HasMany
     {
         return $this->hasMany(LandingClient::class, 'created_by');
     }

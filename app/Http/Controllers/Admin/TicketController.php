@@ -24,11 +24,11 @@ class TicketController extends Controller
 
         if ($technicians->isEmpty()) {
             $technicians = collect([
-                (object)['nama' => 'Agus Prasetyo, S.T.', 'spesialisasi' => 'Fiber Optic & Splicing OTB'],
-                (object)['nama' => 'Budi Santoso', 'spesialisasi' => 'Wireless Microwave & Tower Climber'],
-                (object)['nama' => 'Dimas Nugroho', 'spesialisasi' => 'Troubleshooting Last Mile & ONT/CPE'],
-                (object)['nama' => 'Fajar Maulana', 'spesialisasi' => 'Emergency Response & Core NOC Support'],
-                (object)['nama' => 'Rahmat Hidayat', 'spesialisasi' => 'Routing & Switching Core (Cisco/Mikrotik)'],
+                (object) ['nama' => 'Agus Prasetyo, S.T.', 'spesialisasi' => 'Fiber Optic & Splicing OTB'],
+                (object) ['nama' => 'Budi Santoso', 'spesialisasi' => 'Wireless Microwave & Tower Climber'],
+                (object) ['nama' => 'Dimas Nugroho', 'spesialisasi' => 'Troubleshooting Last Mile & ONT/CPE'],
+                (object) ['nama' => 'Fajar Maulana', 'spesialisasi' => 'Emergency Response & Core NOC Support'],
+                (object) ['nama' => 'Rahmat Hidayat', 'spesialisasi' => 'Routing & Switching Core (Cisco/Mikrotik)'],
             ]);
         }
 
@@ -49,8 +49,9 @@ class TicketController extends Controller
         } else {
             $tickets = $dbTickets->map(function ($ticket) {
                 $reportedAt = $ticket->reported_at ?? $ticket->created_at;
+
                 return [
-                    'id' => $ticket->ticket_number ?? 'INC-' . $ticket->id,
+                    'id' => $ticket->ticket_number ?? 'INC-'.$ticket->id,
                     'db_id' => $ticket->id,
                     'priority' => $ticket->priority ?? 'P3 - MEDIUM',
                     'priority_level' => $ticket->priority_level ?? 'medium',
@@ -60,12 +61,12 @@ class TicketController extends Controller
                     'subject' => $ticket->subject,
                     'description' => $ticket->description,
                     'assigned_technician' => $ticket->assigned_technician,
-                    'is_tech_warning' => (bool)$ticket->is_tech_warning,
+                    'is_tech_warning' => (bool) $ticket->is_tech_warning,
                     'status' => $ticket->status ?? '1. Open (Baru)',
                     'status_type' => $ticket->status_type ?? 'open',
                     'status_note' => $ticket->status_note,
                     'report_date' => $reportedAt ? $reportedAt->format('d M Y') : '10 Okt 2026',
-                    'report_time' => $reportedAt ? $reportedAt->format('H:i') . ' WIB' : '04:06 WIB',
+                    'report_time' => $reportedAt ? $reportedAt->format('H:i').' WIB' : '04:06 WIB',
                 ];
             })->toArray();
         }
@@ -73,11 +74,11 @@ class TicketController extends Controller
         // 4. Hitung ringkasan status tiket dinamis
         $summary = [
             'all' => count($tickets),
-            'open' => count(array_filter($tickets, fn($t) => strtolower($t['status_type']) === 'open' || str_contains($t['status'], 'Open'))),
-            'assigned' => count(array_filter($tickets, fn($t) => strtolower($t['status_type']) === 'assigned' || str_contains($t['status'], 'Assigned'))),
-            'in_progress' => count(array_filter($tickets, fn($t) => strtolower($t['status_type']) === 'in_progress' || str_contains($t['status'], 'In Progress'))),
-            'resolved' => count(array_filter($tickets, fn($t) => strtolower($t['status_type']) === 'resolved' || str_contains($t['status'], 'Resolved'))),
-            'closed' => count(array_filter($tickets, fn($t) => strtolower($t['status_type']) === 'closed' || str_contains($t['status'], 'Closed'))),
+            'open' => count(array_filter($tickets, fn ($t) => strtolower($t['status_type']) === 'open' || str_contains($t['status'], 'Open'))),
+            'assigned' => count(array_filter($tickets, fn ($t) => strtolower($t['status_type']) === 'assigned' || str_contains($t['status'], 'Assigned'))),
+            'in_progress' => count(array_filter($tickets, fn ($t) => strtolower($t['status_type']) === 'in_progress' || str_contains($t['status'], 'In Progress'))),
+            'resolved' => count(array_filter($tickets, fn ($t) => strtolower($t['status_type']) === 'resolved' || str_contains($t['status'], 'Resolved'))),
+            'closed' => count(array_filter($tickets, fn ($t) => strtolower($t['status_type']) === 'closed' || str_contains($t['status'], 'Closed'))),
         ];
 
         return view('admin.tickets', compact('summary', 'technicians', 'statusOptions', 'tickets'));
@@ -92,11 +93,11 @@ class TicketController extends Controller
 
         if ($technicians->isEmpty()) {
             $technicians = collect([
-                (object)['nama' => 'Agus Prasetyo, S.T.', 'spesialisasi' => 'Fiber Optic & Splicing OTB'],
-                (object)['nama' => 'Budi Santoso', 'spesialisasi' => 'Wireless Microwave & Tower Climber'],
-                (object)['nama' => 'Dimas Nugroho', 'spesialisasi' => 'Troubleshooting Last Mile & ONT/CPE'],
-                (object)['nama' => 'Fajar Maulana', 'spesialisasi' => 'Emergency Response & Core NOC Support'],
-                (object)['nama' => 'Rahmat Hidayat', 'spesialisasi' => 'Routing & Switching Core (Cisco/Mikrotik)'],
+                (object) ['nama' => 'Agus Prasetyo, S.T.', 'spesialisasi' => 'Fiber Optic & Splicing OTB'],
+                (object) ['nama' => 'Budi Santoso', 'spesialisasi' => 'Wireless Microwave & Tower Climber'],
+                (object) ['nama' => 'Dimas Nugroho', 'spesialisasi' => 'Troubleshooting Last Mile & ONT/CPE'],
+                (object) ['nama' => 'Fajar Maulana', 'spesialisasi' => 'Emergency Response & Core NOC Support'],
+                (object) ['nama' => 'Rahmat Hidayat', 'spesialisasi' => 'Routing & Switching Core (Cisco/Mikrotik)'],
             ]);
         }
 
@@ -116,11 +117,11 @@ class TicketController extends Controller
 
         if ($technicians->isEmpty()) {
             $technicians = collect([
-                (object)['nama' => 'Agus Prasetyo, S.T.', 'spesialisasi' => 'Fiber Optic & Splicing OTB'],
-                (object)['nama' => 'Budi Santoso', 'spesialisasi' => 'Wireless Microwave & Tower Climber'],
-                (object)['nama' => 'Dimas Nugroho', 'spesialisasi' => 'Troubleshooting Last Mile & ONT/CPE'],
-                (object)['nama' => 'Fajar Maulana', 'spesialisasi' => 'Emergency Response & Core NOC Support'],
-                (object)['nama' => 'Rahmat Hidayat', 'spesialisasi' => 'Routing & Switching Core (Cisco/Mikrotik)'],
+                (object) ['nama' => 'Agus Prasetyo, S.T.', 'spesialisasi' => 'Fiber Optic & Splicing OTB'],
+                (object) ['nama' => 'Budi Santoso', 'spesialisasi' => 'Wireless Microwave & Tower Climber'],
+                (object) ['nama' => 'Dimas Nugroho', 'spesialisasi' => 'Troubleshooting Last Mile & ONT/CPE'],
+                (object) ['nama' => 'Fajar Maulana', 'spesialisasi' => 'Emergency Response & Core NOC Support'],
+                (object) ['nama' => 'Rahmat Hidayat', 'spesialisasi' => 'Routing & Switching Core (Cisco/Mikrotik)'],
             ]);
         }
 
@@ -144,10 +145,11 @@ class TicketController extends Controller
     {
         $ticket = Ticket::where('ticket_number', $id)->orWhere('id', $id)->first();
 
-        if (!$ticket) {
+        if (! $ticket) {
             if ($request->wantsJson()) {
                 return response()->json(['success' => false, 'message' => "Tiket {$id} tidak ditemukan."], 404);
             }
+
             return redirect()->route('tickets.index')->with('error', "Tiket {$id} tidak ditemukan.");
         }
 
@@ -172,7 +174,7 @@ class TicketController extends Controller
         }
 
         if (array_key_exists('node_code', $validated)) {
-            $ticket->node_code = !empty($validated['node_code']) ? trim($validated['node_code']) : null;
+            $ticket->node_code = ! empty($validated['node_code']) ? trim($validated['node_code']) : null;
         }
 
         if (isset($validated['subject']) && filled($validated['subject'])) {
@@ -184,10 +186,10 @@ class TicketController extends Controller
         }
 
         if (array_key_exists('status_note', $validated)) {
-            $ticket->status_note = !empty($validated['status_note']) ? trim($validated['status_note']) : null;
+            $ticket->status_note = ! empty($validated['status_note']) ? trim($validated['status_note']) : null;
         }
 
-        if (!empty($validated['priority'])) {
+        if (! empty($validated['priority'])) {
             $prio = strtolower($validated['priority']);
             $priorityLevel = match (true) {
                 str_contains($prio, 'critical') || str_contains($prio, 'p1') => 'critical',
@@ -205,17 +207,17 @@ class TicketController extends Controller
 
         $assignedTech = null;
         if ($request->has('assigned_technician')) {
-            $assignedTech = !empty($validated['assigned_technician']) ? trim($validated['assigned_technician']) : null;
+            $assignedTech = ! empty($validated['assigned_technician']) ? trim($validated['assigned_technician']) : null;
             $ticket->assigned_technician = $assignedTech;
 
-            if (!empty($assignedTech)) {
+            if (! empty($assignedTech)) {
                 $ticket->is_tech_warning = false;
             } else {
                 $ticket->is_tech_warning = in_array($ticket->priority_level, ['high', 'critical'], true);
             }
         }
 
-        if (!empty($validated['status'])) {
+        if (! empty($validated['status'])) {
             $ticket->status = $validated['status'];
             if (str_contains($validated['status'], 'Open')) {
                 $ticket->status_type = 'open';
@@ -225,16 +227,16 @@ class TicketController extends Controller
                 $ticket->status_type = 'in_progress';
             } elseif (str_contains($validated['status'], 'Resolved')) {
                 $ticket->status_type = 'resolved';
-                if (!$ticket->resolved_at) {
+                if (! $ticket->resolved_at) {
                     $ticket->resolved_at = now();
                     if (empty($ticket->status_note)) {
-                        $ticket->status_note = 'Selesai: ' . now()->format('d/m H:i');
+                        $ticket->status_note = 'Selesai: '.now()->format('d/m H:i');
                     }
                 }
             } elseif (str_contains($validated['status'], 'Closed')) {
                 $ticket->status_type = 'closed';
             }
-        } elseif (!empty($assignedTech) && ($ticket->status_type === 'open' || str_contains($ticket->status, 'Open'))) {
+        } elseif (! empty($assignedTech) && ($ticket->status_type === 'open' || str_contains($ticket->status, 'Open'))) {
             // Naikkan status ke Assigned jika sebelumnya Open dan teknisi ditunjuk
             $ticket->status = '2. Assigned (Ditugaskan)';
             $ticket->status_type = 'assigned';
@@ -245,7 +247,7 @@ class TicketController extends Controller
         ActivityLogger::log(
             'tiket',
             'update',
-            "Memperbarui tiket {$ticket->ticket_number}: status '{$ticket->status}'" . ($ticket->assigned_technician ? ", teknisi: '{$ticket->assigned_technician}'" : ''),
+            "Memperbarui tiket {$ticket->ticket_number}: status '{$ticket->status}'".($ticket->assigned_technician ? ", teknisi: '{$ticket->assigned_technician}'" : ''),
             $ticket->ticket_number,
             (string) $ticket->id,
             [
@@ -299,15 +301,15 @@ class TicketController extends Controller
             default => 'P3 - MEDIUM',
         };
 
-        $assignedTech = !empty($validated['assigned_technician']) ? trim($validated['assigned_technician']) : null;
-        $status = !empty($assignedTech) ? '2. Assigned (Ditugaskan)' : '1. Open (Baru)';
-        $statusType = !empty($assignedTech) ? 'assigned' : 'open';
+        $assignedTech = ! empty($validated['assigned_technician']) ? trim($validated['assigned_technician']) : null;
+        $status = ! empty($assignedTech) ? '2. Assigned (Ditugaskan)' : '1. Open (Baru)';
+        $statusType = ! empty($assignedTech) ? 'assigned' : 'open';
 
         $nextId = (Ticket::max('id') ?? 0) + 1025;
-        $ticketNumber = 'INC-' . date('Y') . '-' . str_pad((string)$nextId, 4, '0', STR_PAD_LEFT);
+        $ticketNumber = 'INC-'.date('Y').'-'.str_pad((string) $nextId, 4, '0', STR_PAD_LEFT);
         while (Ticket::where('ticket_number', $ticketNumber)->exists()) {
             $nextId++;
-            $ticketNumber = 'INC-' . date('Y') . '-' . str_pad((string)$nextId, 4, '0', STR_PAD_LEFT);
+            $ticketNumber = 'INC-'.date('Y').'-'.str_pad((string) $nextId, 4, '0', STR_PAD_LEFT);
         }
 
         $ticket = Ticket::create([

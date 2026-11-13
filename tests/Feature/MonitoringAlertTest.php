@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Http\Controllers\Admin\MonitoringController;
+use App\Models\MonitoringAlert;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
@@ -22,7 +24,7 @@ class MonitoringAlertTest extends TestCase
         ]);
 
         // Inisialisasi mock devices di database untuk unit/feature testing
-        \App\Http\Controllers\Admin\MonitoringController::saveTelemetryDevicesList([
+        MonitoringController::saveTelemetryDevicesList([
             1 => [
                 'id' => 1,
                 'hostname' => 'AP-OUTDOOR-DISDIK-01',
@@ -83,8 +85,8 @@ class MonitoringAlertTest extends TestCase
      */
     public function test_monitoring_page_renders_empty_state_cleanly(): void
     {
-        \App\Http\Controllers\Admin\MonitoringController::saveTelemetryDevicesList([]);
-        \App\Models\MonitoringAlert::query()->delete();
+        MonitoringController::saveTelemetryDevicesList([]);
+        MonitoringAlert::query()->delete();
         $response = $this->actingAs($this->adminUser)->get('/monitoring');
 
         $response->assertStatus(200);

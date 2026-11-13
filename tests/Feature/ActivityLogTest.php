@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\ActivityLog;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Artisan;
@@ -19,6 +20,7 @@ class ActivityLogTest extends TestCase
         parent::setUp();
         config(['activity_logger.enabled_in_tests' => true]);
     }
+
     protected function getAdminUser(): User
     {
         return User::firstOrCreate(
@@ -171,7 +173,7 @@ class ActivityLogTest extends TestCase
         $admin = $this->getAdminUser();
 
         // Log 1: Hari ini jam 08:00 WIB (yang dalam UTC adalah 01:00 UTC)
-        $todayWib = \Carbon\Carbon::now('Asia/Jakarta')->setTime(8, 0, 0);
+        $todayWib = Carbon::now('Asia/Jakarta')->setTime(8, 0, 0);
         $todayUtc = $todayWib->copy()->setTimezone('UTC');
 
         $logToday = ActivityLog::create([
@@ -184,7 +186,7 @@ class ActivityLogTest extends TestCase
         ]);
 
         // Log 2: 5 hari lalu jam 10:00 WIB
-        $fiveDaysAgoWib = \Carbon\Carbon::now('Asia/Jakarta')->subDays(5)->setTime(10, 0, 0);
+        $fiveDaysAgoWib = Carbon::now('Asia/Jakarta')->subDays(5)->setTime(10, 0, 0);
         $fiveDaysAgoUtc = $fiveDaysAgoWib->copy()->setTimezone('UTC');
 
         $logPast = ActivityLog::create([
@@ -196,7 +198,7 @@ class ActivityLogTest extends TestCase
             'created_at' => $fiveDaysAgoUtc,
         ]);
 
-        $todayDateString = \Carbon\Carbon::now('Asia/Jakarta')->toDateString();
+        $todayDateString = Carbon::now('Asia/Jakarta')->toDateString();
 
         // 1. Filter Hari Ini: date_from = today, date_to = today
         $responseToday = $this->actingAs($admin)->get("/activity-logs?date_from={$todayDateString}&date_to={$todayDateString}");
@@ -205,14 +207,14 @@ class ActivityLogTest extends TestCase
         $responseToday->assertDontSee('Aktivitas yang dibuat 5 hari lalu');
 
         // 2. Filter 7 Hari Terakhir: date_from = 6 hari lalu, date_to = today
-        $sevenDaysAgoDateString = \Carbon\Carbon::now('Asia/Jakarta')->subDays(6)->toDateString();
+        $sevenDaysAgoDateString = Carbon::now('Asia/Jakarta')->subDays(6)->toDateString();
         $response7Days = $this->actingAs($admin)->get("/activity-logs?date_from={$sevenDaysAgoDateString}&date_to={$todayDateString}");
         $response7Days->assertOk();
         $response7Days->assertSee('Aktivitas yang dibuat hari ini');
         $response7Days->assertSee('Aktivitas yang dibuat 5 hari lalu');
 
         // 3. Filter Rentang Masa Lalu: 10 hari lalu sampai 7 hari lalu
-        $tenDaysAgoDateString = \Carbon\Carbon::now('Asia/Jakarta')->subDays(10)->toDateString();
+        $tenDaysAgoDateString = Carbon::now('Asia/Jakarta')->subDays(10)->toDateString();
         $responseOld = $this->actingAs($admin)->get("/activity-logs?date_from={$tenDaysAgoDateString}&date_to={$sevenDaysAgoDateString}");
         $responseOld->assertOk();
         $responseOld->assertDontSee('Aktivitas yang dibuat hari ini');
