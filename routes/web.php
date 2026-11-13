@@ -105,7 +105,9 @@ Route::middleware('auth')->group(function () {
 
         // Database & Manajemen Teknisi Lapangan
         Route::get('/teknisi', [TeknisiController::class, 'index'])->name('teknisi.index');
+        Route::get('/teknisi/create', [TeknisiController::class, 'create'])->name('teknisi.create');
         Route::post('/teknisi', [TeknisiController::class, 'store'])->name('teknisi.store');
+        Route::get('/teknisi/{id}/edit', [TeknisiController::class, 'edit'])->name('teknisi.edit');
         Route::match(['post', 'put'], '/teknisi/{id}', [TeknisiController::class, 'update'])->name('teknisi.update');
         Route::delete('/teknisi/{id}', [TeknisiController::class, 'destroy'])->name('teknisi.destroy');
         Route::get('/teknisi/{id}/whatsapp', [TeknisiController::class, 'redirectToWhatsapp'])->name('teknisi.whatsapp');

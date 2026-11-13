@@ -26,6 +26,9 @@ class TeknisiManagementTest extends TestCase
     {
         $response = $this->get('/teknisi');
         $response->assertRedirect('/login');
+
+        $this->get('/teknisi/create')->assertRedirect('/login');
+        $this->get('/teknisi/1/edit')->assertRedirect('/login');
     }
 
     public function test_admin_can_view_teknisi_page(): void
@@ -35,9 +38,35 @@ class TeknisiManagementTest extends TestCase
         $response = $this->actingAs($admin)->get('/teknisi');
         $response->assertStatus(200);
         $response->assertSee('Database Teknisi');
-        $response->assertSee('Tambah Teknisi');
-        $response->assertDontSee('TOTAL TEKNISI');
-        $response->assertDontSee('SIAP DITUGASKAN');
+        $response->assertSee(route('teknisi.create'));
+        $response->assertDontSee('id="createTeknisiModal"', false);
+        $response->assertDontSee('id="editTeknisiModal"', false);
+    }
+
+    public function test_admin_can_view_create_teknisi_page(): void
+    {
+        $admin = $this->getAdminUser();
+
+        $response = $this->actingAs($admin)->get(route('teknisi.create'));
+        $response->assertStatus(200);
+        $response->assertSee('Tambah Teknisi Baru');
+        $response->assertSee('action="'.route('teknisi.store').'"', false);
+    }
+
+    public function test_admin_can_view_edit_teknisi_page(): void
+    {
+        $admin = $this->getAdminUser();
+        $teknisi = Teknisi::first() ?? Teknisi::create([
+            'nama' => 'Teknisi Edit Test',
+            'nomor_hp' => '0812-9999-8888',
+            'alamat' => 'Jl. Kebon Jeruk No. 1',
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('teknisi.edit', $teknisi->id));
+        $response->assertStatus(200);
+        $response->assertSee('Edit Data Teknisi:');
+        $response->assertSee($teknisi->nama);
+        $response->assertSee(route('teknisi.update', $teknisi->id));
     }
 
     public function test_admin_can_store_teknisi(): void
@@ -95,7 +124,7 @@ class TeknisiManagementTest extends TestCase
 
         $response = $this->actingAs($admin)->get("/teknisi/{$teknisi->id}/whatsapp");
         $response->assertStatus(302);
-        
+
         $targetUrl = $response->headers->get('Location');
         $this->assertStringContainsString('https://wa.me/6281234567890', $targetUrl);
     }

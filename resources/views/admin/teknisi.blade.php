@@ -72,10 +72,10 @@
                         </p>
                     </div>
 
-                    <!-- Top Action Button: Tambah Teknisi -->
+                    <!-- Top Action Button: Tambah Teknisi (Dedicated Page) -->
                     <div class="flex items-center gap-2.5 shrink-0">
-                        <button 
-                            type="button" 
+                        <a 
+                            href="{{ route('teknisi.create') }}" 
                             id="btnOpenCreateTeknisi"
                             class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm hover:shadow active:scale-95 transition-all cursor-pointer"
                         >
@@ -83,7 +83,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                             </svg>
                             <span>Tambah Teknisi</span>
-                        </button>
+                        </a>
                     </div>
                 </div>
 
@@ -232,20 +232,16 @@
                                                     <span>WhatsApp</span>
                                                 </a>
 
-                                                <!-- Edit Button -->
-                                                <button 
-                                                    type="button" 
-                                                    class="btn-edit-teknisi p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                                                <!-- Edit Button (Dedicated Page) -->
+                                                <a 
+                                                    href="{{ route('teknisi.edit', $item->id) }}"
+                                                    class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
                                                     title="Edit Data Teknisi"
-                                                    data-id="{{ $item->id }}"
-                                                    data-nama="{{ $item->nama }}"
-                                                    data-phone="{{ $item->nomor_hp }}"
-                                                    data-alamat="{{ $item->alamat }}"
                                                 >
                                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                     </svg>
-                                                </button>
+                                                </a>
 
                                                 <!-- Delete Button -->
                                                 <button 
@@ -288,211 +284,10 @@
         </div>
     </div>
 
-    <!-- ========================================================================= -->
-    <!-- MODAL 1: TAMBAH TEKNISI BARU                                              -->
-    <!-- Hanya: Nama, Nomor HP, Alamat                                             -->
-    <!-- ========================================================================= -->
-    <div id="createTeknisiModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs items-center justify-center p-4 hidden [&:not(.hidden)]:flex">
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            
-            <div class="p-5 border-b border-slate-100 flex items-start justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shrink-0">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="text-sm font-bold text-slate-900 leading-tight">
-                            Tambah Teknisi Baru
-                        </h3>
-                        <p class="text-[11px] text-slate-400 mt-0.5">
-                            Masukkan data nama, nomor HP, dan alamat
-                        </p>
-                    </div>
-                </div>
 
-                <button type="button" class="close-create-modal text-slate-400 hover:text-slate-600 p-1 rounded-md cursor-pointer">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-
-            <form action="{{ route('teknisi.store') }}" method="POST" class="p-6 space-y-4">
-                @csrf
-                
-                <!-- 1. Nama -->
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-tight mb-1.5">
-                        Nama <span class="text-rose-500">*</span>
-                    </label>
-                    <input 
-                        type="text" 
-                        name="nama" 
-                        required 
-                        placeholder="Contoh: Bambang Sutrisno" 
-                        class="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-medium"
-                    >
-                </div>
-
-                <!-- 2. Nomor HP -->
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-tight mb-1.5">
-                        Nomor HP <span class="text-rose-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#25D366]">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.747.953 3.71 1.456 5.711 1.457h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                            </svg>
-                        </div>
-                        <input 
-                            type="tel" 
-                            name="nomor_hp" 
-                            required 
-                            placeholder="0812-3456-7890" 
-                            class="w-full pl-9 pr-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-mono"
-                        >
-                    </div>
-                </div>
-
-                <!-- 3. Alamat -->
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-tight mb-1.5">
-                        Alamat <span class="text-rose-500">*</span>
-                    </label>
-                    <textarea 
-                        name="alamat" 
-                        rows="3" 
-                        required 
-                        placeholder="Alamat domisili atau wilayah tugas teknisi..." 
-                        class="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all leading-relaxed"
-                    ></textarea>
-                </div>
-
-                <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
-                    <button 
-                        type="button" 
-                        class="close-create-modal px-4 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
-                    >
-                        Batal
-                    </button>
-                    <button 
-                        type="submit" 
-                        class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm active:scale-95 transition-all cursor-pointer"
-                    >
-                        Simpan Teknisi
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
 
     <!-- ========================================================================= -->
-    <!-- MODAL 2: EDIT DATA TEKNISI                                                -->
-    <!-- Hanya: Nama, Nomor HP, Alamat                                             -->
-    <!-- ========================================================================= -->
-    <div id="editTeknisiModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs items-center justify-center p-4 hidden [&:not(.hidden)]:flex">
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            
-            <div class="p-5 border-b border-slate-100 flex items-start justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shrink-0">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="text-sm font-bold text-slate-900 leading-tight">
-                            Edit Data Teknisi
-                        </h3>
-                        <p class="text-[11px] text-slate-400 mt-0.5">
-                            Perbarui nama, nomor HP, atau alamat
-                        </p>
-                    </div>
-                </div>
-
-                <button type="button" class="close-edit-modal text-slate-400 hover:text-slate-600 p-1 rounded-md cursor-pointer">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-
-            <form id="editTeknisiForm" method="POST" action="" class="p-6 space-y-4">
-                @csrf
-                @method('PUT')
-
-                <!-- 1. Nama -->
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-tight mb-1.5">
-                        Nama <span class="text-rose-500">*</span>
-                    </label>
-                    <input 
-                        type="text" 
-                        name="nama" 
-                        id="edit_nama"
-                        required 
-                        class="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-medium"
-                    >
-                </div>
-
-                <!-- 2. Nomor HP -->
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-tight mb-1.5">
-                        Nomor HP <span class="text-rose-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#25D366]">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.747.953 3.71 1.456 5.711 1.457h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                            </svg>
-                        </div>
-                        <input 
-                            type="tel" 
-                            name="nomor_hp" 
-                            id="edit_nomor_hp"
-                            required 
-                            class="w-full pl-9 pr-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-mono"
-                        >
-                    </div>
-                </div>
-
-                <!-- 3. Alamat -->
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-tight mb-1.5">
-                        Alamat <span class="text-rose-500">*</span>
-                    </label>
-                    <textarea 
-                        name="alamat" 
-                        id="edit_alamat"
-                        rows="3" 
-                        required 
-                        class="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all leading-relaxed"
-                    ></textarea>
-                </div>
-
-                <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
-                    <button 
-                        type="button" 
-                        class="close-edit-modal px-4 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
-                    >
-                        Batal
-                    </button>
-                    <button 
-                        type="submit" 
-                        class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm active:scale-95 transition-all cursor-pointer"
-                    >
-                        Simpan Perubahan
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- ========================================================================= -->
-    <!-- MODAL 3: HAPUS TEKNISI                                                    -->
+    <!-- MODAL: HAPUS TEKNISI                                                      -->
     <!-- ========================================================================= -->
     <div id="deleteTeknisiModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs items-center justify-center p-4 hidden [&:not(.hidden)]:flex">
         <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150">
@@ -581,51 +376,7 @@
                 });
             }
 
-            // 3. Modal 1: Tambah Teknisi
-            const createModal = document.getElementById('createTeknisiModal');
-            const btnOpenCreate = document.getElementById('btnOpenCreateTeknisi');
-            const closeCreateBtns = document.querySelectorAll('.close-create-modal');
-
-            if (btnOpenCreate && createModal) {
-                btnOpenCreate.addEventListener('click', () => {
-                    createModal.classList.remove('hidden');
-                });
-            }
-            closeCreateBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    createModal.classList.add('hidden');
-                });
-            });
-
-            // 4. Modal 2: Edit Data Teknisi
-            const editModal = document.getElementById('editTeknisiModal');
-            const editForm = document.getElementById('editTeknisiForm');
-            const closeEditBtns = document.querySelectorAll('.close-edit-modal');
-            const editBtns = document.querySelectorAll('.btn-edit-teknisi');
-
-            editBtns.forEach(btn => {
-                btn.addEventListener('click', function () {
-                    const id = this.getAttribute('data-id');
-                    const nama = this.getAttribute('data-nama');
-                    const phone = this.getAttribute('data-phone');
-                    const alamat = this.getAttribute('data-alamat');
-
-                    editForm.action = `/teknisi/${id}`;
-                    document.getElementById('edit_nama').value = nama;
-                    document.getElementById('edit_nomor_hp').value = phone;
-                    document.getElementById('edit_alamat').value = alamat;
-
-                    editModal.classList.remove('hidden');
-                });
-            });
-
-            closeEditBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    editModal.classList.add('hidden');
-                });
-            });
-
-            // 5. Modal 3: Hapus Data Teknisi
+            // 3. Modal: Hapus Data Teknisi
             const deleteModal = document.getElementById('deleteTeknisiModal');
             const deleteForm = document.getElementById('deleteTeknisiForm');
             const closeDeleteBtns = document.querySelectorAll('.close-delete-modal');
@@ -652,15 +403,13 @@
             });
 
             // Close modal on background click
-            [createModal, editModal, deleteModal].forEach(modal => {
-                if (modal) {
-                    modal.addEventListener('click', function (e) {
-                        if (e.target === this) {
-                            this.classList.add('hidden');
-                        }
-                    });
-                }
-            });
+            if (deleteModal) {
+                deleteModal.addEventListener('click', function (e) {
+                    if (e.target === this) {
+                        this.classList.add('hidden');
+                    }
+                });
+            }
 
             // 6. Realtime Live Search Filter
             const searchInput = document.getElementById('teknisiSearch');

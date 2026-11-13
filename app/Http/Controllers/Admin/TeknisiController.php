@@ -18,17 +18,25 @@ class TeknisiController extends Controller
         $query = Teknisi::query()->latest();
 
         $searchQuery = $request->query('q');
-        if (!empty($searchQuery)) {
+        if (! empty($searchQuery)) {
             $query->where(function ($q) use ($searchQuery) {
                 $q->where('nama', 'like', "%{$searchQuery}%")
-                  ->orWhere('alamat', 'like', "%{$searchQuery}%")
-                  ->orWhere('nomor_hp', 'like', "%{$searchQuery}%");
+                    ->orWhere('alamat', 'like', "%{$searchQuery}%")
+                    ->orWhere('nomor_hp', 'like', "%{$searchQuery}%");
             });
         }
 
         $teknisis = $query->get();
 
         return view('admin.teknisi', compact('teknisis', 'searchQuery'));
+    }
+
+    /**
+     * Tampilkan formulir tambah teknisi baru.
+     */
+    public function create(): View
+    {
+        return view('admin.teknisi.create');
     }
 
     /**
@@ -49,6 +57,16 @@ class TeknisiController extends Controller
         $teknisi = Teknisi::create($validated);
 
         return redirect()->route('teknisi.index')->with('success', "Teknisi '{$teknisi->nama}' berhasil ditambahkan ke database.");
+    }
+
+    /**
+     * Tampilkan formulir edit data teknisi.
+     */
+    public function edit(int $id): View
+    {
+        $teknisi = Teknisi::findOrFail($id);
+
+        return view('admin.teknisi.edit', compact('teknisi'));
     }
 
     /**
@@ -91,6 +109,7 @@ class TeknisiController extends Controller
     public function redirectToWhatsapp(int $id): RedirectResponse
     {
         $teknisi = Teknisi::findOrFail($id);
+
         return redirect()->away($teknisi->whatsapp_url);
     }
 }
