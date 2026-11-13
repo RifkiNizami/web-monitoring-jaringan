@@ -8,6 +8,7 @@ use App\Models\Customer;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -125,12 +126,15 @@ class ReportController extends Controller
             $reportData['selectedYear']
         );
 
+        /** @var FromCollection $export */
+        $export = new DevicesReportExport(
+            $reportData['devices'],
+            $reportData['evaluatedPartner'],
+            $reportData['formattedPeriod']
+        );
+
         return Excel::download(
-            new DevicesReportExport(
-                $reportData['devices'],
-                $reportData['evaluatedPartner'],
-                $reportData['formattedPeriod']
-            ),
+            $export,
             $filename
         );
     }

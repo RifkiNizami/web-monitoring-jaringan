@@ -6,12 +6,14 @@ use App\Exports\InventoryDeviceExport;
 use App\Http\Controllers\Controller;
 use App\Models\Device;
 use App\Services\ActivityLogger;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -138,6 +140,7 @@ class DeviceController extends Controller
             }
         }
 
+        /** @var Collection<int, Device> $deviceModels */
         $deviceModels = Device::orderBy('id', 'asc')->get();
         $devices = [];
         foreach ($deviceModels as $device) {
@@ -446,6 +449,9 @@ class DeviceController extends Controller
     {
         $filename = 'NetFly_Inventaris_Perangkat_'.date('Ymd_His').'.xlsx';
 
-        return Excel::download(new InventoryDeviceExport, $filename);
+        /** @var FromCollection $export */
+        $export = new InventoryDeviceExport;
+
+        return Excel::download($export, $filename);
     }
 }
