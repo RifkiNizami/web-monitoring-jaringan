@@ -18,20 +18,22 @@
 <body class="h-full bg-slate-50 font-sans text-slate-800 antialiased selection:bg-blue-600 selection:text-white">
 
     <div class="h-screen flex w-full overflow-hidden">
-        
+
         <!-- SIDEBAR (Include Partial) -->
         @include('partials.sidebar')
 
         <!-- MAIN CONTENT AREA -->
         <div class="flex-1 flex flex-col min-w-0 h-full overflow-y-auto">
-            
+
             <!-- TOP NAVBAR / HEADER -->
             <header class="bg-white border-b border-slate-200/80 px-6 py-3.5 flex items-center justify-between sticky top-0 z-30">
                 <div class="flex items-center gap-3 min-w-0">
-                    <!-- Mobile Hamburger -->
-                    <button id="openSidebar" class="lg:hidden p-1.5 -ml-1 text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 cursor-pointer">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    <!-- Collapsible Sidebar Navbar Toggle Button -->
+                    <button id="openSidebar" type="button" class="sidebar-toggle-btn p-1.5 -ml-1 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors" title="Buka / Tutup Menu Navigasi (Ctrl+B)" aria-label="Toggle menu navigasi" aria-expanded="true">
+                        <svg class="w-5 h-5 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path class="bar-top" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16" />
+                            <path class="bar-mid" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12h16" />
+                            <path class="bar-bot" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 18h16" />
                         </svg>
                     </button>
 
@@ -79,113 +81,137 @@
                 @endif
 
                 <!-- FORM CARD -->
-                <form action="{{ route('monitoring.devices.store') }}" method="POST" class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                <form action="{{ route('monitoring.devices.store') }}" method="POST" class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
                     @csrf
 
                     <div class="p-6 lg:p-8 space-y-5">
-                        
-                        <!-- Row 1: Hostname, Jenis Perangkat & Status Awal -->
-                        <div class="grid grid-cols-1 sm:grid-cols-12 gap-4">
-                            <div class="sm:col-span-6">
+
+                        <!-- Baris 1: Nama Hostname & Jenis Perangkat -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <div>
                                 <label for="inputHostname" class="block text-xs font-semibold text-slate-700 mb-1.5">
                                     Nama Hostname <span class="text-rose-500">*</span>
                                 </label>
-                                <input 
+                                <input
                                     id="inputHostname"
-                                    type="text" 
-                                    name="hostname" 
+                                    type="text"
+                                    name="hostname"
                                     value="{{ old('hostname') }}"
-                                    required 
-                                    placeholder="CONTOH: RTR-CORE-SBY-01" 
+                                    required
+                                    placeholder="CONTOH: RTR-CORE-SBY-01"
                                     class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 font-mono uppercase focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
                                 >
                             </div>
 
-                            <div class="sm:col-span-3">
+                            <div>
                                 <label for="inputUnitType" class="block text-xs font-semibold text-slate-700 mb-1.5">
                                     Jenis Perangkat <span class="text-rose-500">*</span>
                                 </label>
-                                <select id="inputUnitType" name="unit_type" required class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition cursor-pointer">
-                                    <option value="Router" {{ old('unit_type') == 'Router' ? 'selected' : '' }}>Router</option>
-                                    <option value="Switch" {{ old('unit_type') == 'Switch' ? 'selected' : '' }}>Switch</option>
-                                    <option value="Access Point" {{ old('unit_type') == 'Access Point' ? 'selected' : '' }}>Access Point</option>
-                                    <option value="Firewall" {{ old('unit_type') == 'Firewall' ? 'selected' : '' }}>Firewall</option>
-                                    <option value="Server" {{ old('unit_type') == 'Server' ? 'selected' : '' }}>Server</option>
-                                    <option value="OLT" {{ old('unit_type') == 'OLT' ? 'selected' : '' }}>OLT GPON</option>
-                                </select>
-                            </div>
-
-                            <div class="sm:col-span-3">
-                                <label for="inputStatus" class="block text-xs font-semibold text-slate-700 mb-1.5">
-                                    Status Awal
-                                </label>
-                                <select id="inputStatus" name="status" class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition cursor-pointer">
-                                    <option value="online" {{ old('status') == 'online' ? 'selected' : '' }}>Online (Siap Pantau)</option>
-                                    <option value="warning" {{ old('status') == 'warning' ? 'selected' : '' }}>Warning (Peringatan)</option>
-                                    <option value="offline" {{ old('status') == 'offline' ? 'selected' : '' }}>Offline</option>
-                                </select>
+                                <div class="relative">
+                                    <select id="inputUnitType" name="unit_type" required class="w-full appearance-none pl-3.5 pr-9 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition cursor-pointer">
+                                        <option value="Router" {{ old('unit_type') == 'Router' ? 'selected' : '' }}>Router</option>
+                                        <option value="Access Point" {{ old('unit_type') == 'Access Point' ? 'selected' : '' }}>Access Point</option>
+                                        <option value="Generic Router" {{ in_array(old('unit_type'), ['Generic Router', 'Generic Router (HTTP/Ping)']) ? 'selected' : '' }}>Generic Router (HTTP/Ping)</option>
+                                        <option value="Switch" {{ old('unit_type') == 'Switch' ? 'selected' : '' }}>Switch</option>
+                                        <option value="Firewall" {{ old('unit_type') == 'Firewall' ? 'selected' : '' }}>Firewall</option>
+                                        <option value="Server" {{ old('unit_type') == 'Server' ? 'selected' : '' }}>Server</option>
+                                        <option value="OLT" {{ old('unit_type') == 'OLT' ? 'selected' : '' }}>OLT GPON</option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Row 2: IP Address, Port API & Tipe Jalur Monitoring -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Baris 2: IP Address & Port API -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             <div>
-                                <div class="grid grid-cols-12 gap-3">
-                                    <div class="col-span-8">
-                                        <label for="inputIpAddress" class="block text-xs font-semibold text-slate-700 mb-1.5">
-                                            IP Address / Host Target <span class="text-rose-500">*</span>
-                                        </label>
-                                        <input 
-                                            id="inputIpAddress"
-                                            type="text" 
-                                            name="ip_address" 
-                                            value="{{ old('ip_address') }}"
-                                            required 
-                                            placeholder="10.200.x.x atau host domain" 
-                                            class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 font-mono focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
-                                        >
-                                    </div>
-                                    <div class="col-span-4">
-                                        <label for="inputApiPort" class="block text-xs font-semibold text-slate-700 mb-1.5">
-                                            Port API
-                                        </label>
-                                        <input 
-                                            id="inputApiPort"
-                                            type="number" 
-                                            name="api_port" 
-                                            value="{{ old('api_port', '8728') }}" 
-                                            class="w-full px-3 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 font-mono text-center focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
-                                        >
+                                <label for="inputIpAddress" class="block text-xs font-semibold text-slate-700 mb-1.5">
+                                    IP Address / Host Target <span class="text-rose-500">*</span>
+                                </label>
+                                <input
+                                    id="inputIpAddress"
+                                    type="text"
+                                    name="ip_address"
+                                    value="{{ old('ip_address') }}"
+                                    required
+                                    placeholder="10.200.x.x atau 192.168.1.x"
+                                    class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 font-mono focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
+                                >
+                            </div>
+
+                            <div>
+                                <label for="inputApiPort" class="block text-xs font-semibold text-slate-700 mb-1.5">
+                                    Port API <span class="text-slate-400 font-normal">(8728 MikroTik / 80 AP)</span>
+                                </label>
+                                <input
+                                    id="inputApiPort"
+                                    type="number"
+                                    name="api_port"
+                                    value="{{ old('api_port', '8728') }}"
+                                    placeholder="8728 untuk MikroTik, 80 untuk TOTOLINK/AP"
+                                    class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 font-mono focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
+                                >
+                            </div>
+                        </div>
+
+                        <!-- Baris 3: Tipe Jalur Monitoring & Status Awal -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <div>
+                                <label for="inputConnType" class="block text-xs font-semibold text-slate-700 mb-1.5">
+                                    Tipe Jalur Monitoring
+                                </label>
+                                <div class="relative">
+                                    <select id="inputConnType" name="connection_type" class="w-full appearance-none pl-3.5 pr-9 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition cursor-pointer">
+                                        <option value="lan" {{ old('connection_type') == 'lan' ? 'selected' : '' }}>Direct IP / Local LAN</option>
+                                        <option value="http" {{ old('connection_type') == 'http' ? 'selected' : '' }}>HTTP / TCP Socket (Port 80/8080)</option>
+                                        <option value="zerotier" {{ old('connection_type') == 'zerotier' ? 'selected' : '' }}>ZeroTier Virtual LAN</option>
+                                        <option value="vpn" {{ old('connection_type') == 'vpn' ? 'selected' : '' }}>VPN Tunnel (WireGuard / SSTP)</option>
+                                        <option value="ipcloud" {{ old('connection_type') == 'ipcloud' ? 'selected' : '' }}>MikroTik IP Cloud / DDNS</option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
                                     </div>
                                 </div>
                             </div>
 
                             <div>
-                                <label for="inputConnType" class="block text-xs font-semibold text-slate-700 mb-1.5">
-                                    Tipe Jalur Monitoring
+                                <label for="inputStatus" class="block text-xs font-semibold text-slate-700 mb-1.5">
+                                    Status Awal
                                 </label>
-                                <select id="inputConnType" name="connection_type" class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition cursor-pointer">
-                                    <option value="lan" {{ old('connection_type') == 'lan' ? 'selected' : '' }}>Direct IP / Local LAN</option>
-                                    <option value="zerotier" {{ old('connection_type') == 'zerotier' ? 'selected' : '' }}>ZeroTier Virtual LAN</option>
-                                    <option value="vpn" {{ old('connection_type') == 'vpn' ? 'selected' : '' }}>VPN Tunnel (WireGuard / SSTP)</option>
-                                    <option value="ipcloud" {{ old('connection_type') == 'ipcloud' ? 'selected' : '' }}>MikroTik IP Cloud / DDNS</option>
-                                </select>
+                                <div class="relative">
+                                    <select id="inputStatus" name="status" class="w-full appearance-none pl-3.5 pr-9 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition cursor-pointer">
+                                        <option value="online" {{ old('status') == 'online' ? 'selected' : '' }}>Online (Siap Pantau)</option>
+                                        <option value="warning" {{ old('status') == 'warning' ? 'selected' : '' }}>Warning (Peringatan)</option>
+                                        <option value="offline" {{ old('status') == 'offline' ? 'selected' : '' }}>Offline</option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Row 3: Mitra Pelanggan & Proyek -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Baris 4: Mitra Pelanggan & Proyek -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             <div>
                                 <label for="inputCustomer" class="block text-xs font-semibold text-slate-700 mb-1.5">
                                     Mitra Pelanggan / Entitas <span class="text-rose-500">*</span>
                                 </label>
-                                <input 
+                                <input
                                     id="inputCustomer"
-                                    type="text" 
-                                    name="customer" 
+                                    type="text"
+                                    name="customer"
                                     value="{{ old('customer') }}"
-                                    required 
-                                    placeholder="Nama klien / instansi" 
+                                    required
+                                    placeholder="Nama klien / instansi"
                                     list="monitoringCustomerSuggestions"
                                     class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
                                 >
@@ -203,29 +229,29 @@
                                 <label for="inputProject" class="block text-xs font-semibold text-slate-700 mb-1.5">
                                     Proyek / Lokasi Terhubung
                                 </label>
-                                <input 
+                                <input
                                     id="inputProject"
-                                    type="text" 
-                                    name="project" 
+                                    type="text"
+                                    name="project"
                                     value="{{ old('project') }}"
-                                    placeholder="Contoh: Dedicated Internet SCBD" 
+                                    placeholder="Contoh: Dedicated Internet SCBD"
                                     class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
                                 >
                             </div>
                         </div>
 
-                        <!-- Row 4: Model & Lokasi Rak -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Baris 5: Model & Lokasi Rak -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             <div>
                                 <label for="inputModel" class="block text-xs font-semibold text-slate-700 mb-1.5">
                                     Model / Seri Perangkat
                                 </label>
-                                <input 
+                                <input
                                     id="inputModel"
-                                    type="text" 
-                                    name="model" 
+                                    type="text"
+                                    name="model"
                                     value="{{ old('model') }}"
-                                    placeholder="Contoh: MikroTik CCR2004-16G-2S+" 
+                                    placeholder="Contoh: MikroTik CCR2004-16G-2S+"
                                     class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
                                 >
                             </div>
@@ -234,43 +260,42 @@
                                 <label for="inputRack" class="block text-xs font-semibold text-slate-700 mb-1.5">
                                     Lokasi Rak / Titik POP
                                 </label>
-                                <input 
+                                <input
                                     id="inputRack"
-                                    type="text" 
-                                    name="rack_location" 
+                                    type="text"
+                                    name="rack_location"
                                     value="{{ old('rack_location') }}"
-                                    placeholder="Contoh: Rack Core-A, Slot U-42" 
+                                    placeholder="Contoh: Rack Core-A, Slot U-42"
                                     class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
                                 >
                             </div>
                         </div>
 
-                        <!-- Row 5: Kredensial API -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-100">
+                        <!-- Baris 6: Kredensial API -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-4 border-t border-slate-100">
                             <div>
                                 <label for="inputApiUser" class="block text-xs font-semibold text-slate-700 mb-1.5">
-                                    Username API MikroTik <span class="text-rose-500">*</span>
+                                    Username API MikroTik <span id="apiUserRequiredMark" class="text-rose-500">*</span>
+                                    <span id="apiUserOptionalBadge" class="hidden text-slate-400 font-normal">(Opsional)</span>
                                 </label>
-                                <input 
+                                <input
                                     id="inputApiUser"
-                                    type="text" 
-                                    name="api_username" 
+                                    type="text"
+                                    name="api_username"
                                     value="{{ old('api_username') }}"
-                                    required
-                                    placeholder="Contoh: admin atau monitorbot" 
+                                    placeholder="Contoh: admin (Kosongkan untuk AP/Port 80)"
                                     class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
                                 >
                             </div>
                             <div>
                                 <label for="inputApiPass" class="block text-xs font-semibold text-slate-700 mb-1.5">
-                                    Password API MikroTik <span class="text-rose-500">*</span>
+                                    Password API MikroTik <span class="text-slate-400 font-normal">(Opsional)</span>
                                 </label>
-                                <input 
+                                <input
                                     id="inputApiPass"
-                                    type="password" 
-                                    name="api_password" 
-                                    required
-                                    placeholder="••••••••" 
+                                    type="password"
+                                    name="api_password"
+                                    placeholder="••••••••"
                                     class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
                                 >
                             </div>
@@ -293,5 +318,79 @@
         </div>
     </div>
 
+    <script>
+        (function() {
+            function initCreateDeviceForm() {
+                const unitTypeEl = document.getElementById('inputUnitType');
+                if (!unitTypeEl) return;
+                const apiPortEl = document.getElementById('inputApiPort');
+                const connTypeEl = document.getElementById('inputConnType');
+                const apiUserEl = document.getElementById('inputApiUser');
+                const reqMarkEl = document.getElementById('apiUserRequiredMark');
+                const optBadgeEl = document.getElementById('apiUserOptionalBadge');
+
+                function isNonMikrotikMode() {
+                    const typeVal = (unitTypeEl?.value || '').toLowerCase();
+                    const connVal = (connTypeEl?.value || '').toLowerCase();
+                    const portVal = parseInt(apiPortEl?.value || '0', 10);
+                    return ['access point', 'generic router', 'generic router (http/ping)'].includes(typeVal)
+                        || connVal === 'http'
+                        || (portVal > 0 && ![8728, 8729].includes(portVal));
+                }
+
+                function syncCredentialMode(source) {
+                    const typeVal = (unitTypeEl?.value || '').toLowerCase();
+                    const connVal = (connTypeEl?.value || '').toLowerCase();
+                    const currentPort = (apiPortEl?.value || '').trim();
+
+                    if (source === 'unit_type') {
+                        if (['access point', 'generic router', 'generic router (http/ping)'].includes(typeVal)) {
+                            if (currentPort === '' || currentPort === '8728' || currentPort === '8729') {
+                                apiPortEl.value = '80';
+                            }
+                            if (connTypeEl && connTypeEl.value === 'lan') {
+                                connTypeEl.value = 'http';
+                            }
+                        } else if (typeVal === 'router') {
+                            if (currentPort === '80' || currentPort === '8080') {
+                                apiPortEl.value = '8728';
+                            }
+                            if (connTypeEl && connTypeEl.value === 'http') {
+                                connTypeEl.value = 'lan';
+                            }
+                        }
+                    } else if (source === 'conn_type') {
+                        if (connVal === 'http' && (currentPort === '' || currentPort === '8728' || currentPort === '8729')) {
+                            apiPortEl.value = '80';
+                        } else if (connVal !== 'http' && !['access point', 'generic router', 'generic router (http/ping)'].includes(typeVal) && (currentPort === '80' || currentPort === '8080')) {
+                            apiPortEl.value = '8728';
+                        }
+                    }
+
+                    if (isNonMikrotikMode()) {
+                        apiUserEl?.removeAttribute('required');
+                        reqMarkEl?.classList.add('hidden');
+                        optBadgeEl?.classList.remove('hidden');
+                    } else {
+                        apiUserEl?.setAttribute('required', 'required');
+                        reqMarkEl?.classList.remove('hidden');
+                        optBadgeEl?.classList.add('hidden');
+                    }
+                }
+
+                unitTypeEl.onchange = () => syncCredentialMode('unit_type');
+                if (connTypeEl) connTypeEl.onchange = () => syncCredentialMode('conn_type');
+                if (apiPortEl) apiPortEl.oninput = () => syncCredentialMode('api_port');
+                syncCredentialMode('init');
+            }
+
+            document.addEventListener('turbo:load', initCreateDeviceForm);
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initCreateDeviceForm);
+            } else {
+                initCreateDeviceForm();
+            }
+        })();
+    </script>
 </body>
 </html>

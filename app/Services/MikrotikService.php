@@ -332,17 +332,150 @@ class MikrotikService
     }
 
     /**
-     * Tes koneksi ke router dan kembalikan metrik hardware jika berhasil.
+     * Periksa apakah perangkat termasuk kategori Non-MikroTik (Access Point / Generic Router / HTTP Port selain 8728 & 8729).
      */
-    public function testConnection(string $ip, string $username, string $password = '', int $port = 8728, int $timeout = 2): array
+    public static function isNonMikrotik(?string $unitType = null, ?int $port = null, ?string $connectionType = null): bool
     {
-        $connected = $this->connect($ip, $username, $password, $port, $timeout);
+        if ($port !== null && $port > 0 && ! in_array($port, [8728, 8729], true)) {
+            return true;
+        }
+
+        if ($connectionType !== null && strtolower(trim($connectionType)) === 'http') {
+            return true;
+        }
+
+        if ($unitType !== null) {
+            $normalized = strtolower(trim($unitType));
+            if (in_array($normalized, ['access point', 'generic router', 'generic router (http/ping)', 'router non-mikrotik'], true)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Pastikan port untuk perangkat Non-MikroTik menggunakan port HTTP/TCP yang valid (default 80 jika masih 8728/8729).
+     */
+    public static function resolveNonMikrotikPort(?int $port = null): int
+    {
+        if ($port === null || $port <= 0 || in_array($port, [8728, 8729], true)) {
+            return 80;
+        }
+
+        return $port;
+    }
+
+    /**
+     * Kondisi B: Pengecekan koneksi socket TCP HTTP/Ping untuk perangkat Non-MikroTik (misal TOTOLINK N300RT / Access Point).
+     */
+    public function checkHttpSocket(string $ip, int $port = 80, int $timeout = 2): array
+    {
+        $this->disconnect();
+        $this->lastError = null;
+        $port = self::resolveNonMikrotikPort($port);
+
+        $startTime = microtime(true);
+        $errno = 0;
+        $errstr = '';
+
+        $socket = @fsockopen($ip, $port, $errno, $errstr, $timeout);
+
+        if (! $socket) {
+            $this->lastError = "Gagal terhubung ke {$ip}:{$port}. ".($errstr ? "({$errstr})" : 'Koneksi timeout / port tertutup.');
+            $this->latencyMs = 0.0;
+
+            return [
+                'online' => false,
+                'status' => 'offline',
+                'latency_ms' => null,
+                'cpu_load' => 0.0,
+                'ram_load' => 0.0,
+                'rx_mbps' => '0.0 Mbps',
+                'tx_mbps' => '0.0 Mbps',
+                'uptime' => 'Offline (Timeout)',
+                'resource' => null,
+                'interfaces' => [],
+            ];
+        }
+
+        $elapsedMs = round((microtime(true) - $startTime) * 1000, 1);
+        @fclose($socket);
+        $this->latencyMs = max(1.0, $elapsedMs);
+        $latencyInt = (int) round($this->latencyMs);
+
+        return [
+            'online' => true,
+            'status' => 'online',
+            'latency_ms' => $latencyInt,
+            'cpu_load' => 0.0,
+            'ram_load' => 0.0,
+            'rx_mbps' => '0.0 Mbps',
+            'tx_mbps' => '0.0 Mbps',
+            'uptime' => "HTTP/TCP Port {$port} Aktif",
+            'resource' => [
+                'cpu_load' => 0.0,
+                'ram_load' => 0.0,
+                'free_memory' => 0,
+                'total_memory' => 0,
+                'free_memory_human' => '0 B',
+                'total_memory_human' => '0 B',
+                'uptime' => "HTTP/TCP Port {$port} Aktif",
+                'version' => 'HTTP/Ping',
+                'board_name' => 'Generic / Access Point',
+                'cpu_count' => 1,
+                'cpu_frequency' => '-',
+            ],
+            'interfaces' => [
+                [
+                    'name' => 'eth0',
+                    'type' => 'ether',
+                    'status' => 'up',
+                    'speed' => '100 Mbps',
+                    'rx' => '0 B total',
+                    'tx' => '0 B total',
+                    'rx_bytes' => 0,
+                    'tx_bytes' => 0,
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Tes koneksi ke perangkat (Kondisi A: MikroTik RouterOS API, Kondisi B: Non-MikroTik HTTP/TCP Socket).
+     */
+    public function testConnection(string $ip, ?string $username = '', string $password = '', int $port = 8728, int $timeout = 2, ?string $unitType = null): array
+    {
+        // Kondisi B: Non-MikroTik / TOTOLINK HTTP & Ping (Port 80/8080 atau Access Point / Generic Router)
+        if (self::isNonMikrotik($unitType, $port)) {
+            $targetPort = $port ?: 80;
+            $check = $this->checkHttpSocket($ip, $targetPort, $timeout);
+
+            if (! $check['online']) {
+                return [
+                    'success' => false,
+                    'message' => $this->getLastError() ?: "Gagal terhubung ke perangkat pada port {$targetPort}.",
+                    'latency_ms' => null,
+                    'resource' => null,
+                ];
+            }
+
+            return [
+                'success' => true,
+                'message' => "Terhubung via HTTP/TCP Port {$targetPort} ({$check['latency_ms']} ms)",
+                'latency_ms' => $check['latency_ms'],
+                'resource' => $check['resource'],
+            ];
+        }
+
+        // Kondisi A: MikroTik RouterOS API (Port 8728 / 8729)
+        $connected = $this->connect($ip, (string) $username, $password, $port, $timeout);
 
         if (! $connected) {
             return [
                 'success' => false,
                 'message' => $this->getLastError() ?: 'Gagal terhubung ke router MikroTik.',
-                'latency_ms' => $this->latencyMs,
+                'latency_ms' => null,
                 'resource' => null,
             ];
         }
@@ -419,11 +552,35 @@ class MikrotikService
     }
 
     /**
-     * Ambil data lengkap perangkat (CPU, RAM, Uptime, Interfaces) dalam 1 koneksi.
+     * Ambil data lengkap perangkat (Kondisi A: MikroTik RouterOS API, Kondisi B: Non-MikroTik HTTP/TCP Socket).
      */
-    public function getDeviceTelemetry(string $ip, string $username, string $password = '', int $port = 8728, int $timeout = 2): ?array
+    public function getDeviceTelemetry(string $ip, ?string $username = '', string $password = '', int $port = 8728, int $timeout = 2, ?string $unitType = null): ?array
     {
-        if (! $this->connect($ip, $username, $password, $port, $timeout)) {
+        // Kondisi B: Non-MikroTik / TOTOLINK HTTP & Ping (Port 80/8080 atau Access Point / Generic Router)
+        if (self::isNonMikrotik($unitType, $port)) {
+            $targetPort = $port ?: 80;
+            $check = $this->checkHttpSocket($ip, $targetPort, $timeout);
+
+            if (! $check['online']) {
+                return null;
+            }
+
+            return [
+                'online' => true,
+                'status' => 'online',
+                'resource' => $check['resource'],
+                'interfaces' => $check['interfaces'],
+                'latency_ms' => $check['latency_ms'],
+                'cpu_load' => 0.0,
+                'ram_load' => 0.0,
+                'rx_mbps' => '0.0 Mbps',
+                'tx_mbps' => '0.0 Mbps',
+                'uptime' => $check['uptime'],
+            ];
+        }
+
+        // Kondisi A: MikroTik RouterOS API (Port 8728 / 8729)
+        if (empty($username) || ! $this->connect($ip, $username, $password, $port, $timeout)) {
             return null;
         }
 
@@ -434,9 +591,16 @@ class MikrotikService
         $this->disconnect();
 
         return [
+            'online' => true,
+            'status' => 'online',
             'resource' => $resource,
             'interfaces' => $interfaces,
             'latency_ms' => $latency,
+            'cpu_load' => $resource['cpu_load'],
+            'ram_load' => $resource['ram_load'],
+            'rx_mbps' => '0.0 Mbps',
+            'tx_mbps' => '0.0 Mbps',
+            'uptime' => $resource['uptime'],
         ];
     }
 

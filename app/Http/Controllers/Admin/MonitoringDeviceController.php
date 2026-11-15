@@ -26,6 +26,13 @@ class MonitoringDeviceController extends Controller
      */
     public function store(Request $request): JsonResponse|RedirectResponse
     {
+        $inputPort = $request->filled('api_port') ? (int) $request->input('api_port') : null;
+        $isNonMikrotik = MikrotikService::isNonMikrotik(
+            $request->input('unit_type'),
+            $inputPort,
+            $request->input('connection_type')
+        );
+
         $validated = $request->validate([
             'hostname' => 'required|string|max:100',
             'unit_type' => 'required|string|max:50',
@@ -36,7 +43,7 @@ class MonitoringDeviceController extends Controller
             'rack_location' => 'nullable|string|max:100',
             'connection_type' => 'nullable|string|max:50',
             'api_port' => 'nullable|numeric',
-            'api_username' => 'required|string|max:50',
+            'api_username' => $isNonMikrotik ? 'nullable|string|max:50' : 'required|string|max:50',
             'api_password' => 'nullable|string|max:100',
             'status' => 'nullable|string|in:online,warning,offline',
         ], [
@@ -44,48 +51,83 @@ class MonitoringDeviceController extends Controller
             'unit_type.required' => 'Jenis perangkat wajib dipilih.',
             'ip_address.required' => 'IP Address target monitoring wajib diisi.',
             'customer.required' => 'Nama mitra/pelanggan target wajib diisi.',
-            'api_username.required' => 'Username API MikroTik wajib diisi.',
+            'api_username.required' => 'Username API MikroTik wajib diisi untuk perangkat RouterOS.',
         ]);
+
+        $port = $isNonMikrotik
+            ? MikrotikService::resolveNonMikrotikPort($inputPort)
+            : ($inputPort ?? 8728);
+        $apiUsername = ! empty($validated['api_username'])
+            ? trim((string) $validated['api_username'])
+            : ($isNonMikrotik ? null : 'admin');
+        $apiPassword = (string) ($validated['api_password'] ?? '');
 
         $status = $validated['status'] ?? 'online';
         $cpu = 0.0;
         $ram = 0.0;
-        $uptime = 'Siap Pantau';
-        $latency = 0;
+        $uptime = $isNonMikrotik ? "HTTP/TCP Port {$port} Siap Pantau" : 'Siap Pantau';
+        $latency = $status === 'offline' ? null : 0;
         $model = ! empty($validated['model']) ? trim($validated['model']) : ($validated['unit_type'].' Node');
         $interfaces = [
-            ['name' => 'ether1', 'status' => 'up', 'speed' => '1 Gbps', 'rx' => '0 Mbps', 'tx' => '0 Mbps'],
+            ['name' => $isNonMikrotik ? 'eth0' : 'ether1', 'status' => 'up', 'speed' => $isNonMikrotik ? '100 Mbps' : '1 Gbps', 'rx' => '0 Mbps', 'tx' => '0 Mbps'],
         ];
         $connectNotice = '';
 
-        // Hubungi router MikroTik secara real jika IP & kredensial diberikan
-        if (! empty($validated['ip_address']) && ! empty($validated['api_username']) && ! app()->runningUnitTests()) {
+        // Pengecekan koneksi perangkat secara real-time saat pendaftaran (Kondisi A vs Kondisi B)
+        if (! empty($validated['ip_address']) && ! app()->runningUnitTests()) {
             $mikrotikService = new MikrotikService;
-            $telemetry = $mikrotikService->getDeviceTelemetry(
-                trim($validated['ip_address']),
-                trim($validated['api_username']),
-                (string) ($validated['api_password'] ?? ''),
-                (int) ($validated['api_port'] ?? 8728),
-                2
-            );
+            $ip = trim($validated['ip_address']);
 
-            if ($telemetry) {
-                $status = 'online';
-                $cpu = $telemetry['resource']['cpu_load'];
-                $ram = $telemetry['resource']['ram_load'];
-                $uptime = $telemetry['resource']['uptime'];
-                $latency = (int) $telemetry['latency_ms'];
-                if (empty($validated['model'])) {
-                    $model = $telemetry['resource']['board_name'].' (v'.$telemetry['resource']['version'].')';
+            if ($isNonMikrotik) {
+                // Kondisi B: Non-MikroTik / TOTOLINK HTTP & Ping (Port 80/8080 atau Access Point / Generic Router)
+                $check = $mikrotikService->checkHttpSocket($ip, $port, 2);
+
+                if ($check['online']) {
+                    $status = 'online';
+                    $cpu = 0.0;
+                    $ram = 0.0;
+                    $uptime = $check['uptime'];
+                    $latency = $check['latency_ms'];
+                    $interfaces = $check['interfaces'];
+                    $connectNotice = " — Berhasil terhubung via HTTP/TCP Port {$port} ({$latency} ms).";
+                } else {
+                    $status = 'offline';
+                    $cpu = 0.0;
+                    $ram = 0.0;
+                    $uptime = 'Offline (Timeout)';
+                    $latency = null;
+                    $connectNotice = " — Perangkat disimpan (Port {$port} tidak merespons dalam 2 detik).";
                 }
-                if (! empty($telemetry['interfaces'])) {
-                    $interfaces = $telemetry['interfaces'];
+            } elseif (! empty($apiUsername)) {
+                // Kondisi A: MikroTik RouterOS API (Port 8728 / 8729)
+                $telemetry = $mikrotikService->getDeviceTelemetry(
+                    $ip,
+                    $apiUsername,
+                    $apiPassword,
+                    $port,
+                    2,
+                    $validated['unit_type']
+                );
+
+                if ($telemetry) {
+                    $status = 'online';
+                    $cpu = $telemetry['resource']['cpu_load'];
+                    $ram = $telemetry['resource']['ram_load'];
+                    $uptime = $telemetry['resource']['uptime'];
+                    $latency = (int) $telemetry['latency_ms'];
+                    if (empty($validated['model'])) {
+                        $model = $telemetry['resource']['board_name'].' (v'.$telemetry['resource']['version'].')';
+                    }
+                    if (! empty($telemetry['interfaces'])) {
+                        $interfaces = $telemetry['interfaces'];
+                    }
+                    $connectNotice = " — Berhasil terhubung ke {$telemetry['resource']['board_name']} (RouterOS v{$telemetry['resource']['version']}).";
+                } else {
+                    $status = 'offline';
+                    $latency = null;
+                    $uptime = 'Gagal Konek (Timeout)';
+                    $connectNotice = " — Perangkat disimpan (Belum dapat terhubung ke port API {$port}: ".($mikrotikService->getLastError() ?: 'Periksa IP/Kredensial').').';
                 }
-                $connectNotice = " — Berhasil terhubung ke {$telemetry['resource']['board_name']} (RouterOS v{$telemetry['resource']['version']}).";
-            } else {
-                $status = 'offline';
-                $uptime = 'Gagal Konek (Timeout)';
-                $connectNotice = ' — Perangkat disimpan (Belum dapat terhubung ke port API 8728: '.($mikrotikService->getLastError() ?: 'Periksa IP/Kredensial').').';
             }
         }
 
@@ -108,10 +150,10 @@ class MonitoringDeviceController extends Controller
             'voltage' => '-',
             'packet_loss' => $status === 'offline' ? 100.0 : 0.0,
             'last_ping_ms' => $latency,
-            'connection_type' => $validated['connection_type'] ?? 'lan',
-            'api_port' => (int) ($validated['api_port'] ?? 8728),
-            'api_username' => $validated['api_username'] ?? 'admin',
-            'api_password' => $validated['api_password'] ?? '',
+            'connection_type' => $validated['connection_type'] ?? ($isNonMikrotik ? 'http' : 'lan'),
+            'api_port' => $port,
+            'api_username' => $apiUsername,
+            'api_password' => $apiPassword,
             'interfaces' => $interfaces,
         ]);
 
@@ -167,6 +209,13 @@ class MonitoringDeviceController extends Controller
      */
     public function update(Request $request, int $id): JsonResponse|RedirectResponse
     {
+        $inputPort = $request->filled('api_port') ? (int) $request->input('api_port') : null;
+        $isNonMikrotik = MikrotikService::isNonMikrotik(
+            $request->input('unit_type'),
+            $inputPort,
+            $request->input('connection_type')
+        );
+
         $validated = $request->validate([
             'hostname' => 'required|string|max:100',
             'unit_type' => 'required|string|max:50',
@@ -177,7 +226,7 @@ class MonitoringDeviceController extends Controller
             'rack_location' => 'nullable|string|max:100',
             'connection_type' => 'nullable|string|max:50',
             'api_port' => 'nullable|numeric',
-            'api_username' => 'required|string|max:50',
+            'api_username' => $isNonMikrotik ? 'nullable|string|max:50' : 'required|string|max:50',
             'api_password' => 'nullable|string|max:100',
             'status' => 'nullable|string|in:online,warning,offline',
         ], [
@@ -185,7 +234,7 @@ class MonitoringDeviceController extends Controller
             'unit_type.required' => 'Jenis perangkat wajib dipilih.',
             'ip_address.required' => 'IP Address target monitoring wajib diisi.',
             'customer.required' => 'Nama mitra/pelanggan target wajib diisi.',
-            'api_username.required' => 'Username API MikroTik wajib diisi.',
+            'api_username.required' => 'Username API MikroTik wajib diisi untuk perangkat RouterOS.',
         ]);
 
         $deviceModel = MonitoringDevice::find($id);
@@ -200,11 +249,15 @@ class MonitoringDeviceController extends Controller
 
         $status = $validated['status'] ?? $deviceModel->status ?? 'online';
         $ip = trim($validated['ip_address']);
-        $port = (int) ($validated['api_port'] ?? ($deviceModel->api_port ?: 8728));
-        $username = ! empty($validated['api_username']) ? $validated['api_username'] : $deviceModel->api_username;
+        $port = $isNonMikrotik
+            ? MikrotikService::resolveNonMikrotikPort($inputPort ?? $deviceModel->api_port)
+            : ($inputPort ?? (int) ($deviceModel->api_port ?: 8728));
+        $username = ! empty($validated['api_username'])
+            ? trim((string) $validated['api_username'])
+            : ($isNonMikrotik ? null : $deviceModel->api_username);
         $password = (array_key_exists('api_password', $validated) && $validated['api_password'] !== null && $validated['api_password'] !== '')
             ? $validated['api_password']
-            : $deviceModel->api_password;
+            : ($isNonMikrotik ? '' : $deviceModel->api_password);
 
         $updates = [
             'hostname' => strtoupper(trim($validated['hostname'])),
@@ -212,7 +265,7 @@ class MonitoringDeviceController extends Controller
             'ip_address' => $ip,
             'customer' => trim($validated['customer']),
             'project' => ! empty($validated['project']) ? trim($validated['project']) : ($deviceModel->project ?: 'Dedicated SLA Monitoring'),
-            'connection_type' => $validated['connection_type'] ?? ($deviceModel->connection_type ?: 'lan'),
+            'connection_type' => $validated['connection_type'] ?? ($deviceModel->connection_type ?: ($isNonMikrotik ? 'http' : 'lan')),
             'api_port' => $port,
             'api_username' => $username,
             'api_password' => $password,
@@ -226,25 +279,52 @@ class MonitoringDeviceController extends Controller
         }
 
         $connectNotice = '';
-        if (! empty($ip) && ! empty($username) && ! app()->runningUnitTests()) {
+        if (! empty($ip) && ! app()->runningUnitTests()) {
             $mikrotikService = new MikrotikService;
-            $telemetry = $mikrotikService->getDeviceTelemetry($ip, $username, (string) $password, $port, 2);
 
-            if ($telemetry) {
-                $status = 'online';
-                $updates['cpu_load'] = $telemetry['resource']['cpu_load'];
-                $updates['ram_load'] = $telemetry['resource']['ram_load'];
-                $updates['uptime'] = $telemetry['resource']['uptime'];
-                $updates['last_ping_ms'] = (int) $telemetry['latency_ms'];
-                $updates['packet_loss'] = 0.0;
-                if (! empty($telemetry['interfaces'])) {
-                    $updates['interfaces'] = $telemetry['interfaces'];
+            if ($isNonMikrotik) {
+                // Kondisi B: Non-MikroTik / TOTOLINK HTTP & Ping
+                $check = $mikrotikService->checkHttpSocket($ip, $port, 2);
+
+                if ($check['online']) {
+                    $status = 'online';
+                    $updates['cpu_load'] = 0.0;
+                    $updates['ram_load'] = 0.0;
+                    $updates['uptime'] = $check['uptime'];
+                    $updates['last_ping_ms'] = $check['latency_ms'];
+                    $updates['packet_loss'] = 0.0;
+                    $updates['interfaces'] = $check['interfaces'];
+                    $connectNotice = " — Terhubung via HTTP/TCP Port {$port} ({$check['latency_ms']} ms)";
+                } else {
+                    $status = 'offline';
+                    $updates['cpu_load'] = 0.0;
+                    $updates['ram_load'] = 0.0;
+                    $updates['uptime'] = 'Offline (Timeout)';
+                    $updates['last_ping_ms'] = null;
+                    $updates['packet_loss'] = 100.0;
+                    $connectNotice = " — Peringatan: Port {$port} tidak merespons dalam 2 detik";
                 }
-                $connectNotice = " — Terhubung ke {$telemetry['resource']['board_name']} (RouterOS v{$telemetry['resource']['version']})";
-            } else {
-                $status = 'offline';
-                $updates['packet_loss'] = 100.0;
-                $connectNotice = ' — Peringatan: '.($mikrotikService->getLastError() ?: 'Koneksi API gagal');
+            } elseif (! empty($username)) {
+                // Kondisi A: MikroTik RouterOS API
+                $telemetry = $mikrotikService->getDeviceTelemetry($ip, $username, (string) $password, $port, 2, $validated['unit_type']);
+
+                if ($telemetry) {
+                    $status = 'online';
+                    $updates['cpu_load'] = $telemetry['resource']['cpu_load'];
+                    $updates['ram_load'] = $telemetry['resource']['ram_load'];
+                    $updates['uptime'] = $telemetry['resource']['uptime'];
+                    $updates['last_ping_ms'] = (int) $telemetry['latency_ms'];
+                    $updates['packet_loss'] = 0.0;
+                    if (! empty($telemetry['interfaces'])) {
+                        $updates['interfaces'] = $telemetry['interfaces'];
+                    }
+                    $connectNotice = " — Terhubung ke {$telemetry['resource']['board_name']} (RouterOS v{$telemetry['resource']['version']})";
+                } else {
+                    $status = 'offline';
+                    $updates['last_ping_ms'] = null;
+                    $updates['packet_loss'] = 100.0;
+                    $connectNotice = ' — Peringatan: '.($mikrotikService->getLastError() ?: 'Koneksi API gagal');
+                }
             }
         }
 
@@ -329,28 +409,31 @@ class MonitoringDeviceController extends Controller
     }
 
     /**
-     * Simpan / Perbarui Konfigurasi IP & Kredensial API MikroTik (API Ajax cepat) ke database.
+     * Simpan / Perbarui Konfigurasi IP & Kredensial API MikroTik / HTTP Socket (API Ajax cepat) ke database.
      */
     public function saveSettings(Request $request): JsonResponse
     {
+        $inputPort = $request->filled('api_port') ? (int) $request->input('api_port') : null;
+        $deviceModel = $request->filled('device_id') ? MonitoringDevice::find((int) $request->input('device_id')) : null;
+        $isNonMikrotik = MikrotikService::isNonMikrotik($deviceModel?->unit_type, $inputPort);
+
         $validated = $request->validate([
             'device_id' => 'required',
             'ip_address' => 'required|string',
             'api_port' => 'required|numeric',
-            'api_username' => 'required|string',
+            'api_username' => $isNonMikrotik ? 'nullable|string' : 'required|string',
             'api_password' => 'nullable|string',
             'connection_type' => 'required|string',
         ]);
 
         $id = (int) $validated['device_id'];
-        $deviceModel = MonitoringDevice::find($id);
 
         if ($deviceModel) {
             $updates = [
                 'ip_address' => $validated['ip_address'],
                 'connection_type' => $validated['connection_type'],
                 'api_port' => (int) $validated['api_port'],
-                'api_username' => $validated['api_username'],
+                'api_username' => $validated['api_username'] ?? ($isNonMikrotik ? null : 'admin'),
             ];
 
             if (! empty($validated['api_password'])) {

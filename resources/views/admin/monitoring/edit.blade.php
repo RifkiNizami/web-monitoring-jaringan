@@ -27,20 +27,22 @@
     @endphp
 
     <div class="h-screen flex w-full overflow-hidden">
-        
+
         <!-- SIDEBAR (Include Partial) -->
         @include('partials.sidebar')
 
         <!-- MAIN CONTENT AREA -->
         <div class="flex-1 flex flex-col min-w-0 h-full overflow-y-auto">
-            
+
             <!-- TOP NAVBAR / HEADER -->
             <header class="bg-white border-b border-slate-200/80 px-6 py-3.5 flex items-center justify-between sticky top-0 z-30">
                 <div class="flex items-center gap-3 min-w-0">
-                    <!-- Mobile Hamburger -->
-                    <button id="openSidebar" class="lg:hidden p-1.5 -ml-1 text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 cursor-pointer">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    <!-- Collapsible Sidebar Navbar Toggle Button -->
+                    <button id="openSidebar" type="button" class="sidebar-toggle-btn p-1.5 -ml-1 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors" title="Buka / Tutup Menu Navigasi (Ctrl+B)" aria-label="Toggle menu navigasi" aria-expanded="true">
+                        <svg class="w-5 h-5 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path class="bar-top" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16" />
+                            <path class="bar-mid" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12h16" />
+                            <path class="bar-bot" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 18h16" />
                         </svg>
                     </button>
 
@@ -108,117 +110,141 @@
                 @endif
 
                 <!-- FORM CARD -->
-                <form action="{{ route('monitoring.devices.update', $device['id']) }}" method="POST" class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                <form action="{{ route('monitoring.devices.update', $device['id']) }}" method="POST" class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
                     @csrf
                     @method('PUT')
 
                     <div class="p-6 lg:p-8 space-y-5">
 
-                        <!-- Row 1: Hostname, Jenis Perangkat & Status Operasional -->
-                        <div class="grid grid-cols-1 sm:grid-cols-12 gap-4">
-                            <div class="sm:col-span-6">
+                        <!-- Baris 1: Nama Hostname & Jenis Perangkat -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <div>
                                 <label for="editHostname" class="block text-xs font-semibold text-slate-700 mb-1.5">
                                     Nama Hostname <span class="text-rose-500">*</span>
                                 </label>
-                                <input 
+                                <input
                                     id="editHostname"
-                                    type="text" 
-                                    name="hostname" 
+                                    type="text"
+                                    name="hostname"
                                     value="{{ old('hostname', $device['hostname'] ?? '') }}"
-                                    required 
-                                    placeholder="CONTOH: RTR-CORE-SBY-01" 
+                                    required
+                                    placeholder="CONTOH: RTR-CORE-SBY-01"
                                     class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 font-mono uppercase focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
                                 >
                             </div>
 
-                            <div class="sm:col-span-3">
+                            <div>
                                 <label for="editUnitType" class="block text-xs font-semibold text-slate-700 mb-1.5">
                                     Jenis Perangkat <span class="text-rose-500">*</span>
                                 </label>
                                 @php $currentType = old('unit_type', $device['unit_type'] ?? 'Router'); @endphp
-                                <select id="editUnitType" name="unit_type" required class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition cursor-pointer">
-                                    <option value="Router" {{ $currentType == 'Router' ? 'selected' : '' }}>Router</option>
-                                    <option value="Switch" {{ $currentType == 'Switch' ? 'selected' : '' }}>Switch</option>
-                                    <option value="Access Point" {{ $currentType == 'Access Point' ? 'selected' : '' }}>Access Point</option>
-                                    <option value="Firewall" {{ $currentType == 'Firewall' ? 'selected' : '' }}>Firewall</option>
-                                    <option value="Server" {{ $currentType == 'Server' ? 'selected' : '' }}>Server</option>
-                                    <option value="OLT" {{ $currentType == 'OLT' ? 'selected' : '' }}>OLT GPON</option>
-                                </select>
-                            </div>
-
-                            <div class="sm:col-span-3">
-                                <label for="editStatus" class="block text-xs font-semibold text-slate-700 mb-1.5">
-                                    Status Operasional
-                                </label>
-                                @php $currentStatus = old('status', $device['status'] ?? 'online'); @endphp
-                                <select id="editStatus" name="status" class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition cursor-pointer">
-                                    <option value="online" {{ $currentStatus == 'online' ? 'selected' : '' }}>Online (Siap Pantau)</option>
-                                    <option value="warning" {{ $currentStatus == 'warning' ? 'selected' : '' }}>Warning (Peringatan)</option>
-                                    <option value="offline" {{ $currentStatus == 'offline' ? 'selected' : '' }}>Offline</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Row 2: IP Address, Port API & Tipe Jalur Monitoring -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <div class="grid grid-cols-12 gap-3">
-                                    <div class="col-span-8">
-                                        <label for="editIpAddress" class="block text-xs font-semibold text-slate-700 mb-1.5">
-                                            IP Address / Host Target <span class="text-rose-500">*</span>
-                                        </label>
-                                        <input 
-                                            id="editIpAddress"
-                                            type="text" 
-                                            name="ip_address" 
-                                            value="{{ old('ip_address', $device['ip_address'] ?? '') }}"
-                                            required 
-                                            placeholder="10.200.x.x atau host domain" 
-                                            class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 font-mono focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
-                                        >
-                                    </div>
-                                    <div class="col-span-4">
-                                        <label for="editApiPort" class="block text-xs font-semibold text-slate-700 mb-1.5">
-                                            Port API
-                                        </label>
-                                        <input 
-                                            id="editApiPort"
-                                            type="number" 
-                                            name="api_port" 
-                                            value="{{ old('api_port', $device['api_port'] ?? '8728') }}" 
-                                            class="w-full px-3 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 font-mono text-center focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
-                                        >
+                                <div class="relative">
+                                    <select id="editUnitType" name="unit_type" required class="w-full appearance-none pl-3.5 pr-9 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition cursor-pointer">
+                                        <option value="Router" {{ $currentType == 'Router' ? 'selected' : '' }}>Router</option>
+                                        <option value="Access Point" {{ $currentType == 'Access Point' ? 'selected' : '' }}>Access Point</option>
+                                        <option value="Generic Router" {{ in_array($currentType, ['Generic Router', 'Generic Router (HTTP/Ping)']) ? 'selected' : '' }}>Generic Router (HTTP/Ping)</option>
+                                        <option value="Switch" {{ $currentType == 'Switch' ? 'selected' : '' }}>Switch</option>
+                                        <option value="Firewall" {{ $currentType == 'Firewall' ? 'selected' : '' }}>Firewall</option>
+                                        <option value="Server" {{ $currentType == 'Server' ? 'selected' : '' }}>Server</option>
+                                        <option value="OLT" {{ $currentType == 'OLT' ? 'selected' : '' }}>OLT GPON</option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
+                        <!-- Baris 2: IP Address & Port API -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <div>
+                                <label for="editIpAddress" class="block text-xs font-semibold text-slate-700 mb-1.5">
+                                    IP Address / Host Target <span class="text-rose-500">*</span>
+                                </label>
+                                <input
+                                    id="editIpAddress"
+                                    type="text"
+                                    name="ip_address"
+                                    value="{{ old('ip_address', $device['ip_address'] ?? '') }}"
+                                    required
+                                    placeholder="10.200.x.x atau 192.168.1.x"
+                                    class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 font-mono focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
+                                >
+                            </div>
+
+                            <div>
+                                <label for="editApiPort" class="block text-xs font-semibold text-slate-700 mb-1.5">
+                                    Port API <span class="text-slate-400 font-normal">(8728 MikroTik / 80 AP)</span>
+                                </label>
+                                <input
+                                    id="editApiPort"
+                                    type="number"
+                                    name="api_port"
+                                    value="{{ old('api_port', $device['api_port'] ?? '8728') }}"
+                                    placeholder="8728 untuk MikroTik, 80 untuk TOTOLINK/AP"
+                                    class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 font-mono focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
+                                >
+                            </div>
+                        </div>
+
+                        <!-- Baris 3: Tipe Jalur Monitoring & Status Operasional -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             <div>
                                 <label for="editConnType" class="block text-xs font-semibold text-slate-700 mb-1.5">
                                     Tipe Jalur Monitoring
                                 </label>
                                 @php $currentConn = old('connection_type', $device['connection_type'] ?? 'lan'); @endphp
-                                <select id="editConnType" name="connection_type" class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition cursor-pointer">
-                                    <option value="lan" {{ $currentConn == 'lan' ? 'selected' : '' }}>Direct IP / Local LAN</option>
-                                    <option value="zerotier" {{ $currentConn == 'zerotier' ? 'selected' : '' }}>ZeroTier Virtual LAN</option>
-                                    <option value="vpn" {{ $currentConn == 'vpn' ? 'selected' : '' }}>VPN Tunnel (WireGuard / SSTP)</option>
-                                    <option value="ipcloud" {{ $currentConn == 'ipcloud' ? 'selected' : '' }}>MikroTik IP Cloud / DDNS</option>
-                                </select>
+                                <div class="relative">
+                                    <select id="editConnType" name="connection_type" class="w-full appearance-none pl-3.5 pr-9 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition cursor-pointer">
+                                        <option value="lan" {{ $currentConn == 'lan' ? 'selected' : '' }}>Direct IP / Local LAN</option>
+                                        <option value="http" {{ $currentConn == 'http' ? 'selected' : '' }}>HTTP / TCP Socket (Port 80/8080)</option>
+                                        <option value="zerotier" {{ $currentConn == 'zerotier' ? 'selected' : '' }}>ZeroTier Virtual LAN</option>
+                                        <option value="vpn" {{ $currentConn == 'vpn' ? 'selected' : '' }}>VPN Tunnel (WireGuard / SSTP)</option>
+                                        <option value="ipcloud" {{ $currentConn == 'ipcloud' ? 'selected' : '' }}>MikroTik IP Cloud / DDNS</option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="editStatus" class="block text-xs font-semibold text-slate-700 mb-1.5">
+                                    Status Operasional
+                                </label>
+                                @php $currentStatus = old('status', $device['status'] ?? 'online'); @endphp
+                                <div class="relative">
+                                    <select id="editStatus" name="status" class="w-full appearance-none pl-3.5 pr-9 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition cursor-pointer">
+                                        <option value="online" {{ $currentStatus == 'online' ? 'selected' : '' }}>Online (Siap Pantau)</option>
+                                        <option value="warning" {{ $currentStatus == 'warning' ? 'selected' : '' }}>Warning (Peringatan)</option>
+                                        <option value="offline" {{ $currentStatus == 'offline' ? 'selected' : '' }}>Offline</option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Row 3: Mitra Pelanggan & Proyek -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Baris 4: Mitra Pelanggan & Proyek -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             <div>
                                 <label for="editCustomer" class="block text-xs font-semibold text-slate-700 mb-1.5">
                                     Mitra Pelanggan / Entitas <span class="text-rose-500">*</span>
                                 </label>
-                                <input 
+                                <input
                                     id="editCustomer"
-                                    type="text" 
-                                    name="customer" 
+                                    type="text"
+                                    name="customer"
                                     value="{{ old('customer', $device['customer'] ?? '') }}"
-                                    required 
-                                    placeholder="Nama klien / instansi" 
+                                    required
+                                    placeholder="Nama klien / instansi"
                                     list="monitoringCustomerSuggestions"
                                     class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
                                 >
@@ -236,29 +262,29 @@
                                 <label for="editProject" class="block text-xs font-semibold text-slate-700 mb-1.5">
                                     Proyek / Lokasi Terhubung
                                 </label>
-                                <input 
+                                <input
                                     id="editProject"
-                                    type="text" 
-                                    name="project" 
+                                    type="text"
+                                    name="project"
                                     value="{{ old('project', $device['project'] ?? '') }}"
-                                    placeholder="Contoh: Dedicated Internet SCBD" 
+                                    placeholder="Contoh: Dedicated Internet SCBD"
                                     class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
                                 >
                             </div>
                         </div>
 
-                        <!-- Row 4: Model & Lokasi Rak -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Baris 5: Model & Lokasi Rak -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             <div>
                                 <label for="editModel" class="block text-xs font-semibold text-slate-700 mb-1.5">
                                     Model / Seri Perangkat
                                 </label>
-                                <input 
+                                <input
                                     id="editModel"
-                                    type="text" 
-                                    name="model" 
+                                    type="text"
+                                    name="model"
                                     value="{{ old('model', $device['model'] ?? '') }}"
-                                    placeholder="Contoh: MikroTik CCR2004-16G-2S+" 
+                                    placeholder="Contoh: MikroTik CCR2004-16G-2S+"
                                     class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
                                 >
                             </div>
@@ -267,45 +293,44 @@
                                 <label for="editRack" class="block text-xs font-semibold text-slate-700 mb-1.5">
                                     Lokasi Rak / Titik POP
                                 </label>
-                                <input 
+                                <input
                                     id="editRack"
-                                    type="text" 
-                                    name="rack_location" 
+                                    type="text"
+                                    name="rack_location"
                                     value="{{ old('rack_location', $device['rack_location'] ?? '') }}"
-                                    placeholder="Contoh: Rack Core-A, Slot U-42" 
+                                    placeholder="Contoh: Rack Core-A, Slot U-42"
                                     class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
                                 >
                             </div>
                         </div>
 
-                        <!-- Row 5: Kredensial API -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-100">
+                        <!-- Baris 6: Kredensial API -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-4 border-t border-slate-100">
                             <div>
                                 <label for="editApiUser" class="block text-xs font-semibold text-slate-700 mb-1.5">
-                                    Username API MikroTik <span class="text-rose-500">*</span>
+                                    Username API MikroTik <span id="editApiUserRequiredMark" class="text-rose-500">*</span>
+                                    <span id="editApiUserOptionalBadge" class="hidden text-slate-400 font-normal">(Opsional)</span>
                                 </label>
-                                <input 
+                                <input
                                     id="editApiUser"
-                                    type="text" 
-                                    name="api_username" 
+                                    type="text"
+                                    name="api_username"
                                     value="{{ old('api_username', $device['api_username'] ?? '') }}"
-                                    required
-                                    placeholder="Contoh: admin atau monitorbot" 
+                                    placeholder="Contoh: admin (Kosongkan untuk AP/Port 80)"
                                     class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
                                 >
                             </div>
                             <div>
                                 <label for="editApiPass" class="block text-xs font-semibold text-slate-700 mb-1.5">
-                                    Password API MikroTik
+                                    Password API MikroTik <span class="text-slate-400 font-normal">(Opsional)</span>
                                 </label>
-                                <input 
+                                <input
                                     id="editApiPass"
-                                    type="password" 
-                                    name="api_password" 
-                                    placeholder="Kosongkan jika tidak ingin mengubah password" 
+                                    type="password"
+                                    name="api_password"
+                                    placeholder="Kosongkan jika tidak ingin mengubah password"
                                     class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
                                 >
-                                <p class="text-[10px] text-slate-400 mt-1">Biarkan kosong jika tetap menggunakan kata sandi saat ini.</p>
                             </div>
                         </div>
 
@@ -346,5 +371,79 @@
     <!-- TOAST NOTIFICATION CONTAINER -->
     <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
+    <script>
+        (function() {
+            function initEditDeviceForm() {
+                const unitTypeEl = document.getElementById('editUnitType');
+                if (!unitTypeEl) return;
+                const apiPortEl = document.getElementById('editApiPort');
+                const connTypeEl = document.getElementById('editConnType');
+                const apiUserEl = document.getElementById('editApiUser');
+                const reqMarkEl = document.getElementById('editApiUserRequiredMark');
+                const optBadgeEl = document.getElementById('editApiUserOptionalBadge');
+
+                function isNonMikrotikMode() {
+                    const typeVal = (unitTypeEl?.value || '').toLowerCase();
+                    const connVal = (connTypeEl?.value || '').toLowerCase();
+                    const portVal = parseInt(apiPortEl?.value || '0', 10);
+                    return ['access point', 'generic router', 'generic router (http/ping)'].includes(typeVal)
+                        || connVal === 'http'
+                        || (portVal > 0 && ![8728, 8729].includes(portVal));
+                }
+
+                function syncCredentialMode(source) {
+                    const typeVal = (unitTypeEl?.value || '').toLowerCase();
+                    const connVal = (connTypeEl?.value || '').toLowerCase();
+                    const currentPort = (apiPortEl?.value || '').trim();
+
+                    if (source === 'unit_type') {
+                        if (['access point', 'generic router', 'generic router (http/ping)'].includes(typeVal)) {
+                            if (currentPort === '' || currentPort === '8728' || currentPort === '8729') {
+                                apiPortEl.value = '80';
+                            }
+                            if (connTypeEl && connTypeEl.value === 'lan') {
+                                connTypeEl.value = 'http';
+                            }
+                        } else if (typeVal === 'router') {
+                            if (currentPort === '80' || currentPort === '8080') {
+                                apiPortEl.value = '8728';
+                            }
+                            if (connTypeEl && connTypeEl.value === 'http') {
+                                connTypeEl.value = 'lan';
+                            }
+                        }
+                    } else if (source === 'conn_type') {
+                        if (connVal === 'http' && (currentPort === '' || currentPort === '8728' || currentPort === '8729')) {
+                            apiPortEl.value = '80';
+                        } else if (connVal !== 'http' && !['access point', 'generic router', 'generic router (http/ping)'].includes(typeVal) && (currentPort === '80' || currentPort === '8080')) {
+                            apiPortEl.value = '8728';
+                        }
+                    }
+
+                    if (isNonMikrotikMode()) {
+                        apiUserEl?.removeAttribute('required');
+                        reqMarkEl?.classList.add('hidden');
+                        optBadgeEl?.classList.remove('hidden');
+                    } else {
+                        apiUserEl?.setAttribute('required', 'required');
+                        reqMarkEl?.classList.remove('hidden');
+                        optBadgeEl?.classList.add('hidden');
+                    }
+                }
+
+                unitTypeEl.onchange = () => syncCredentialMode('unit_type');
+                if (connTypeEl) connTypeEl.onchange = () => syncCredentialMode('conn_type');
+                if (apiPortEl) apiPortEl.oninput = () => syncCredentialMode('api_port');
+                syncCredentialMode('init');
+            }
+
+            document.addEventListener('turbo:load', initEditDeviceForm);
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initEditDeviceForm);
+            } else {
+                initEditDeviceForm();
+            }
+        })();
+    </script>
 </body>
 </html>

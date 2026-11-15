@@ -18,6 +18,7 @@ class MonitoringController extends Controller
     public static function formatMonitoringDevice(MonitoringDevice $device): array
     {
         $status = $device->status ?: 'online';
+        $isNonMikrotik = MikrotikService::isNonMikrotik($device->unit_type, $device->api_port);
 
         return [
             'id' => $device->id,
@@ -38,13 +39,15 @@ class MonitoringController extends Controller
             'temperature' => $device->temperature ?: '-',
             'voltage' => $device->voltage ?: '-',
             'packet_loss' => (float) ($device->packet_loss ?? 0.0),
+            'latency_ms' => $device->last_ping_ms !== null ? (int) $device->last_ping_ms : null,
             'last_ping_ms' => (int) ($device->last_ping_ms ?? 0),
-            'connection_type' => $device->connection_type ?: 'lan',
-            'api_port' => (int) ($device->api_port ?? 8728),
-            'api_username' => $device->api_username ?: 'admin',
+            'connection_type' => $device->connection_type ?: ($isNonMikrotik ? 'http' : 'lan'),
+            'api_port' => (int) ($device->api_port ?? ($isNonMikrotik ? 80 : 8728)),
+            'api_username' => $device->api_username ?? ($isNonMikrotik ? '' : 'admin'),
             'api_password' => $device->api_password ?? '',
-            'interfaces' => is_array($device->interfaces) ? $device->interfaces : [
-                ['name' => 'ether1', 'status' => 'up', 'speed' => '1 Gbps', 'rx' => '0 Mbps', 'tx' => '0 Mbps'],
+            'is_non_mikrotik' => $isNonMikrotik,
+            'interfaces' => is_array($device->interfaces) && count($device->interfaces) > 0 ? $device->interfaces : [
+                ['name' => $isNonMikrotik ? 'eth0' : 'ether1', 'status' => 'up', 'speed' => $isNonMikrotik ? '100 Mbps' : '1 Gbps', 'rx' => '0 Mbps', 'tx' => '0 Mbps'],
             ],
         ];
     }
@@ -103,39 +106,74 @@ class MonitoringController extends Controller
      */
     public function index(Request $request): View
     {
-        // Jalankan polling update real-time jika perangkat MikroTik memiliki IP & username
+        // Jalankan polling update real-time untuk perangkat MikroTik (Kondisi A) & Non-MikroTik (Kondisi B)
         if (! app()->runningUnitTests()) {
             $mikrotikService = new MikrotikService;
-            $nodesToPoll = MonitoringDevice::whereNotNull('ip_address')
-                ->whereNotNull('api_username')
-                ->get();
+            $nodesToPoll = MonitoringDevice::whereNotNull('ip_address')->get();
 
             foreach ($nodesToPoll as $node) {
-                $telemetry = $mikrotikService->getDeviceTelemetry(
-                    $node->ip_address,
-                    $node->api_username,
-                    (string) ($node->api_password ?? ''),
-                    (int) ($node->api_port ?? 8728),
-                    1
-                );
+                $isNonMikrotik = MikrotikService::isNonMikrotik($node->unit_type, $node->api_port);
 
-                if ($telemetry) {
-                    $node->update([
-                        'status' => 'online',
-                        'status_label' => 'ONLINE',
-                        'cpu_load' => $telemetry['resource']['cpu_load'],
-                        'ram_load' => $telemetry['resource']['ram_load'],
-                        'uptime' => $telemetry['resource']['uptime'],
-                        'last_ping_ms' => (int) $telemetry['latency_ms'],
-                        'packet_loss' => 0.0,
-                        'interfaces' => $telemetry['interfaces'] ?? $node->interfaces,
-                    ]);
-                } else {
-                    $node->update([
-                        'status' => 'offline',
-                        'status_label' => 'OFFLINE',
-                        'packet_loss' => 100.0,
-                    ]);
+                if ($isNonMikrotik) {
+                    // Kondisi B: Non-MikroTik / TOTOLINK HTTP & Ping (Port 80/8080 atau Access Point / Generic Router)
+                    $port = (int) ($node->api_port ?: 80);
+                    $check = $mikrotikService->checkHttpSocket($node->ip_address, $port, 2);
+
+                    if ($check['online']) {
+                        $node->update([
+                            'status' => 'online',
+                            'status_label' => 'ONLINE',
+                            'cpu_load' => 0.0,
+                            'ram_load' => 0.0,
+                            'uptime' => $check['uptime'],
+                            'last_ping_ms' => $check['latency_ms'],
+                            'packet_loss' => 0.0,
+                            'interfaces' => ! empty($check['interfaces']) ? $check['interfaces'] : $node->interfaces,
+                        ]);
+                    } else {
+                        $node->update([
+                            'status' => 'offline',
+                            'status_label' => 'OFFLINE',
+                            'cpu_load' => 0.0,
+                            'ram_load' => 0.0,
+                            'uptime' => 'Offline (Timeout)',
+                            'last_ping_ms' => null,
+                            'packet_loss' => 100.0,
+                        ]);
+                    }
+                } elseif (! empty($node->api_username)) {
+                    // Kondisi A: MikroTik RouterOS API (Port 8728 / 8729)
+                    $telemetry = $mikrotikService->getDeviceTelemetry(
+                        $node->ip_address,
+                        $node->api_username,
+                        (string) ($node->api_password ?? ''),
+                        (int) ($node->api_port ?? 8728),
+                        2,
+                        $node->unit_type
+                    );
+
+                    if ($telemetry) {
+                        $node->update([
+                            'status' => 'online',
+                            'status_label' => 'ONLINE',
+                            'cpu_load' => $telemetry['resource']['cpu_load'],
+                            'ram_load' => $telemetry['resource']['ram_load'],
+                            'uptime' => $telemetry['resource']['uptime'],
+                            'last_ping_ms' => (int) $telemetry['latency_ms'],
+                            'packet_loss' => 0.0,
+                            'interfaces' => $telemetry['interfaces'] ?? $node->interfaces,
+                        ]);
+                    } else {
+                        $node->update([
+                            'status' => 'offline',
+                            'status_label' => 'OFFLINE',
+                            'cpu_load' => 0.0,
+                            'ram_load' => 0.0,
+                            'uptime' => 'Offline (Timeout)',
+                            'last_ping_ms' => null,
+                            'packet_loss' => 100.0,
+                        ]);
+                    }
                 }
             }
         }
@@ -246,35 +284,68 @@ class MonitoringController extends Controller
             return response()->json(['error' => 'Device not found'], 404);
         }
 
-        // Ambil data telemetri langsung dari RouterOS MikroTik jika terdaftar
-        if (! empty($deviceModel->ip_address) && ! empty($deviceModel->api_username) && ! app()->runningUnitTests()) {
+        // Ambil data telemetri langsung (Kondisi A: MikroTik RouterOS API, Kondisi B: Non-MikroTik HTTP/TCP Socket)
+        if (! empty($deviceModel->ip_address) && ! app()->runningUnitTests()) {
             $mikrotikService = new MikrotikService;
-            $telemetry = $mikrotikService->getDeviceTelemetry(
-                $deviceModel->ip_address,
-                $deviceModel->api_username,
-                (string) ($deviceModel->api_password ?? ''),
-                (int) ($deviceModel->api_port ?? 8728),
-                2
-            );
+            $isNonMikrotik = MikrotikService::isNonMikrotik($deviceModel->unit_type, $deviceModel->api_port);
 
-            if ($telemetry) {
-                $updates = [
-                    'cpu_load' => $telemetry['resource']['cpu_load'],
-                    'ram_load' => $telemetry['resource']['ram_load'],
-                    'uptime' => $telemetry['resource']['uptime'],
-                    'last_ping_ms' => (int) $telemetry['latency_ms'],
-                    'status' => 'online',
-                    'status_label' => 'ONLINE',
-                ];
-                if (! empty($telemetry['interfaces'])) {
-                    $updates['interfaces'] = $telemetry['interfaces'];
+            if ($isNonMikrotik) {
+                $port = (int) ($deviceModel->api_port ?: 80);
+                $check = $mikrotikService->checkHttpSocket($deviceModel->ip_address, $port, 2);
+
+                if ($check['online']) {
+                    $deviceModel->update([
+                        'cpu_load' => 0.0,
+                        'ram_load' => 0.0,
+                        'uptime' => $check['uptime'],
+                        'last_ping_ms' => $check['latency_ms'],
+                        'packet_loss' => 0.0,
+                        'status' => 'online',
+                        'status_label' => 'ONLINE',
+                    ]);
+                } else {
+                    $deviceModel->update([
+                        'cpu_load' => 0.0,
+                        'ram_load' => 0.0,
+                        'uptime' => 'Offline (Timeout)',
+                        'last_ping_ms' => null,
+                        'packet_loss' => 100.0,
+                        'status' => 'offline',
+                        'status_label' => 'OFFLINE',
+                    ]);
                 }
-                $deviceModel->update($updates);
-            } else {
-                $deviceModel->update([
-                    'status' => 'offline',
-                    'status_label' => 'OFFLINE',
-                ]);
+            } elseif (! empty($deviceModel->api_username)) {
+                $telemetry = $mikrotikService->getDeviceTelemetry(
+                    $deviceModel->ip_address,
+                    $deviceModel->api_username,
+                    (string) ($deviceModel->api_password ?? ''),
+                    (int) ($deviceModel->api_port ?? 8728),
+                    2,
+                    $deviceModel->unit_type
+                );
+
+                if ($telemetry) {
+                    $updates = [
+                        'cpu_load' => $telemetry['resource']['cpu_load'],
+                        'ram_load' => $telemetry['resource']['ram_load'],
+                        'uptime' => $telemetry['resource']['uptime'],
+                        'last_ping_ms' => (int) $telemetry['latency_ms'],
+                        'packet_loss' => 0.0,
+                        'status' => 'online',
+                        'status_label' => 'ONLINE',
+                    ];
+                    if (! empty($telemetry['interfaces'])) {
+                        $updates['interfaces'] = $telemetry['interfaces'];
+                    }
+                    $deviceModel->update($updates);
+                } else {
+                    $deviceModel->update([
+                        'last_ping_ms' => null,
+                        'packet_loss' => 100.0,
+                        'status' => 'offline',
+                        'status_label' => 'OFFLINE',
+                    ]);
+                }
             }
         }
 
@@ -289,6 +360,7 @@ class MonitoringController extends Controller
                 'cpu_load' => (float) ($device['cpu_load'] ?? 0.0),
                 'ram_load' => (float) ($device['ram_load'] ?? 0.0),
                 'ping_ms' => (int) ($device['last_ping_ms'] ?? 0),
+                'latency_ms' => $device['latency_ms'],
                 'rx_mbps' => $device['rx_mbps'] ?? '0 Mbps',
                 'tx_mbps' => $device['tx_mbps'] ?? '0 Mbps',
                 'packet_loss' => (float) ($device['packet_loss'] ?? 0.0),
@@ -317,7 +389,7 @@ class MonitoringController extends Controller
     }
 
     /**
-     * Eksekusi diagnostic polling ICMP / SNMP terhadap perangkat secara realtime.
+     * Eksekusi diagnostic polling ICMP / SNMP / HTTP Socket terhadap perangkat secara realtime.
      */
     public function pollDevice(Request $request, int $id): JsonResponse
     {
@@ -331,30 +403,46 @@ class MonitoringController extends Controller
         $snmpStatus = 'Status Link: '.strtoupper($status);
         $quality = $status === 'offline' ? 'Offline / Unreachable' : 'Normal / Ready';
 
-        if ($deviceModel && ! empty($deviceModel->api_username) && ! app()->runningUnitTests()) {
+        if ($deviceModel && ! empty($deviceModel->ip_address) && ! app()->runningUnitTests()) {
             $mikrotikService = new MikrotikService;
+            $isNonMikrotik = MikrotikService::isNonMikrotik($deviceModel->unit_type, $deviceModel->api_port);
+            $port = (int) ($deviceModel->api_port ?? ($isNonMikrotik ? 80 : 8728));
+
             $test = $mikrotikService->testConnection(
                 $deviceModel->ip_address,
                 $deviceModel->api_username,
                 (string) ($deviceModel->api_password ?? ''),
-                (int) ($deviceModel->api_port ?? 8728),
-                2
+                $port,
+                2,
+                $deviceModel->unit_type
             );
 
             if ($test['success']) {
-                $ping = $test['latency_ms'];
-                $snmpStatus = "RouterOS v{$test['resource']['version']} ({$test['resource']['board_name']}) OK";
-                $quality = 'Connected via Port '.($deviceModel->api_port ?? 8728);
+                $ping = (float) ($test['latency_ms'] ?? 1.0);
+                if ($isNonMikrotik) {
+                    $snmpStatus = "HTTP/TCP Port {$port} Aktif ({$ping} ms)";
+                } else {
+                    $snmpStatus = "RouterOS v{$test['resource']['version']} ({$test['resource']['board_name']}) OK";
+                }
+                $quality = "Connected via Port {$port}";
                 $status = 'online';
                 $deviceModel->update([
                     'status' => 'online',
                     'status_label' => 'ONLINE',
                     'last_ping_ms' => (int) $ping,
+                    'packet_loss' => 0.0,
                 ]);
             } else {
-                $snmpStatus = 'API Unreachable: '.$test['message'];
-                $quality = 'Port 8728 Timeout';
+                $snmpStatus = 'Unreachable: '.$test['message'];
+                $quality = "Port {$port} Timeout";
                 $status = 'offline';
+                $ping = 0.0;
+                $deviceModel->update([
+                    'status' => 'offline',
+                    'status_label' => 'OFFLINE',
+                    'last_ping_ms' => null,
+                    'packet_loss' => 100.0,
+                ]);
             }
         }
 

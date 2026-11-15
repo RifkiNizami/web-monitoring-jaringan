@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" class="h-full bg-slate-50 antialiased">
+<html lang="id" class="h-full bg-slate-100 antialiased">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,7 +13,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="h-full bg-slate-50 font-sans text-slate-800 antialiased">
+<body class="h-full bg-slate-100 font-sans text-slate-800 antialiased">
 
     <div class="h-screen flex w-full overflow-hidden">
         
@@ -21,15 +21,17 @@
         @include('partials.sidebar')
 
         <!-- MAIN CONTENT AREA -->
-        <div class="flex-1 flex flex-col min-w-0 h-full overflow-y-auto">
+        <div class="flex-1 flex flex-col min-w-0 h-full overflow-y-auto bg-slate-100">
             
             <!-- TOP NAVBAR / HEADER -->
             <header class="bg-white border-b border-slate-200/80 px-6 py-3.5 flex items-center justify-between sticky top-0 z-30">
                 <div class="flex items-center gap-3">
-                    <!-- Mobile Hamburger -->
-                    <button id="openSidebar" class="lg:hidden p-1.5 -ml-1 text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    <!-- Collapsible Sidebar Navbar Toggle Button -->
+                    <button id="openSidebar" type="button" class="sidebar-toggle-btn p-1.5 -ml-1 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors" title="Buka / Tutup Menu Navigasi (Ctrl+B)" aria-label="Toggle menu navigasi" aria-expanded="true">
+                        <svg class="w-5 h-5 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path class="bar-top" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16" />
+                            <path class="bar-mid" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12h16" />
+                            <path class="bar-bot" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 18h16" />
                         </svg>
                     </button>
 
@@ -62,7 +64,7 @@
             </header>
 
             <!-- MAIN BODY PADDING -->
-            <main class="p-6 lg:p-8 space-y-6">
+            <main class="flex-1 p-6 lg:p-8 space-y-6 bg-slate-100 min-h-screen">
                 
                 <!-- WELCOME BANNER & ACTION BUTTON -->
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">

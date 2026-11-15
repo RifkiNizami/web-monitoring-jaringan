@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Http\Controllers\Admin\MonitoringController;
 use App\Models\MonitoringAlert;
+use App\Models\MonitoringDevice;
 use App\Models\User;
+use App\Services\MikrotikService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
@@ -267,5 +269,110 @@ class MonitoringAlertTest extends TestCase
             'api_username' => 'testuser',
             'connection_type' => 'zerotier',
         ]);
+    }
+
+    /**
+     * Memastikan perangkat Non-MikroTik (Access Point / TOTOLINK N300RT port 80) dapat ditambahkan tanpa Username & Password API MikroTik.
+     */
+    public function test_admin_can_add_non_mikrotik_access_point_without_api_credentials(): void
+    {
+        $response = $this->actingAs($this->adminUser)->postJson('/monitoring/devices', [
+            'hostname' => 'AP-TOTOLINK-N300RT-01',
+            'unit_type' => 'Access Point',
+            'ip_address' => '192.168.1.254',
+            'customer' => 'SMAN 1 Jakarta',
+            'project' => 'WiFi Ruang Guru',
+            'model' => 'TOTOLINK N300RT',
+            'api_port' => 80,
+            'api_username' => null,
+            'api_password' => null,
+            'status' => 'online',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+        ]);
+        $response->assertJsonPath('device.hostname', 'AP-TOTOLINK-N300RT-01');
+        $response->assertJsonPath('device.api_port', 80);
+        $response->assertJsonPath('device.is_non_mikrotik', true);
+
+        $this->assertDatabaseHas('monitoring_devices', [
+            'hostname' => 'AP-TOTOLINK-N300RT-01',
+            'unit_type' => 'Access Point',
+            'ip_address' => '192.168.1.254',
+            'api_port' => 80,
+            'api_username' => null,
+        ]);
+
+        $device = MonitoringDevice::where('hostname', 'AP-TOTOLINK-N300RT-01')->firstOrFail();
+
+        // Pastikan halaman daftar monitoring dan detail perangkat merender perangkat Access Point / Port 80 tanpa error
+        $indexResponse = $this->actingAs($this->adminUser)->get('/monitoring');
+        $indexResponse->assertStatus(200);
+        $indexResponse->assertSee('AP-TOTOLINK-N300RT-01');
+        $indexResponse->assertSee('Latensi (ms)', false);
+
+        $detailResponse = $this->actingAs($this->adminUser)->get('/monitoring/devices/'.$device->id);
+        $detailResponse->assertStatus(200);
+        $detailResponse->assertSee('AP-TOTOLINK-N300RT-01');
+        $detailResponse->assertSee('HTTP/TCP Socket (Port 80)', false);
+        $detailResponse->assertSee('Latensi (ms)', false);
+    }
+
+    /**
+     * Memastikan Generic Router (HTTP/Ping) pada port 8080 juga opsional terhadap kredensial API MikroTik,
+     * sedangkan Router MikroTik (port 8728) tetap mewajibkan api_username.
+     */
+    public function test_generic_router_optional_credentials_vs_mikrotik_required_credentials(): void
+    {
+        // Generic Router (Port 8080) -> Berhasil tanpa username/password
+        $genericResp = $this->actingAs($this->adminUser)->postJson('/monitoring/devices', [
+            'hostname' => 'RTR-TOTOLINK-OFFICE-01',
+            'unit_type' => 'Generic Router',
+            'ip_address' => '192.168.0.1',
+            'customer' => 'Kantor Cabang Bekasi',
+            'api_port' => 8080,
+        ]);
+        $genericResp->assertStatus(200);
+        $genericResp->assertJsonPath('device.api_port', 8080);
+
+        // Router MikroTik (Port 8728) -> Gagal validasi jika api_username kosong
+        $mikrotikResp = $this->actingAs($this->adminUser)->postJson('/monitoring/devices', [
+            'hostname' => 'RTR-MIKROTIK-CCR-01',
+            'unit_type' => 'Router',
+            'ip_address' => '10.10.10.1',
+            'customer' => 'Data Center Pusat',
+            'api_port' => 8728,
+            'api_username' => '',
+        ]);
+        $mikrotikResp->assertStatus(422);
+        $mikrotikResp->assertJsonValidationErrors(['api_username']);
+    }
+
+    /**
+     * Memastikan logika percabangan Kondisi A (MikroTik) & Kondisi B (Non-MikroTik HTTP Socket) pada MikrotikService.
+     */
+    public function test_mikrotik_service_condition_branching_and_http_socket_check(): void
+    {
+        // Kondisi A: MikroTik RouterOS (Port 8728 / 8729 dan bukan Access Point / Generic Router)
+        $this->assertFalse(MikrotikService::isNonMikrotik('Router', 8728));
+        $this->assertFalse(MikrotikService::isNonMikrotik('Firewall', 8729));
+
+        // Kondisi B: Non-MikroTik (Port 80 / 8080 atau Access Point / Generic Router)
+        $this->assertTrue(MikrotikService::isNonMikrotik('Access Point', 8728));
+        $this->assertTrue(MikrotikService::isNonMikrotik('Generic Router', 80));
+        $this->assertTrue(MikrotikService::isNonMikrotik('Router', 80));
+        $this->assertTrue(MikrotikService::isNonMikrotik('Router', 8080));
+
+        // Uji kegagalan socket port tertutup pada localhost port 59999 (timeout cepat)
+        $service = new MikrotikService;
+        $offlineCheck = $service->checkHttpSocket('127.0.0.1', 59999, 1);
+
+        $this->assertFalse($offlineCheck['online']);
+        $this->assertSame('offline', $offlineCheck['status']);
+        $this->assertNull($offlineCheck['latency_ms']);
+        $this->assertSame(0.0, $offlineCheck['cpu_load']);
+        $this->assertSame(0.0, $offlineCheck['ram_load']);
     }
 }

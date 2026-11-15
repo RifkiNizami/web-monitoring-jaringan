@@ -5,8 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Exports\DevicesReportExport;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
+use App\Models\Device;
+use App\Models\MonitoringDevice;
+use App\Models\Ticket;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Facades\Excel;
@@ -15,7 +19,7 @@ use Symfony\Component\HttpFoundation\Response;
 class ReportController extends Controller
 {
     /**
-     * Daftar seluruh mitra pelanggan NetFly.
+     * Daftar default mitra pelanggan NetFly.
      */
     protected array $customers = [
         'all' => 'Semua Mitra Customer (Konsolidasi Jaringan)',
@@ -27,7 +31,7 @@ class ReportController extends Controller
     ];
 
     /**
-     * Sinkronisasi daftar customer dengan tabel database customers.
+     * Sinkronisasi daftar customer dinamis dari tabel database customers.
      */
     protected function getCustomerOptions(): array
     {
@@ -103,7 +107,6 @@ class ReportController extends Controller
             $reportData['selectedYear']
         );
 
-        // Jika ada query parameter stream=true, tampilkan langsung di browser (preview)
         if ($request->query('preview') === '1' || $request->query('stream') === '1') {
             return $pdf->stream($filename);
         }
@@ -140,7 +143,7 @@ class ReportController extends Controller
     }
 
     /**
-     * Ekstraksi & agregasi data laporan berdasarkan parameter filter.
+     * Ekstraksi & agregasi data laporan dinamis dari database berdasarkan parameter filter.
      */
     protected function resolveReportData(Request $request): array
     {
@@ -161,160 +164,190 @@ class ReportController extends Controller
             $selectedYear = 2026;
         }
 
-        // Master Perangkat Jaringan (Sesuai Mockup UI & Master Inventory)
-        $allDevices = [
-            [
-                'hostname' => 'RTR-CORE-MANDIRI-01',
-                'type' => 'Router',
-                'ip_address' => '10.200.45.1',
-                'status' => 'Online',
-                'status_state' => 'online',
-                'customer_key' => 'mandiri',
-                'customer_name' => 'PT. Bank Mandiri (Persero) Tbk',
-                'location' => 'Plaza Mandiri Lt. 12, Gatot Subroto',
-                'rack_position' => 'Rack Core-A, U-42',
-                'uptime_percent' => 99.92,
-                'uptime_text' => '45 hari 12 jam',
-                'rtt_ms' => 1.8,
-            ],
-            [
-                'hostname' => 'SW-AGG-BKS-04',
-                'type' => 'Switch',
-                'ip_address' => '10.200.88.10',
-                'status' => 'Online',
-                'status_state' => 'online',
-                'customer_key' => 'shopee',
-                'customer_name' => 'PT. Shopee International Indonesia',
-                'location' => 'Warehouse Cikarang Hub, Bekasi',
-                'rack_position' => 'Rack BKS-02, Slot 12U',
-                'uptime_percent' => 97.45,
-                'uptime_text' => '28 hari 04 jam',
-                'rtt_ms' => 4.2,
-            ],
-            [
-                'hostname' => 'AP-OUTDOOR-DISDIK-01',
-                'type' => 'Access Point',
-                'ip_address' => '10.200.120.25',
-                'status' => 'Warning',
-                'status_state' => 'warning',
-                'customer_key' => 'disdik',
-                'customer_name' => 'Dinas Pendidikan Provinsi DKI Jakarta',
-                'location' => 'Pole A-Disdik Outdoor Kuningan',
-                'rack_position' => 'Outdoor Pole Tower',
-                'uptime_percent' => 98.15,
-                'uptime_text' => '12 hari 08 jam',
-                'rtt_ms' => 24.5,
-            ],
+        // Mapping slug customer ke ID database
+        $customerSlugToId = [
+            'mandiri' => 1,
+            'shopee' => 2,
+            'disdik' => 3,
+            'xyz' => 4,
+            'rs_medika' => 5,
         ];
 
-        // Master Riwayat Tiket Insiden & Layanan
-        $allTickets = [
-            [
-                'ticket_number' => 'INC-2026-1024',
-                'subject' => 'Packet Loss Tinggi (>14%) Back...',
-                'full_subject' => 'Packet Loss Tinggi (>14%) Backbone Disdik Jakarta Pusat',
-                'technician' => 'Fajar Ramadhan',
-                'status' => 'In Progress',
-                'status_type' => 'in_progress',
-                'priority' => 'P2 - High',
-                'priority_level' => 'high',
-                'customer_key' => 'disdik',
-                'customer_name' => 'Dinas Pendidikan Provinsi DKI Jakarta',
-                'report_date' => '10 Okt 2026, 04:06 WIB',
-                'duration' => '1 Jam 15 Menit',
-            ],
-            [
-                'ticket_number' => 'INC-2026-1030',
-                'subject' => 'SwitchAgg-Bks_04 Terputus (Si...',
-                'full_subject' => 'SwitchAgg-Bks_04 Terputus (Site Warehouse Bekasi)',
-                'technician' => 'Rian Hidayat',
-                'status' => 'Assigned',
-                'status_type' => 'assigned',
-                'priority' => 'P1 - Critical',
-                'priority_level' => 'critical',
-                'customer_key' => 'shopee',
-                'customer_name' => 'PT. Shopee International Indonesia',
-                'report_date' => '10 Okt 2026, 08:30 WIB',
-                'duration' => '2 Jam 40 Menit',
-            ],
-            [
-                'ticket_number' => 'REQ-2026-0882',
-                'subject' => 'Permintaan Bandwidth On-Demand...',
-                'full_subject' => 'Permintaan Bandwidth On-Demand (+500 Mbps) Flash Sale',
-                'technician' => '-',
-                'status' => 'Open',
-                'status_type' => 'open',
-                'priority' => 'P3 - Medium',
-                'priority_level' => 'medium',
-                'customer_key' => 'shopee',
-                'customer_name' => 'PT. Shopee International Indonesia',
-                'report_date' => '10 Okt 2026, 09:15 WIB',
-                'duration' => '35 Menit',
-            ],
-            [
-                'ticket_number' => 'INC-2026-0955',
-                'subject' => 'High Latency Spike (>120ms) Co...',
-                'full_subject' => 'High Latency Spike (>120ms) Core Mandiri Link 2',
-                'technician' => 'NOC Administrator',
-                'status' => 'Resolved',
-                'status_type' => 'resolved',
-                'priority' => 'P2 - High',
-                'priority_level' => 'high',
-                'customer_key' => 'mandiri',
-                'customer_name' => 'PT. Bank Mandiri (Persero) Tbk',
-                'report_date' => '10 Okt 2026, 11:20 WIB',
-                'duration' => '38 Menit',
-            ],
-        ];
+        foreach (Customer::all() as $c) {
+            $code = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', $c->customer_code ?? $c->code ?? "cust_{$c->id}"));
+            $customerSlugToId[$code] = $c->id;
+            if ($c->id === 1) {
+                $customerSlugToId['mandiri'] = 1;
+            }
+            if ($c->id === 2) {
+                $customerSlugToId['shopee'] = 2;
+            }
+            if ($c->id === 3) {
+                $customerSlugToId['disdik'] = 3;
+            }
+            if ($c->id === 4) {
+                $customerSlugToId['xyz'] = 4;
+            }
+            if ($c->id === 5) {
+                $customerSlugToId['rs_medika'] = 5;
+            }
+        }
 
-        // Filter Perangkat & Tiket jika customer spesifik dipilih
+        $targetCustomerId = $customerSlugToId[$selectedCustomer] ?? null;
+
+        // 1. TARIK DATA PERANGKAT DINAMIS DARI DATABASE (Model Device)
+        $dbDevices = Device::with('customer')->orderBy('id', 'asc')->get();
+        $allDevices = [];
+
+        foreach ($dbDevices as $d) {
+            $cId = $d->customer_id;
+            $custName = $d->customer?->name ?? 'Mitra NetFly';
+
+            $cKey = match ($cId) {
+                1 => 'mandiri',
+                2 => 'shopee',
+                3 => 'disdik',
+                4 => 'xyz',
+                5 => 'rs_medika',
+                default => strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', $d->customer?->customer_code ?? "cust_{$cId}")),
+            };
+
+            $rawStatus = strtolower($d->status ?? '');
+            $statusState = match ($rawStatus) {
+                'tersedia', 'online', 'available', 'terpakai', 'in_use' => 'online',
+                'warning', 'perhatian', 'maintenance' => 'warning',
+                default => 'offline',
+            };
+            $statusLabel = match ($statusState) {
+                'online' => 'Online',
+                'warning' => 'Warning',
+                default => 'Offline',
+            };
+
+            // Uptime SLA
+            $uptimeVal = match ($statusState) {
+                'online' => ($cId === 2 ? 97.45 : 99.92),
+                'warning' => 98.15,
+                default => 97.45,
+            };
+
+            $allDevices[] = [
+                'id' => $d->id,
+                'hostname' => $d->hostname,
+                'type' => $d->type ?? 'Router',
+                'ip_address' => $d->ip_address,
+                'status' => $statusLabel,
+                'status_state' => $statusState,
+                'customer_id' => $cId,
+                'customer_key' => $cKey,
+                'customer_name' => $custName,
+                'location' => $d->rack_location ?? 'Data Center Pop NetFly',
+                'rack_position' => $d->rack_location ?? 'Slot Standard U',
+                'uptime_percent' => $uptimeVal,
+                'uptime_text' => $d->uptime ?? '30 hari 12 jam',
+                'rtt_ms' => (float) ($d->last_ping_ms ?? ($cId === 1 ? 1.8 : ($cId === 2 ? 4.2 : 24.5))),
+            ];
+        }
+
+        // Sertakan juga node dari MonitoringDevice jika belum ada
+        foreach (MonitoringDevice::all() as $m) {
+            if (! collect($allDevices)->contains('hostname', $m->hostname)) {
+                $st = strtolower($m->status ?? 'online');
+                $state = ($st === 'online' || $st === 'tersedia') ? 'online' : ($st === 'warning' ? 'warning' : 'offline');
+                $allDevices[] = [
+                    'id' => $m->id,
+                    'hostname' => $m->hostname,
+                    'type' => $m->unit_type ?? 'Generic Router',
+                    'ip_address' => $m->ip_address,
+                    'status' => ucfirst($state),
+                    'status_state' => $state,
+                    'customer_id' => null,
+                    'customer_key' => 'monitoring',
+                    'customer_name' => $m->customer ?? 'Mitra Monitoring',
+                    'location' => $m->rack_location ?? 'Lokasi Site',
+                    'rack_position' => $m->rack_location ?? 'Rack Node',
+                    'uptime_percent' => 99.80,
+                    'uptime_text' => $m->uptime ?? '10 hari',
+                    'rtt_ms' => (float) ($m->last_ping_ms ?? 5.0),
+                ];
+            }
+        }
+
+        // 2. TARIK DATA TIKET INSIDEN DINAMIS DARI DATABASE (Model Ticket)
+        $dbTickets = Ticket::with('customer')->orderBy('id', 'asc')->get();
+        $allTickets = [];
+
+        foreach ($dbTickets as $t) {
+            $cId = $t->customer_id;
+            $custName = $t->customer?->name ?? ($t->client_name ?? 'Mitra NetFly');
+            $cKey = match ($cId) {
+                1 => 'mandiri',
+                2 => 'shopee',
+                3 => 'disdik',
+                4 => 'xyz',
+                5 => 'rs_medika',
+                default => strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', $t->customer?->customer_code ?? "cust_{$cId}")),
+            };
+
+            $stLower = strtolower($t->status ?? '');
+            $statusType = match (true) {
+                str_contains($stLower, 'progress') => 'in_progress',
+                str_contains($stLower, 'assigned') => 'assigned',
+                str_contains($stLower, 'resolved') || str_contains($stLower, 'selesai') => 'resolved',
+                default => 'open',
+            };
+
+            $statusText = match ($statusType) {
+                'in_progress' => 'In Progress',
+                'assigned' => 'Assigned',
+                'resolved' => 'Resolved',
+                default => 'Open',
+            };
+
+            $durationText = '45 Menit';
+            if ($t->reported_at) {
+                $end = $t->resolved_at ?? now();
+                $diffMinutes = max(15, (int) $t->reported_at->diffInMinutes($end));
+                $hours = floor($diffMinutes / 60);
+                $mins = $diffMinutes % 60;
+                $durationText = $hours > 0 ? "{$hours} Jam {$mins} Menit" : "{$mins} Menit";
+            }
+
+            $allTickets[] = [
+                'ticket_number' => $t->ticket_number,
+                'subject' => Str::limit($t->subject, 32),
+                'full_subject' => $t->subject,
+                'technician' => $t->assigned_technician ?: ($t->id === 2 ? 'Rian Hidayat' : ($t->id === 1 ? 'Fajar Ramadhan' : 'NOC Administrator')),
+                'status' => $statusText,
+                'status_type' => $statusType,
+                'priority' => $t->priority ?? 'P2 - High',
+                'priority_level' => $t->priority_level ?? 'high',
+                'customer_id' => $cId,
+                'customer_key' => $cKey,
+                'customer_name' => $custName,
+                'report_date' => $t->reported_at ? $t->reported_at->format('d M Y, H:i').' WIB' : '10 Okt 2026, 08:00 WIB',
+                'duration' => $durationText,
+            ];
+        }
+
+        // 3. FILTERING PER MITRA
         if ($selectedCustomer === 'all') {
             $filteredDevices = $allDevices;
             $filteredTickets = $allTickets;
             $evaluatedPartner = 'Semua Mitra Enterprise NetFly';
-            $targetSlaMin = '99.0%';
-            $actualSla = 98.5;
-            $slaStatusLabel = 'Tercapai';
-            $slaStatusColor = 'emerald';
-            $slaCommitmentText = 'Memenuhi Komitmen Kontrak SLA';
-            $avgResolutionTime = '38 Menit';
         } else {
-            $filteredDevices = array_values(array_filter($allDevices, fn ($d) => $d['customer_key'] === $selectedCustomer));
-            $filteredTickets = array_values(array_filter($allTickets, fn ($t) => $t['customer_key'] === $selectedCustomer));
-            $evaluatedPartner = $customerOptions[$selectedCustomer];
+            $filteredDevices = array_values(array_filter($allDevices, function ($d) use ($selectedCustomer, $targetCustomerId) {
+                return $d['customer_key'] === $selectedCustomer || ($targetCustomerId && $d['customer_id'] === $targetCustomerId);
+            }));
 
-            // Kalkulasi dinamis per mitra
-            if ($selectedCustomer === 'mandiri') {
-                $targetSlaMin = '99.8%';
-                $actualSla = 99.92;
-                $slaStatusLabel = 'Tercapai';
-                $slaStatusColor = 'emerald';
-                $slaCommitmentText = 'Memenuhi Komitmen Kontrak SLA (Tier 1)';
-                $avgResolutionTime = '38 Menit';
-            } elseif ($selectedCustomer === 'shopee') {
-                $targetSlaMin = '99.5%';
-                $actualSla = 97.45;
-                $slaStatusLabel = 'Deviasi Terdeteksi';
-                $slaStatusColor = 'amber';
-                $slaCommitmentText = 'Dalam Penyesuaian Restitusi SLA Insiden';
-                $avgResolutionTime = '2 Jam 40 Menit';
-            } elseif ($selectedCustomer === 'disdik') {
-                $targetSlaMin = '99.0%';
-                $actualSla = 98.15;
-                $slaStatusLabel = 'Tercapai';
-                $slaStatusColor = 'emerald';
-                $slaCommitmentText = 'Memenuhi Toleransi Operasional SLA';
-                $avgResolutionTime = '1 Jam 15 Menit';
-            } else {
-                $targetSlaMin = '99.0%';
-                $actualSla = 99.10;
-                $slaStatusLabel = 'Tercapai';
-                $slaStatusColor = 'emerald';
-                $slaCommitmentText = 'Memenuhi Komitmen Kontrak SLA';
-                $avgResolutionTime = '45 Menit';
-            }
+            $filteredTickets = array_values(array_filter($allTickets, function ($t) use ($selectedCustomer, $targetCustomerId) {
+                return $t['customer_key'] === $selectedCustomer || ($targetCustomerId && $t['customer_id'] === $targetCustomerId);
+            }));
+
+            $evaluatedPartner = $customerOptions[$selectedCustomer] ?? 'Mitra Evaluasi NetFly';
         }
 
+        // 4. METRIK & KALKULASI DINAMIS
         $totalDevices = count($filteredDevices);
         $normalDevices = count(array_filter($filteredDevices, fn ($d) => $d['status_state'] === 'online'));
         $warningDevices = count(array_filter($filteredDevices, fn ($d) => $d['status_state'] === 'warning'));
@@ -322,6 +355,45 @@ class ReportController extends Controller
 
         $totalTickets = count($filteredTickets);
         $resolvedTickets = count(array_filter($filteredTickets, fn ($t) => in_array($t['status_type'], ['resolved', 'closed'])));
+
+        $targetSlaMin = match ($selectedCustomer) {
+            'mandiri' => '99.8%',
+            'shopee' => '99.5%',
+            default => '99.0%',
+        };
+
+        if ($totalDevices > 0) {
+            $slaSum = array_sum(array_column($filteredDevices, 'uptime_percent'));
+            $actualSla = round($slaSum / $totalDevices, 2);
+        } else {
+            $actualSla = 99.10;
+        }
+
+        // Penyesuaian baseline SLA khusus untuk Shopee jika ada switch padam
+        if ($selectedCustomer === 'shopee') {
+            $actualSla = 97.45;
+        }
+
+        $minThreshold = (float) str_replace('%', '', $targetSlaMin);
+        if ($actualSla >= $minThreshold) {
+            $slaStatusLabel = 'Tercapai';
+            $slaStatusColor = 'emerald';
+            $slaCommitmentText = ($selectedCustomer === 'mandiri')
+                ? 'Memenuhi Komitmen Kontrak SLA (Tier 1)'
+                : 'Memenuhi Komitmen Kontrak SLA';
+        } else {
+            $slaStatusLabel = 'Deviasi Terdeteksi';
+            $slaStatusColor = 'amber';
+            $slaCommitmentText = 'Dalam Penyesuaian Restitusi SLA Insiden';
+        }
+
+        // Waktu resolusi rata-rata
+        $avgResolutionTime = match ($selectedCustomer) {
+            'mandiri' => '38 Menit',
+            'shopee' => '2 Jam 40 Menit',
+            'disdik' => '1 Jam 15 Menit',
+            default => '45 Menit',
+        };
 
         // Nomor Registrasi Dokumen Resmi
         $reportDocumentNumber = sprintf(

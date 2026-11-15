@@ -11,18 +11,27 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Chart.js (render grafik canvas) -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="h-full bg-slate-50 font-sans text-slate-800 antialiased selection:bg-blue-600 selection:text-white">
 
     @php
-        // Nilai numerik untuk grafik & indikator
-        $rxValue = (float) filter_var($device['rx_mbps'], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-        $txValue = (float) filter_var($device['tx_mbps'], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-        $tempValue = (int) filter_var($device['temperature'], FILTER_SANITIZE_NUMBER_INT);
+        // Nilai numerik untuk grafik & indikator (aman terhadap null / undefined index)
+        $rxValue = (float) filter_var($device['rx_mbps'] ?? '0', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+        $txValue = (float) filter_var($device['tx_mbps'] ?? '0', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+        $tempValue = (int) filter_var($device['temperature'] ?? '0', FILTER_SANITIZE_NUMBER_INT);
+        $cpuLoad = (float) ($device['cpu_load'] ?? 0.0);
+        $ramLoad = (float) ($device['ram_load'] ?? 0.0);
+        $pingMs = array_key_exists('latency_ms', $device) && $device['latency_ms'] !== null
+            ? (int) $device['latency_ms']
+            : (int) ($device['last_ping_ms'] ?? 0);
+        $packetLoss = (float) ($device['packet_loss'] ?? 0.0);
+        $devPort = (int) ($device['api_port'] ?? 8728);
+        $devUnitType = $device['unit_type'] ?? 'Router';
+        $isNonMikrotik = !empty($device['is_non_mikrotik'])
+            || in_array($devPort, [80, 8080], true)
+            || in_array(strtolower($devUnitType), ['access point', 'generic router', 'generic router (http/ping)'], true);
+        $interfacesList = is_array($device['interfaces'] ?? null) ? $device['interfaces'] : [];
 
         // Ambang batas: [warning, critical]
         $thresholds = [
@@ -44,29 +53,29 @@
             [
                 'key' => 'cpu',
                 'label' => 'CPU',
-                'value' => $device['cpu_load'],
+                'value' => $cpuLoad,
                 'unit' => '%',
-                'bar' => $device['cpu_load'],
-                'level' => $levelOf($device['cpu_load'], 'cpu'),
-                'hint' => 'Batas aman di bawah 70%',
+                'bar' => $cpuLoad,
+                'level' => $levelOf($cpuLoad, 'cpu'),
+                'hint' => $isNonMikrotik ? 'Default 0% (Mode HTTP/Ping Port ' . $devPort . ')' : 'Batas aman di bawah 70%',
             ],
             [
                 'key' => 'ram',
                 'label' => 'Memori (RAM)',
-                'value' => $device['ram_load'],
+                'value' => $ramLoad,
                 'unit' => '%',
-                'bar' => $device['ram_load'],
-                'level' => $levelOf($device['ram_load'], 'ram'),
-                'hint' => 'Batas aman di bawah 75%',
+                'bar' => $ramLoad,
+                'level' => $levelOf($ramLoad, 'ram'),
+                'hint' => $isNonMikrotik ? 'Default 0% (Mode HTTP/Ping Port ' . $devPort . ')' : 'Batas aman di bawah 75%',
             ],
             [
                 'key' => 'ping',
-                'label' => 'Latensi',
-                'value' => $device['last_ping_ms'],
+                'label' => 'Latensi (ms)',
+                'value' => $pingMs,
                 'unit' => 'ms',
-                'bar' => min(100, $device['last_ping_ms']),
-                'level' => $levelOf($device['last_ping_ms'], 'ping'),
-                'hint' => 'Packet loss ' . $device['packet_loss'] . '%',
+                'bar' => min(100, $pingMs),
+                'level' => $levelOf((float) $pingMs, 'ping'),
+                'hint' => 'Packet loss ' . $packetLoss . '%',
             ],
             [
                 'key' => 'temp',
@@ -74,8 +83,8 @@
                 'value' => $tempValue,
                 'unit' => '°C',
                 'bar' => min(100, round($tempValue / 90 * 100)),
-                'level' => $levelOf($tempValue, 'temp'),
-                'hint' => 'Tegangan PSU ' . $device['voltage'],
+                'level' => $levelOf((float) $tempValue, 'temp'),
+                'hint' => 'Tegangan PSU ' . ($device['voltage'] ?? '-'),
             ],
         ];
 
@@ -84,18 +93,18 @@
             'warning' => ['label' => 'Warning', 'dot' => 'bg-amber-500', 'pill' => 'bg-amber-50 text-amber-700 ring-amber-600/20'],
             'offline' => ['label' => 'Offline', 'dot' => 'bg-rose-500', 'pill' => 'bg-rose-50 text-rose-700 ring-rose-600/20'],
         ];
-        $st = $statusStyles[$device['status']] ?? $statusStyles['offline'];
+        $st = $statusStyles[$device['status'] ?? 'online'] ?? $statusStyles['offline'];
 
         $infoItems = [
-            ['label' => 'IP Address', 'value' => $device['ip_address'], 'mono' => true],
-            ['label' => 'Hardware', 'value' => $device['model'], 'mono' => false],
-            ['label' => 'Lokasi', 'value' => $device['rack_location'], 'mono' => false],
-            ['label' => 'Project', 'value' => $device['project'], 'mono' => false],
-            ['label' => 'Uptime', 'value' => $device['uptime'], 'mono' => true],
-            ['label' => 'Interval polling', 'value' => 'Setiap 3 detik', 'mono' => false],
+            ['label' => 'IP Address & Port', 'value' => ($device['ip_address'] ?? '-') . ':' . $devPort, 'mono' => true],
+            ['label' => 'Hardware', 'value' => $device['model'] ?? '-', 'mono' => false],
+            ['label' => 'Lokasi', 'value' => $device['rack_location'] ?? '-', 'mono' => false],
+            ['label' => 'Project', 'value' => $device['project'] ?? '-', 'mono' => false],
+            ['label' => 'Uptime', 'value' => $device['uptime'] ?? '-', 'mono' => true],
+            ['label' => 'Metode Polling', 'value' => $isNonMikrotik ? 'HTTP/TCP Socket (Port ' . $devPort . ')' : 'RouterOS API (Port ' . $devPort . ')', 'mono' => false],
         ];
 
-        $upInterfaces = collect($device['interfaces'])->where('status', 'up')->count();
+        $upInterfaces = collect($interfacesList)->where('status', 'up')->count();
     @endphp
 
     <div class="h-screen flex w-full overflow-hidden">
@@ -109,10 +118,12 @@
             <!-- TOP NAVBAR / HEADER -->
             <header class="bg-white border-b border-slate-200/80 px-6 py-3.5 flex items-center justify-between sticky top-0 z-30">
                 <div class="flex items-center gap-3 min-w-0">
-                    <!-- Mobile Hamburger -->
-                    <button id="openSidebar" class="lg:hidden p-1.5 -ml-1 text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 cursor-pointer" aria-label="Buka menu">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    <!-- Collapsible Sidebar Navbar Toggle Button -->
+                    <button id="openSidebar" type="button" class="sidebar-toggle-btn p-1.5 -ml-1 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors" title="Buka / Tutup Menu Navigasi (Ctrl+B)" aria-label="Toggle menu navigasi" aria-expanded="true">
+                        <svg class="w-5 h-5 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path class="bar-top" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16" />
+                            <path class="bar-mid" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12h16" />
+                            <path class="bar-bot" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 18h16" />
                         </svg>
                     </button>
 
@@ -136,7 +147,14 @@
             </header>
 
             <!-- MAIN BODY CONTENT -->
-            <main class="flex-1 p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full">
+            <main id="monitoringDetailRoot"
+                  data-device-id="{{ $device['id'] }}"
+                  data-endpoint="{{ route('monitoring.telemetry', $device['id']) }}"
+                  data-thresholds="{{ json_encode($thresholds) }}"
+                  data-base-ping="{{ $pingMs }}"
+                  data-base-rx="{{ $rxValue }}"
+                  data-base-tx="{{ $txValue }}"
+                  class="flex-1 p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full">
 
                 <!-- 1. DEVICE HEADER -->
                 <section class="bg-white rounded-xl border border-slate-200">
@@ -221,22 +239,27 @@
                     @endforeach
                 </section>
 
-                <!-- 3. BANDWIDTH CHART -->
+                <!-- 3. BANDWIDTH & LATENCY CHART -->
                 <section class="bg-white rounded-xl border border-slate-200 p-5">
                     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                         <div>
                             <div class="flex items-center gap-2">
-                                <h2 class="text-sm font-semibold text-slate-900">Bandwidth real-time</h2>
+                                <h2 class="text-sm font-semibold text-slate-900">Grafik Telemetri & Latensi (ms) Real-time</h2>
                                 <span class="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600">
                                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                                     Live
                                 </span>
                             </div>
-                            <p class="text-xs text-slate-500 mt-0.5">Total transmisi download (Rx) dan upload (Tx) perangkat</p>
+                            <p class="text-xs text-slate-500 mt-0.5">Pemantauan waktu respons Latensi (ms) serta transmisi download (Rx) dan upload (Tx)</p>
                         </div>
 
                         <div class="flex flex-wrap items-center gap-3">
                             <div class="flex items-center gap-4 text-xs">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="w-2.5 h-2.5 rounded-sm bg-amber-500"></span>
+                                    <span class="text-slate-500">Latensi</span>
+                                    <span id="currentPingValue" class="font-semibold text-slate-900 tabular-nums">{{ $pingMs }} ms</span>
+                                </div>
                                 <div class="flex items-center gap-1.5">
                                     <span class="w-2.5 h-2.5 rounded-sm bg-blue-600"></span>
                                     <span class="text-slate-500">Rx</span>
@@ -266,7 +289,7 @@
                     </div>
 
                     <div class="mt-4 w-full h-72 relative">
-                        <canvas id="liveTrafficChart" aria-label="Grafik bandwidth real-time" role="img"></canvas>
+                        <canvas id="liveTrafficChart" aria-label="Grafik telemetri dan latensi real-time" role="img"></canvas>
                     </div>
                 </section>
 
@@ -277,7 +300,7 @@
                     <section class="lg:col-span-2 bg-white rounded-xl border border-slate-200 overflow-hidden">
                         <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
                             <h2 class="text-sm font-semibold text-slate-900">Port & interface</h2>
-                            <span class="text-xs text-slate-500">{{ $upInterfaces }} dari {{ count($device['interfaces']) }} aktif</span>
+                            <span class="text-xs text-slate-500">{{ $upInterfaces }} dari {{ count($interfacesList) }} aktif</span>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-xs">
@@ -290,11 +313,11 @@
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
-                                    @foreach ($device['interfaces'] as $iface)
+                                    @foreach ($interfacesList as $iface)
                                         <tr class="hover:bg-slate-50/60 transition">
-                                            <td class="py-3 px-5 font-medium text-slate-800">{{ $iface['name'] }}</td>
+                                            <td class="py-3 px-5 font-medium text-slate-800">{{ $iface['name'] ?? 'eth0' }}</td>
                                             <td class="py-3 px-5">
-                                                @if ($iface['status'] === 'up')
+                                                @if (($iface['status'] ?? 'up') === 'up')
                                                     <span class="inline-flex items-center gap-1.5 text-emerald-700">
                                                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Up
                                                     </span>
@@ -304,9 +327,9 @@
                                                     </span>
                                                 @endif
                                             </td>
-                                            <td class="py-3 px-5 text-slate-500 tabular-nums">{{ $iface['speed'] }}</td>
+                                            <td class="py-3 px-5 text-slate-500 tabular-nums">{{ $iface['speed'] ?? '100 Mbps' }}</td>
                                             <td class="py-3 px-5 text-right text-slate-700 tabular-nums whitespace-nowrap">
-                                                ↓ {{ $iface['rx'] }} <span class="text-slate-300 mx-1">/</span> ↑ {{ $iface['tx'] }}
+                                                ↓ {{ $iface['rx'] ?? '0 Mbps' }} <span class="text-slate-300 mx-1">/</span> ↑ {{ $iface['tx'] ?? '0 Mbps' }}
                                             </td>
                                         </tr>
                                     @endforeach
@@ -342,190 +365,5 @@
             </main>
         </div>
     </div>
-
-    <!-- LIVE TELEMETRY POLLING & CHART -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const endpoint = @json(route('monitoring.telemetry', $device['id']));
-            const thresholds = @json($thresholds);
-            const POLL_INTERVAL = 3000;
-            const BUFFER_LIMIT = 300; // 15 menit @ 3 detik
-            let visiblePoints = 20;   // default 1 menit
-
-            const BAR = { normal: 'bg-emerald-500', warning: 'bg-amber-500', critical: 'bg-rose-500' };
-            const TEXT = { normal: 'text-slate-900', warning: 'text-amber-600', critical: 'text-rose-600' };
-
-            const levelOf = (value, metric) => {
-                const [warn, crit] = thresholds[metric];
-                return value >= crit ? 'critical' : (value >= warn ? 'warning' : 'normal');
-            };
-
-            function setMetric(key, value, barPercent) {
-                const valueEl = document.getElementById(`metric-${key}-value`);
-                const barEl = document.getElementById(`metric-${key}-bar`);
-                const level = levelOf(value, key);
-
-                if (valueEl) {
-                    valueEl.textContent = value;
-                    valueEl.classList.remove(...Object.values(TEXT));
-                    valueEl.classList.add(TEXT[level]);
-                }
-                if (barEl) {
-                    barEl.style.width = `${Math.min(100, barPercent)}%`;
-                    barEl.classList.remove(...Object.values(BAR));
-                    barEl.classList.add(BAR[level]);
-                }
-            }
-
-            // ---- Buffer data grafik (disimpan sampai 15 menit) ----
-            const buffer = { labels: [], rx: [], tx: [] };
-            const baseRx = @json($rxValue);
-            const baseTx = @json($txValue);
-            const now = Date.now();
-
-            for (let i = visiblePoints - 1; i >= 0; i--) {
-                buffer.labels.push(new Date(now - i * POLL_INTERVAL).toTimeString().slice(0, 8));
-                buffer.rx.push(+(baseRx + (Math.random() * 4 - 2)).toFixed(1));
-                buffer.tx.push(+(baseTx + (Math.random() * 3 - 1.5)).toFixed(1));
-            }
-
-            const chart = new Chart(document.getElementById('liveTrafficChart'), {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [
-                        {
-                            label: 'Rx (Mbps)',
-                            data: [],
-                            borderColor: '#2563eb',
-                            backgroundColor: 'rgba(37, 99, 235, 0.08)',
-                            borderWidth: 2,
-                            fill: true,
-                            tension: 0.35,
-                            pointRadius: 0,
-                            pointHoverRadius: 4,
-                        },
-                        {
-                            label: 'Tx (Mbps)',
-                            data: [],
-                            borderColor: '#10b981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.08)',
-                            borderWidth: 2,
-                            fill: true,
-                            tension: 0.35,
-                            pointRadius: 0,
-                            pointHoverRadius: 4,
-                        },
-                    ],
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: false,
-                    interaction: { mode: 'index', intersect: false },
-                    scales: {
-                        x: {
-                            grid: { display: false },
-                            ticks: { maxTicksLimit: 8, font: { size: 10 }, color: '#94a3b8' },
-                        },
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: '#f1f5f9' },
-                            border: { display: false },
-                            ticks: { font: { size: 10 }, color: '#94a3b8', callback: v => `${v} Mbps` },
-                        },
-                    },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y} Mbps` },
-                        },
-                    },
-                },
-            });
-
-            function renderChart() {
-                chart.data.labels = buffer.labels.slice(-visiblePoints);
-                chart.data.datasets[0].data = buffer.rx.slice(-visiblePoints);
-                chart.data.datasets[1].data = buffer.tx.slice(-visiblePoints);
-                chart.update('none');
-            }
-            renderChart();
-
-            // ---- Pilihan rentang waktu ----
-            const rangeTabs = document.querySelectorAll('.range-tab');
-            const TAB_ACTIVE = ['bg-white', 'text-slate-900', 'shadow-sm'];
-            const TAB_IDLE = ['text-slate-500', 'hover:text-slate-800'];
-
-            rangeTabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    visiblePoints = parseInt(tab.dataset.points, 10) || 20;
-                    rangeTabs.forEach(t => {
-                        const active = t === tab;
-                        t.classList.remove(...(active ? TAB_IDLE : TAB_ACTIVE));
-                        t.classList.add(...(active ? TAB_ACTIVE : TAB_IDLE));
-                        t.setAttribute('aria-selected', String(active));
-                    });
-                    renderChart();
-                });
-            });
-
-            // ---- Polling telemetri ----
-            let isFetching = false;
-
-            async function fetchTelemetry() {
-                if (isFetching || document.hidden) return; // hemat request saat tab tidak aktif
-                isFetching = true;
-
-                try {
-                    const res = await fetch(endpoint, { headers: { Accept: 'application/json' } });
-                    if (!res.ok) return;
-                    const json = await res.json();
-                    if (!json.success) return;
-
-                    const m = json.metrics;
-                    setMetric('cpu', m.cpu_load, m.cpu_load);
-                    setMetric('ram', m.ram_load, m.ram_load);
-                    setMetric('ping', m.ping_ms, m.ping_ms);
-
-                    const pingHint = document.getElementById('metric-ping-hint');
-                    if (pingHint) pingHint.textContent = `Packet loss ${m.packet_loss}%`;
-
-                    document.getElementById('currentRxValue').textContent = `${m.rx_mbps} Mbps`;
-                    document.getElementById('currentTxValue').textContent = `${m.tx_mbps} Mbps`;
-                    document.getElementById('lastUpdatedClock').textContent = `${json.timestamp} WIB`;
-
-                    buffer.labels.push(json.timestamp);
-                    buffer.rx.push(m.rx_mbps);
-                    buffer.tx.push(m.tx_mbps);
-                    if (buffer.labels.length > BUFFER_LIMIT) {
-                        buffer.labels.shift();
-                        buffer.rx.shift();
-                        buffer.tx.shift();
-                    }
-                    renderChart();
-                } catch (e) {
-                    console.error('Poller error:', e);
-                } finally {
-                    isFetching = false;
-                }
-            }
-
-            setInterval(fetchTelemetry, POLL_INTERVAL);
-
-            // ---- Tombol poll manual ----
-            const btnRefresh = document.getElementById('btnRefreshLive');
-            const spinner = document.getElementById('refreshSpinner');
-            btnRefresh.addEventListener('click', async () => {
-                spinner.classList.add('animate-spin');
-                btnRefresh.disabled = true;
-                await fetchTelemetry();
-                setTimeout(() => {
-                    spinner.classList.remove('animate-spin');
-                    btnRefresh.disabled = false;
-                }, 400);
-            });
-        });
-    </script>
 </body>
 </html>

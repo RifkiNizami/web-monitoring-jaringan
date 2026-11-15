@@ -15,6 +15,12 @@ import { initAdminDevices } from './admin/devices';
 import { initAdminCustomers } from './admin/customers';
 import { initAdminAccounts } from './admin/accounts';
 import { initAdminMonitoring } from './admin/monitoring';
+import { initAdminMonitoringDetail } from './admin/monitoring-detail';
+import Chart from 'chart.js/auto';
+
+if (typeof window !== 'undefined') {
+    window.Chart = Chart;
+}
 
 function initAppModules() {
     /* ==========================================
@@ -36,8 +42,19 @@ function initAppModules() {
     if (drawerBtn && mobileDrawer) {
         const toggleDrawer = () => {
             const isHidden = mobileDrawer.classList.contains('hidden');
-            mobileDrawer.classList.toggle('hidden');
+            if (isHidden) {
+                mobileDrawer.classList.remove('hidden');
+                mobileDrawer.style.animation = 'revealFadeUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards';
+            } else {
+                mobileDrawer.classList.add('hidden');
+                mobileDrawer.style.animation = '';
+            }
             drawerBtn.setAttribute('aria-expanded', String(isHidden));
+            const iconSvg = drawerBtn.querySelector('svg');
+            if (iconSvg) {
+                iconSvg.style.transform = isHidden ? 'rotate(90deg)' : 'none';
+                iconSvg.style.transition = 'transform 0.25s ease';
+            }
         };
 
         drawerBtn.addEventListener('click', toggleDrawer);
@@ -153,7 +170,23 @@ function initAppModules() {
     initAdminCustomers();
     initAdminAccounts();
     initAdminMonitoring();
+    initAdminMonitoringDetail();
 }
+
+// Pre-apply sidebar collapsed class on Turbo visit to prevent layout flicker
+document.addEventListener('turbo:before-render', (event) => {
+    try {
+        const isCollapsed = localStorage.getItem('netfly_sidebar_collapsed') === 'true';
+        if (isCollapsed && window.innerWidth >= 1024) {
+            const newSidebar = event.detail.newBody.querySelector('#sidebar');
+            if (newSidebar) {
+                newSidebar.classList.add('is-collapsed');
+            }
+            const toggleBtns = event.detail.newBody.querySelectorAll('#openSidebar, .sidebar-toggle-btn');
+            toggleBtns.forEach(btn => btn.classList.add('is-collapsed'));
+        }
+    } catch (e) {}
+});
 
 // Jalankan modul pada load awal dan setiap perpindahan halaman via Turbo Drive
 document.addEventListener('turbo:load', initAppModules);
