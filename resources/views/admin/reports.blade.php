@@ -389,25 +389,29 @@
                             <table class="w-full text-left border-collapse">
                                 <thead>
                                     <tr class="border-b border-slate-100 bg-slate-50/60 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                                        <th class="py-2.5 px-5">HOSTNAME</th>
-                                        <th class="py-2.5 px-4">JENIS</th>
-                                        <th class="py-2.5 px-4 font-mono">IP ADDRESS</th>
-                                        <th class="py-2.5 px-5 text-right">STATUS</th>
+                                        <th class="py-2.5 px-4">HOSTNAME</th>
+                                        <th class="py-2.5 px-3">JENIS</th>
+                                        <th class="py-2.5 px-3 font-mono">IP ADDRESS</th>
+                                        <th class="py-2.5 px-3">LOKASI</th>
+                                        <th class="py-2.5 px-4 text-right">STATUS</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100 text-xs">
                                     @forelse($devices as $device)
                                         <tr class="hover:bg-slate-50/80 transition-colors">
-                                            <td class="py-3 px-5 font-bold text-slate-900 font-mono text-[11px] tracking-tight">
+                                            <td class="py-3 px-4 font-bold text-slate-900 font-mono text-[11px] tracking-tight">
                                                 {{ $device['hostname'] }}
                                             </td>
-                                            <td class="py-3 px-4 text-slate-600 font-medium">
+                                            <td class="py-3 px-3 text-slate-600 font-medium">
                                                 {{ $device['type'] }}
                                             </td>
-                                            <td class="py-3 px-4 font-mono text-[11px] text-slate-500">
+                                            <td class="py-3 px-3 font-mono text-[11px] text-slate-500">
                                                 {{ $device['ip_address'] }}
                                             </td>
-                                            <td class="py-3 px-5 text-right">
+                                            <td class="py-3 px-3 text-[11px] text-slate-500">
+                                                {{ $device['location'] }}
+                                            </td>
+                                            <td class="py-3 px-4 text-right whitespace-nowrap">
                                                 @if($device['status_state'] === 'online')
                                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
                                                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
@@ -428,7 +432,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="4" class="py-8 text-center text-xs text-slate-400">
+                                            <td colspan="5" class="py-8 text-center text-xs text-slate-400">
                                                 Tidak ada perangkat jaringan yang tercatat untuk filter ini.
                                             </td>
                                         </tr>
@@ -462,25 +466,31 @@
                             <table class="w-full text-left border-collapse">
                                 <thead>
                                     <tr class="border-b border-slate-100 bg-slate-50/60 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                                        <th class="py-2.5 px-5 font-mono">NOMOR TIKET</th>
-                                        <th class="py-2.5 px-4">SUBJEK</th>
-                                        <th class="py-2.5 px-4">TEKNISI</th>
-                                        <th class="py-2.5 px-5 text-right">STATUS</th>
+                                        <th class="py-2.5 px-4 font-mono">NOMOR TIKET</th>
+                                        <th class="py-2.5 px-3">SUBJEK / RINGKASAN GANGGUAN</th>
+                                        <th class="py-2.5 px-3">PRIORITAS</th>
+                                        <th class="py-2.5 px-3">TEKNISI NOC</th>
+                                        <th class="py-2.5 px-4 text-right">STATUS</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100 text-xs">
                                     @forelse($tickets as $ticket)
                                         <tr class="hover:bg-slate-50/80 transition-colors">
-                                            <td class="py-3 px-5 font-bold font-mono text-[11px] text-blue-600 hover:text-blue-800 cursor-pointer">
+                                            <td class="py-3 px-4 font-bold font-mono text-[11px] text-blue-600 hover:text-blue-800 cursor-pointer whitespace-nowrap">
                                                 {{ $ticket['ticket_number'] }}
                                             </td>
-                                            <td class="py-3 px-4 font-medium text-slate-800 max-w-[180px] truncate" title="{{ $ticket['full_subject'] }}">
-                                                {{ $ticket['subject'] }}
+                                            <td class="py-3 px-3 font-medium text-slate-800 text-[11px] leading-relaxed" title="{{ $ticket['full_subject'] }}">
+                                                {{ $ticket['full_subject'] }}
                                             </td>
-                                            <td class="py-3 px-4 text-slate-600 text-xs">
+                                            <td class="py-3 px-3 whitespace-nowrap">
+                                                <span class="text-[10px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200/60">
+                                                    {{ $ticket['priority'] }}
+                                                </span>
+                                            </td>
+                                            <td class="py-3 px-3 text-slate-600 text-xs whitespace-nowrap">
                                                 {{ $ticket['technician'] }}
                                             </td>
-                                            <td class="py-3 px-5 text-right">
+                                            <td class="py-3 px-4 text-right whitespace-nowrap">
                                                 @if($ticket['status_type'] === 'in_progress')
                                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-900 text-white">
                                                         In Progress
@@ -506,7 +516,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="4" class="py-8 text-center text-xs text-slate-400">
+                                            <td colspan="5" class="py-8 text-center text-xs text-slate-400">
                                                 Tidak ada riwayat tiket gangguan pada periode ini.
                                             </td>
                                         </tr>

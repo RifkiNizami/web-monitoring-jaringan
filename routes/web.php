@@ -122,7 +122,6 @@ Route::middleware('auth')->group(function () {
 
         // Inventaris Perangkat Jaringan (Network Devices Management)
         Route::get('/devices', [DeviceController::class, 'index'])->name('devices.index');
-        Route::get('/devices/export-excel', [DeviceController::class, 'exportExcel'])->name('devices.exportExcel');
         Route::get('/devices/create', [DeviceController::class, 'create'])->name('devices.create');
         Route::post('/devices', [DeviceController::class, 'store'])->name('devices.store');
         Route::get('/devices/{id}/edit', [DeviceController::class, 'edit'])->name('devices.edit');

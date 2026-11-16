@@ -8,12 +8,13 @@ use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithTitle;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class DevicesReportExport implements FromCollection, WithColumnWidths, WithHeadings, WithMapping, WithStyles
+class DevicesReportExport implements FromCollection, WithColumnWidths, WithHeadings, WithMapping, WithStyles, WithTitle
 {
     protected Collection $devices;
 
@@ -26,6 +27,11 @@ class DevicesReportExport implements FromCollection, WithColumnWidths, WithHeadi
         $this->devices = collect($devices);
         $this->customerName = $customerName;
         $this->period = $period;
+    }
+
+    public function title(): string
+    {
+        return 'Daftar Perangkat';
     }
 
     /**
