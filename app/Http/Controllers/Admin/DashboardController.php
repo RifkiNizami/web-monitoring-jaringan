@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminKonten\KontenDashboardController;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Admin\AccountController;
 use App\Models\Customer;
 use App\Models\Device;
 use App\Models\MonitoringAlert;
@@ -78,7 +79,7 @@ class DashboardController extends Controller
         ];
 
         // 3. Live Alerts Terbaru dari Database
-        $dbAlerts = MonitoringAlert::latest()->take(4)->get();
+        $dbAlerts = MonitoringAlert::with(['device', 'customer'])->latest()->take(6)->get();
         $alerts = $dbAlerts->map(function ($alert) {
             $badgeType = match ($alert->severity) {
                 'critical' => 'danger',
@@ -92,11 +93,19 @@ class DashboardController extends Controller
             };
 
             return [
+                'id' => 'ALT-' . str_pad($alert->id, 4, '0', STR_PAD_LEFT),
                 'badge' => $badgeLabel,
                 'badge_type' => $badgeType,
-                'time' => $alert->created_at ? $alert->created_at->format('H:i:s').' WIB' : now()->format('H:i:s').' WIB',
-                'title' => $alert->host.' - '.$alert->type,
+                'host' => $alert->host,
+                'customer' => $alert->customer_name ?? ($alert->customer?->company_name ?? 'Infrastruktur Internal'),
+                'type' => $alert->type,
                 'desc' => $alert->message,
+                'is_resolved' => (bool) $alert->is_resolved,
+                'status_label' => $alert->is_resolved ? 'Teratasi' : 'Aktif (Perlu Cek)',
+                'status_color' => $alert->is_resolved ? 'emerald' : ($alert->severity === 'critical' ? 'rose' : 'amber'),
+                'time' => $alert->created_at ? $alert->created_at->format('H:i:s') . ' WIB' : now()->format('H:i:s') . ' WIB',
+                'duration' => $alert->created_at ? $alert->created_at->diffForHumans(null, true) : 'Baru saja',
+                'title' => $alert->host . ' - ' . $alert->type,
             ];
         })->toArray();
 
@@ -130,7 +139,10 @@ class DashboardController extends Controller
             ];
         })->toArray();
 
-        return view('admin.dashboard', compact('metrics', 'alerts', 'tickets', 'uptimeStats'));
+        // 5. Data Sebaran Akun Customer dari Account Management
+        $customerAccounts = app(AccountController::class)->getActiveAccounts();
+
+        return view('admin.dashboard', compact('metrics', 'alerts', 'tickets', 'uptimeStats', 'customerAccounts'));
     }
 
     /**

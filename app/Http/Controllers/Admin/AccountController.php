@@ -216,7 +216,7 @@ class AccountController extends Controller
     /**
      * Gabungan seluruh customer (Perusahaan & Rumahan)
      */
-    protected function getCustomerList(): array
+    public function getCustomerList(): array
     {
         return array_merge($this->getCorporateCustomerList(), $this->getResidentialCustomerList());
     }
@@ -365,7 +365,7 @@ class AccountController extends Controller
     /**
      * Helper to load dynamic accounts from session or database
      */
-    protected function getActiveAccounts(): array
+    public function getActiveAccounts(): array
     {
         $sessionAccounts = session('customer_accounts', null);
 
