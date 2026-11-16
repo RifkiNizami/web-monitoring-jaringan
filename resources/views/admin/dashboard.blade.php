@@ -11,18 +11,22 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- Leaflet.js 1.9.4 CSS & JS (OpenStreetMap Interactive Map) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="h-full bg-slate-100 font-sans text-slate-800 antialiased">
 
     <div class="h-screen flex w-full overflow-hidden">
-        
+
         <!-- SIDEBAR (Include Partial) -->
         @include('partials.sidebar')
 
         <!-- MAIN CONTENT AREA -->
         <div class="flex-1 flex flex-col min-w-0 h-full overflow-y-auto bg-slate-100">
-            
+
             <!-- TOP NAVBAR / HEADER -->
             <header class="bg-white border-b border-slate-200/80 px-6 py-3.5 flex items-center justify-between sticky top-0 z-30">
                 <div class="flex items-center gap-3">
@@ -65,7 +69,7 @@
 
             <!-- MAIN BODY PADDING -->
             <main class="flex-1 p-6 lg:p-8 space-y-6 bg-slate-100 min-h-screen">
-                
+
                 <!-- WELCOME BANNER & ACTION BUTTON -->
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
@@ -94,7 +98,7 @@
 
                 <!-- 4 STATS CARDS -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-                    
+
                     <!-- Card 1: Customer Aktif -->
                     <div class="bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-2xs flex flex-col justify-between">
                         <div class="flex items-center justify-between mb-3">
@@ -191,313 +195,93 @@
 
                 </div>
 
-                <!-- MIDDLE SECTION: CHART & LIVE ALERTS -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    
-                    <!-- Left: Uptime SLA Chart (2 Cols) -->
-                    <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200/80 p-5 shadow-2xs flex flex-col justify-between">
-                        <div>
-                            <!-- Chart Header -->
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
-                                <div>
-                                    <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
-                                        LAST 30 DAYS • KETERSEDIAAN JARINGAN & ALERT
-                                    </div>
-                                    <h3 class="text-sm font-bold text-slate-900">
-                                        Grafik Ketersediaan Jaringan (Uptime SLA)
-                                    </h3>
-                                    <p class="text-xs text-slate-400 mt-0.5">
-                                        Statistik ketersediaan transmisi backbone dan link pelanggan ({{ $uptimeStats['date_start'] }} - {{ $uptimeStats['date_end'] }})
-                                    </p>
-                                </div>
-                                <div>
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold {{ $uptimeStats['is_sla_met'] ? 'text-blue-700 bg-blue-50 border-blue-200/60' : 'text-amber-700 bg-amber-50 border-amber-200/60' }} border rounded-md">
-                                        <span class="w-1.5 h-1.5 rounded-full {{ $uptimeStats['is_sla_met'] ? 'bg-blue-600' : 'bg-amber-600' }}"></span>
-                                        Rata-rata: {{ $uptimeStats['average'] }}%
-                                    </span>
-                                </div>
-                            </div>
-
-                            <!-- Metrics Summary Subrow -->
-                            <div class="grid grid-cols-3 gap-3 p-3 bg-slate-50/80 rounded-lg border border-slate-100 text-center mb-6">
-                                <div>
-                                    <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-tight">UPTIME TERTINGGI</div>
-                                    <div class="text-sm font-bold text-slate-800 mt-0.5">{{ $uptimeStats['highest'] }}</div>
-                                </div>
-                                <div class="border-x border-slate-200/60">
-                                    <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-tight">TITIK TERENDAH</div>
-                                    <div class="text-sm font-bold text-slate-800 mt-0.5">{{ $uptimeStats['lowest'] }}</div>
-                                </div>
-                                <div>
-                                    <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-tight">STATUS SLA BULANAN</div>
-                                    <div class="text-sm font-bold {{ $uptimeStats['is_sla_met'] ? 'text-emerald-600' : 'text-rose-600' }} mt-0.5">
-                                        {{ $uptimeStats['is_sla_met'] ? 'Tercapai (' . $uptimeStats['sla_target'] . ')' : 'Deviasi (< ' . $uptimeStats['sla_target'] . ')' }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- SVG Line Chart (Dinamis dari Database, Proporsional & Anti-Gepeng) -->
-                        <div class="w-full relative mt-2 pt-2">
-                            <!-- Chart Canvas Container -->
-                            <div class="w-full h-64 sm:h-72 lg:h-80 relative">
-                                <svg class="w-full h-full overflow-visible" viewBox="0 0 760 240" preserveAspectRatio="none">
-                                    <defs>
-                                        <!-- Gradient Fill for Area -->
-                                        <linearGradient id="slaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                            <stop offset="0%" stop-color="#2563eb" stop-opacity="0.30" />
-                                            <stop offset="60%" stop-color="#3b82f6" stop-opacity="0.08" />
-                                            <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.0" />
-                                        </linearGradient>
-
-                                        <!-- Shadow for Main Spline -->
-                                        <filter id="lineGlow" x="-20%" y="-20%" width="140%" height="140%">
-                                            <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#2563eb" flood-opacity="0.25" />
-                                        </filter>
-                                    </defs>
-
-                                    <!-- Grid Lines & Y-Axis Labels -->
-                                    @foreach ($uptimeStats['y_ticks'] as $tick)
-                                        <line 
-                                            x1="{{ $uptimeStats['plot_left'] }}" 
-                                            y1="{{ $tick['y'] }}" 
-                                            x2="{{ $uptimeStats['plot_right'] }}" 
-                                            y2="{{ $tick['y'] }}" 
-                                            stroke="#e2e8f0" 
-                                            stroke-width="1" 
-                                            stroke-dasharray="{{ $loop->last ? 'none' : '4,4' }}" 
-                                        />
-                                        <text 
-                                            x="{{ $uptimeStats['plot_left'] - 8 }}" 
-                                            y="{{ $tick['y'] + 3.5 }}" 
-                                            text-anchor="end" 
-                                            fill="#94a3b8" 
-                                            font-size="10" 
-                                            font-weight="500" 
-                                            font-family="ui-monospace, SFMono-Regular, monospace"
-                                        >{{ $tick['label'] }}</text>
-                                    @endforeach
-
-                                    <!-- SLA Target Threshold Line (99.50%) -->
-                                    <line 
-                                        x1="{{ $uptimeStats['plot_left'] }}" 
-                                        y1="{{ $uptimeStats['sla_target_y'] }}" 
-                                        x2="{{ $uptimeStats['plot_right'] }}" 
-                                        y2="{{ $uptimeStats['sla_target_y'] }}" 
-                                        stroke="#f59e0b" 
-                                        stroke-width="1.5" 
-                                        stroke-dasharray="4,4" 
-                                        opacity="0.85" 
-                                    />
-                                    <text 
-                                        x="{{ $uptimeStats['plot_right'] }}" 
-                                        y="{{ max(14, $uptimeStats['sla_target_y'] - 6) }}" 
-                                        text-anchor="end" 
-                                        fill="#d97706" 
-                                        font-size="9" 
-                                        font-weight="700" 
-                                        font-family="ui-monospace, SFMono-Regular, monospace"
-                                    >Batas SLA Target: {{ $uptimeStats['sla_target'] }}</text>
-
-                                    <!-- Area Gradient Fill -->
-                                    <path 
-                                        d="{{ $uptimeStats['area_path'] }}" 
-                                        fill="url(#slaGradient)" 
-                                    />
-
-                                    <!-- Spline Curve Line -->
-                                    <path 
-                                        d="{{ $uptimeStats['stroke_path'] }}" 
-                                        fill="none" 
-                                        stroke="#2563eb" 
-                                        stroke-width="2.5" 
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        filter="url(#lineGlow)"
-                                    />
-
-                                    <!-- Interactive Points with Smooth Hover Tooltips (Stably Locked to Curve) -->
-                                    @foreach ($uptimeStats['all_points'] as $pt)
-                                        <g class="cursor-pointer group">
-                                            <!-- Invisible Wide Hit Area for Smooth Interaction -->
-                                            <circle 
-                                                cx="{{ $pt['x'] }}" 
-                                                cy="{{ $pt['y'] }}" 
-                                                r="12" 
-                                                fill="transparent" 
-                                            />
-
-                                            <!-- Outer Halo on Hover (Never Detaches) -->
-                                            <circle 
-                                                cx="{{ $pt['x'] }}" 
-                                                cy="{{ $pt['y'] }}" 
-                                                r="8" 
-                                                fill="#3b82f6" 
-                                                fill-opacity="0.22" 
-                                                class="opacity-0 group-hover:opacity-100 transition-opacity duration-150" 
-                                            />
-
-                                            <!-- Dot (Milestone or Incident Point) -->
-                                            @if ($pt['is_milestone'] || $pt['uptime'] < 99.7)
-                                                <circle 
-                                                    cx="{{ $pt['x'] }}" 
-                                                    cy="{{ $pt['y'] }}" 
-                                                    r="4" 
-                                                    fill="#ffffff" 
-                                                    stroke="{{ $pt['uptime'] < 99.7 ? '#ef4444' : '#2563eb' }}" 
-                                                    stroke-width="2.5" 
-                                                    class="transition-colors group-hover:fill-blue-100" 
-                                                />
-                                            @else
-                                                <circle 
-                                                    cx="{{ $pt['x'] }}" 
-                                                    cy="{{ $pt['y'] }}" 
-                                                    r="2.5" 
-                                                    fill="#2563eb" 
-                                                    class="opacity-0 group-hover:opacity-100 transition-opacity duration-150" 
-                                                />
-                                            @endif
-
-                                            <!-- Tooltip Popover (Floating cleanly ABOVE the peak) -->
-                                            <g class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none">
-                                                @php
-                                                    $tooltipX = max(68, min(692, $pt['x']));
-                                                    $tooltipY = max(6, $pt['y'] - 38);
-                                                @endphp
-                                                <rect 
-                                                    x="{{ $tooltipX - 58 }}" 
-                                                    y="{{ $tooltipY }}" 
-                                                    width="116" 
-                                                    height="32" 
-                                                    rx="6" 
-                                                    fill="#0f172a" 
-                                                    fill-opacity="0.95" 
-                                                />
-                                                <text 
-                                                    x="{{ $tooltipX }}" 
-                                                    y="{{ $tooltipY + 13 }}" 
-                                                    text-anchor="middle" 
-                                                    fill="#ffffff" 
-                                                    font-size="9.5" 
-                                                    font-weight="700" 
-                                                    font-family="system-ui, -apple-system, sans-serif"
-                                                >{{ $pt['uptime'] }}% • {{ $pt['date'] }}</text>
-                                                <text 
-                                                    x="{{ $tooltipX }}" 
-                                                    y="{{ $tooltipY + 24 }}" 
-                                                    text-anchor="middle" 
-                                                    fill="{{ $pt['downtime'] > 0 ? '#fca5a5' : '#86efac' }}" 
-                                                    font-size="8.5" 
-                                                    font-weight="600" 
-                                                    font-family="system-ui, -apple-system, sans-serif"
-                                                >{{ $pt['downtime'] > 0 ? $pt['downtime'] . 'm Padam (' . $pt['status'] . ')' : '100% Normal Operasional' }}</text>
-                                            </g>
-
-                                            <!-- Native Browser Title Accessibility -->
-                                            <title>{{ $pt['full_date'] }}&#10;Uptime: {{ $pt['uptime'] }}%&#10;Downtime: {{ $pt['downtime'] }} Menit&#10;Status: {{ $pt['status'] }}</title>
-                                        </g>
-                                    @endforeach
-
-                                    <!-- X-Axis Milestone Date Labels -->
-                                    @foreach ($uptimeStats['sample_points'] as $pt)
-                                        <text 
-                                            x="{{ $pt['x'] }}" 
-                                            y="228" 
-                                            text-anchor="middle" 
-                                            fill="#94a3b8" 
-                                            font-size="10" 
-                                            font-weight="500" 
-                                            font-family="ui-monospace, SFMono-Regular, monospace"
-                                        >{{ $pt['date'] }}</text>
-                                    @endforeach
+                <!-- PETA SEBARAN LOKASI CUSTOMER (DARI ACCOUNT MANAGEMENT) -->
+                <div class="bg-white rounded-xl border border-slate-200/80 shadow-2xs overflow-hidden">
+                    <!-- Map Header -->
+                    <div class="p-4 sm:p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50/50">
+                        <div class="flex items-center gap-2.5">
+                            <span class="p-2 rounded-lg bg-blue-600 text-white shadow-2xs">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
-                            </div>
-
-                            <!-- Legend Footer Subrow -->
-                            <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-[11px] text-slate-500">
-                                <div class="flex items-center gap-4">
-                                    <span class="inline-flex items-center gap-1.5">
-                                        <span class="w-3.5 h-1 bg-blue-600 rounded-full inline-block"></span>
-                                        <span>Realisasi Uptime Harian</span>
-                                    </span>
-                                    <span class="inline-flex items-center gap-1.5">
-                                        <span class="w-3.5 h-0.5 border-t-2 border-dashed border-amber-500 inline-block"></span>
-                                        <span>Target Kontrak ({{ $uptimeStats['sla_target'] }})</span>
-                                    </span>
-                                    <span class="inline-flex items-center gap-1.5">
-                                        <span class="w-2 h-2 rounded-full border-2 border-blue-600 bg-white inline-block"></span>
-                                        <span>Milestone Telemetri</span>
+                            </span>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h3 class="text-sm font-bold text-slate-900">
+                                        Peta Sebaran Customer Terdaftar
+                                    </h3>
+                                    <span class="px-2 py-0.5 text-[10px] font-semibold text-blue-700 bg-blue-50 rounded-full border border-blue-200/60">
+                                        {{ count($customerAccounts) }} Titik Lokasi
                                     </span>
                                 </div>
-                                <div class="text-[10px] font-mono text-slate-400">
-                                    Sampel 30 Hari Aktif
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Right: Live Alert Mini-Board -->
-                    <div class="bg-white rounded-xl border border-slate-200/80 p-5 shadow-2xs flex flex-col justify-between">
-                        <div>
-                            <!-- Header -->
-                            <div class="flex items-center justify-between mb-1">
-                                <h3 class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-                                    <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
-                                    <span class="w-2 h-2 rounded-full bg-rose-500 -ml-3.5"></span>
-                                    <span>Live Alert Mini-Board</span>
-                                </h3>
-                                <span class="px-2 py-0.5 text-[10px] font-semibold text-slate-500 bg-slate-100 rounded-full border border-slate-200/60">
-                                    Realtime
-                                </span>
-                            </div>
-                            <p class="text-xs text-slate-400 mb-4">
-                                Notifikasi insiden perangkat dan anomali jaringan saat ini:
-                            </p>
-
-                            <!-- Alerts List (Dinamis) -->
-                            <div class="space-y-3">
-                                @forelse ($alerts as $alert)
-                                    @php
-                                        $bgClass = match ($alert['badge_type']) {
-                                            'danger' => 'border-rose-100 bg-rose-50/40 hover:bg-rose-50/70',
-                                            'warning' => 'border-amber-100 bg-amber-50/40 hover:bg-amber-50/70',
-                                            default => 'border-indigo-100 bg-indigo-50/40 hover:bg-indigo-50/70',
-                                        };
-                                        $badgeClass = match ($alert['badge_type']) {
-                                            'danger' => 'bg-rose-100 text-rose-700',
-                                            'warning' => 'bg-amber-100 text-amber-800',
-                                            default => 'bg-indigo-100 text-indigo-700',
-                                        };
-                                    @endphp
-                                    <div class="p-3 rounded-lg border {{ $bgClass }} transition-colors">
-                                        <div class="flex items-center justify-between mb-1">
-                                            <span class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded {{ $badgeClass }} tracking-wide">
-                                                {{ $alert['badge'] }}
-                                            </span>
-                                            <span class="text-[10px] font-mono text-slate-400">{{ $alert['time'] }}</span>
-                                        </div>
-                                        <div class="text-xs font-bold text-slate-900 mt-1">
-                                            {{ $alert['title'] }}
-                                        </div>
-                                        <p class="text-[11px] text-slate-500 mt-0.5 leading-snug">
-                                            {{ $alert['desc'] }}
-                                        </p>
-                                    </div>
-                                @empty
-                                    <div class="p-4 text-center text-xs text-slate-400 bg-slate-50 rounded-lg">
-                                        Tidak ada anomali atau insiden aktif saat ini.
-                                    </div>
-                                @endforelse
+                                <p class="text-xs text-slate-400 mt-0.5">
+                                    Persebaran titik instalasi pelanggan B2B & perumahan dari modul Account Management.
+                                </p>
                             </div>
                         </div>
 
-                        <div class="pt-3 border-t border-slate-100 mt-4">
-                            <a href="{{ route('monitoring.index') }}" class="w-full block text-center py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors">
-                                Buka NOC Monitoring Center &rarr;
+                        <!-- Right Controls / Legend -->
+                        <div class="flex flex-wrap items-center gap-2.5 text-xs font-semibold">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-200 text-[11px]">
+                                <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                                Korporat (B2B)
+                            </span>
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px]">
+                                <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                                Rumahan (Home)
+                            </span>
+                            <button
+                                type="button"
+                                id="btnResetDashboardMap"
+                                class="px-2.5 py-1 rounded-md bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-[11px] font-semibold transition-colors cursor-pointer"
+                            >
+                                Reset Zoom
+                            </button>
+                            <a
+                                href="{{ route('accounts.index') }}"
+                                class="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 transition-colors ml-1"
+                            >
+                                <span>Buka Account Management</span>
+                                <span>&rsaquo;</span>
                             </a>
                         </div>
                     </div>
 
+                    <!-- Quick Customer Focus Bar -->
+                    <div class="px-4 py-2.5 bg-slate-50/80 border-b border-slate-100 flex items-center gap-2 overflow-x-auto text-[11px]">
+                        <span class="text-slate-400 font-bold uppercase tracking-wider text-[10px] shrink-0">Fokus Lokasi:</span>
+                        @foreach ($customerAccounts as $acc)
+                            @if (!empty($acc['latitude']) && !empty($acc['longitude']))
+                                <button
+                                    type="button"
+                                    class="btn-dashboard-focus-customer shrink-0 px-2.5 py-1 rounded-md bg-white hover:bg-blue-50 border border-slate-200/80 hover:border-blue-200 text-slate-700 hover:text-blue-700 font-medium transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                                    data-lat="{{ $acc['latitude'] }}"
+                                    data-lng="{{ $acc['longitude'] }}"
+                                    data-name="{{ $acc['customer_name'] }}"
+                                    data-id="{{ $acc['id'] }}"
+                                >
+                                    <span class="w-1.5 h-1.5 rounded-full {{ ($acc['customer_type'] ?? '') === 'rumahan' ? 'bg-emerald-500' : 'bg-blue-600' }}"></span>
+                                    <span>{{ \Illuminate\Support\Str::limit($acc['customer_name'], 22) }}</span>
+                                </button>
+                            @endif
+                        @endforeach
+                    </div>
+
+                    <!-- Map Container -->
+                    <div id="dashboardCustomerMap" class="w-full h-80 sm:h-96 z-10 bg-slate-100"></div>
+
+                    <!-- Map Footer Subrow -->
+                    <div class="p-3 bg-white border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-[11px] text-slate-500">
+                        <div class="flex items-center gap-4">
+                            <span class="text-slate-400">Total Terpetakan: <b class="text-slate-800">{{ count($customerAccounts) }} Titik</b></span>
+                            <span class="text-slate-400">•</span>
+                            <span class="text-slate-400">Peta: <b class="text-slate-700">OpenStreetMap Interactive</b></span>
+                        </div>
+                        <div class="text-[10px] text-slate-400">
+                            Sinkronisasi data langsung dari modul Account Management
+                        </div>
+                    </div>
                 </div>
 
                 <!-- BOTTOM TABLE: WIDGET ANTREAN TIKET -->
@@ -596,5 +380,152 @@
 
     </div>
 
+    <!-- Leaflet Interactive Customer Overview Map Script -->
+    <script>
+        (function() {
+            let dashboardCustomerMapInstance = null;
+            let dashboardMarkersLayer = null;
+            const dashboardCustomerMarkers = {};
+
+            function initDashboardCustomerMap() {
+                const mapEl = document.getElementById('dashboardCustomerMap');
+                if (!mapEl || typeof L === 'undefined') return;
+
+                // Reset jika sudah pernah di-inisialisasi sebelumnya (misal navigasi Turbo)
+                if (mapEl._leaflet_id) {
+                    if (dashboardCustomerMapInstance) {
+                        try {
+                            dashboardCustomerMapInstance.remove();
+                        } catch (e) {}
+                        dashboardCustomerMapInstance = null;
+                    }
+                    mapEl._leaflet_id = null;
+                }
+
+                dashboardCustomerMapInstance = L.map('dashboardCustomerMap', {
+                    zoomControl: true,
+                    scrollWheelZoom: false,
+                }).setView([-6.225, 106.825], 11);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
+                }).addTo(dashboardCustomerMapInstance);
+
+                dashboardMarkersLayer = L.layerGroup().addTo(dashboardCustomerMapInstance);
+
+                const customerData = @json($customerAccounts);
+                const bounds = [];
+
+                function createPinIcon(type) {
+                    const isHome = type === 'rumahan';
+                    const bgColor = isHome ? '#059669' : '#2563eb';
+                    const ringColor = isHome ? '#a7f3d0' : '#bfdbfe';
+                    return L.divIcon({
+                        className: 'custom-dashboard-map-pin',
+                        html: `<div style="width:30px;height:30px;border-radius:9999px;background:${bgColor};border:3px solid ${ringColor};box-shadow:0 4px 10px rgba(15,23,42,0.35);display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer;">
+                            <svg style="width:15px;height:15px" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                        </div>`,
+                        iconSize: [30, 30],
+                        iconAnchor: [15, 15],
+                        popupAnchor: [0, -15],
+                    });
+                }
+
+                customerData.forEach(acc => {
+                    const lat = parseFloat(acc.latitude);
+                    const lng = parseFloat(acc.longitude);
+                    if (isNaN(lat) || isNaN(lng)) return;
+
+                    const isHome = (acc.customer_type || '') === 'rumahan';
+                    const badgeType = isHome ? 'CUSTOMER RUMAHAN' : 'KORPORAT B2B';
+                    const badgeStyle = isHome
+                        ? 'background:#ecfdf5;color:#047857;border:1px solid #a7f3d0;'
+                        : 'background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;';
+                    const statusLabel = acc.is_active
+                        ? '<span style="color:#059669;font-weight:700;">● Aktif</span>'
+                        : '<span style="color:#e11d48;font-weight:700;">● Nonaktif</span>';
+
+                    const popupContent = `
+                        <div style="min-width:230px;font-family:'Plus Jakarta Sans',sans-serif;line-height:1.45;padding:2px;">
+                            <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:6px;">
+                                <span style="display:inline-block;padding:2px 7px;border-radius:4px;font-size:9.5px;font-weight:800;${badgeStyle}">${badgeType}</span>
+                                <span style="font-size:10px;">${statusLabel}</span>
+                            </div>
+                            <div style="font-size:12.5px;font-weight:800;color:#0f172a;">${acc.customer_name}</div>
+                            <div style="font-size:11px;color:#334155;margin-top:3px;">
+                                PIC: <b>${acc.name || '-'}</b> (${acc.username || '-'})
+                            </div>
+                            <div style="font-size:10.5px;color:#2563eb;font-weight:700;margin-top:2px;">
+                                ${acc.package || '-'}
+                            </div>
+                            <div style="font-size:10px;color:#64748b;margin-top:4px;">
+                                ${acc.address || '-'}
+                            </div>
+                            <div style="font-size:10px;font-family:monospace;color:#475569;margin-top:5px;padding-top:4px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;">
+                                <span>${lat.toFixed(6)}, ${lng.toFixed(6)}</span>
+                                <a href="{{ route('accounts.index') }}" style="color:#2563eb;text-decoration:none;font-weight:700;">Kelola &rsaquo;</a>
+                            </div>
+                        </div>
+                    `;
+
+                    const marker = L.marker([lat, lng], {
+                        icon: createPinIcon(acc.customer_type),
+                    }).bindPopup(popupContent);
+
+                    dashboardMarkersLayer.addLayer(marker);
+                    dashboardCustomerMarkers[acc.id] = marker;
+                    bounds.push([lat, lng]);
+                });
+
+                setTimeout(() => {
+                    if (dashboardCustomerMapInstance) {
+                        dashboardCustomerMapInstance.invalidateSize();
+                        if (bounds.length > 0) {
+                            dashboardCustomerMapInstance.fitBounds(bounds, { padding: [35, 35], maxZoom: 14 });
+                        }
+                    }
+                }, 200);
+
+                // Tombol Reset Zoom Peta
+                const btnReset = document.getElementById('btnResetDashboardMap');
+                if (btnReset) {
+                    btnReset.onclick = function() {
+                        if (dashboardCustomerMapInstance && bounds.length > 0) {
+                            dashboardCustomerMapInstance.fitBounds(bounds, { padding: [35, 35], maxZoom: 14 });
+                        }
+                    };
+                }
+
+                // Tombol Fokus Pelanggan di Quick Bar
+                document.querySelectorAll('.btn-dashboard-focus-customer').forEach(btn => {
+                    btn.onclick = function() {
+                        const lat = parseFloat(this.getAttribute('data-lat'));
+                        const lng = parseFloat(this.getAttribute('data-lng'));
+                        const id = this.getAttribute('data-id');
+                        if (isNaN(lat) || isNaN(lng) || !dashboardCustomerMapInstance) return;
+
+                        mapEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        dashboardCustomerMapInstance.flyTo([lat, lng], 16, { duration: 0.9 });
+
+                        const marker = dashboardCustomerMarkers[id];
+                        if (marker) {
+                            setTimeout(() => marker.openPopup(), 500);
+                        }
+                    };
+                });
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initDashboardCustomerMap);
+            } else {
+                initDashboardCustomerMap();
+            }
+            document.addEventListener('turbo:load', initDashboardCustomerMap);
+        })();
+    </script>
 </body>
 </html>
