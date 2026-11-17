@@ -22,6 +22,20 @@ class TeknisiManagementTest extends TestCase
         );
     }
 
+    protected function tearDown(): void
+    {
+        Teknisi::whereIn('nama', [
+            'Hendra Setiawan',
+            'WhatsApp Test User',
+            'Delete Me Technician',
+            'Teknisi Edit Test',
+            'Teknisi Update Test',
+            'Teknisi Update Test Modified',
+        ])->delete();
+
+        parent::tearDown();
+    }
+
     public function test_guest_cannot_access_teknisi_page(): void
     {
         $response = $this->get('/teknisi');
@@ -88,15 +102,21 @@ class TeknisiManagementTest extends TestCase
             'nomor_hp' => '0812-9988-5544',
             'alamat' => 'Jl. RS Fatmawati No. 12, Cilandak, Jakarta Selatan',
         ]);
+
+        Teknisi::where('nama', 'Hendra Setiawan')->delete();
     }
 
     public function test_admin_can_update_teknisi(): void
     {
         $admin = $this->getAdminUser();
-        $teknisi = Teknisi::first();
+        $teknisi = Teknisi::create([
+            'nama' => 'Teknisi Update Test',
+            'nomor_hp' => '0812-0000-1111',
+            'alamat' => 'Alamat Awal',
+        ]);
 
         $updatePayload = [
-            'nama' => 'Budi Santoso Updated',
+            'nama' => 'Teknisi Update Test Modified',
             'nomor_hp' => '0813-1111-2222',
             'alamat' => 'Alamat Baru No. 99',
         ];
@@ -111,6 +131,8 @@ class TeknisiManagementTest extends TestCase
             'nomor_hp' => '0813-1111-2222',
             'alamat' => 'Alamat Baru No. 99',
         ]);
+
+        $teknisi->delete();
     }
 
     public function test_whatsapp_redirect(): void
@@ -127,6 +149,8 @@ class TeknisiManagementTest extends TestCase
 
         $targetUrl = $response->headers->get('Location');
         $this->assertStringContainsString('https://wa.me/6281234567890', $targetUrl);
+
+        $teknisi->delete();
     }
 
     public function test_admin_can_delete_teknisi(): void

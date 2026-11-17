@@ -160,7 +160,7 @@ export function initAdminAccounts() {
         document.querySelectorAll('.account-row').forEach(row => {
             const id = row.getAttribute('data-id');
             const custName = row.getAttribute('data-customer-name') || '-';
-            const custType = row.getAttribute('data-customer-type') || 'perusahaan';
+            const custType = (row.getAttribute('data-customer-type') || 'perusahaan').toLowerCase();
             const picName = row.getAttribute('data-name') || '-';
             const username = row.getAttribute('data-username') || '-';
             const pkg = row.getAttribute('data-package') || '-';

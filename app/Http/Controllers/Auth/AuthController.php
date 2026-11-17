@@ -53,7 +53,11 @@ class AuthController extends Controller
             $user = Auth::user();
 
             // Proteksi Role Web Portal: Akun Pelanggan (customer_representative) hanya untuk Mobile App
-            if (! in_array($user->role, ['admin', 'admin_konten'], true)) {
+            // Izinkan jika request berasal dari aplikasi mobile NetFly (via User-Agent NetFly-Mobile)
+            $isMobileApp = str_contains($request->userAgent() ?? '', 'NetFly-Mobile')
+                || $request->header('X-App-Platform') === 'NetFly-Mobile';
+
+            if (! $isMobileApp && ! in_array($user->role, ['admin', 'admin_konten'], true)) {
                 ActivityLogger::log(
                     'auth',
                     'login_failed',

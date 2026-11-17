@@ -235,13 +235,20 @@
                             <button
                                 type="button"
                                 id="btnResetAccountsOverviewMap"
-                                class="px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-[11px] font-semibold transition-colors cursor-pointer"
+                                class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-[11px] font-semibold transition-colors cursor-pointer shadow-2xs"
+                                title="Reset posisi dan zoom peta"
                             >
-                                Reset Zoom Peta
+                                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                <span>Reset Zoom</span>
                             </button>
                         </div>
                     </div>
-                    <div id="accountsOverviewMap" class="w-full h-80 z-10 bg-slate-100"></div>
+
+                    <div class="relative">
+                        <div id="accountsOverviewMap" class="w-full h-115 sm:h-125 lg:h-135 z-10 bg-slate-100"></div>
+                    </div>
                 </div>
 
                 <!-- FILTER BAR (SEARCH, STATUS SELECT, CUSTOMER SELECT) -->
@@ -361,7 +368,7 @@
                                                     {{ $account['package'] ?? 'Dedicated Fiber Link' }}
                                                 </p>
                                                 <div class="flex items-center gap-1.5 pt-0.5">
-                                                    <span class="text-[10px] text-slate-400 truncate max-w-[210px]" title="{{ $account['address'] ?? '-' }}">
+                                                    <span class="text-[10px] text-slate-400 truncate max-w-51.5" title="{{ $account['address'] ?? '-' }}">
                                                         {{ $account['address'] ?? '-' }}
                                                     </span>
                                                     @if (!empty($account['latitude']) && !empty($account['longitude']))

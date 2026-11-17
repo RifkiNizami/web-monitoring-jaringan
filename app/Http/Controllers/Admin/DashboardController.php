@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminKonten\KontenDashboardController;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Admin\AccountController;
 use App\Models\Customer;
 use App\Models\Device;
 use App\Models\MonitoringAlert;
@@ -93,7 +92,7 @@ class DashboardController extends Controller
             };
 
             return [
-                'id' => 'ALT-' . str_pad($alert->id, 4, '0', STR_PAD_LEFT),
+                'id' => 'ALT-'.str_pad($alert->id, 4, '0', STR_PAD_LEFT),
                 'badge' => $badgeLabel,
                 'badge_type' => $badgeType,
                 'host' => $alert->host,
@@ -103,39 +102,58 @@ class DashboardController extends Controller
                 'is_resolved' => (bool) $alert->is_resolved,
                 'status_label' => $alert->is_resolved ? 'Teratasi' : 'Aktif (Perlu Cek)',
                 'status_color' => $alert->is_resolved ? 'emerald' : ($alert->severity === 'critical' ? 'rose' : 'amber'),
-                'time' => $alert->created_at ? $alert->created_at->format('H:i:s') . ' WIB' : now()->format('H:i:s') . ' WIB',
+                'time' => $alert->created_at ? $alert->created_at->format('H:i:s').' WIB' : now()->format('H:i:s').' WIB',
                 'duration' => $alert->created_at ? $alert->created_at->diffForHumans(null, true) : 'Baru saja',
-                'title' => $alert->host . ' - ' . $alert->type,
+                'title' => $alert->host.' - '.$alert->type,
             ];
         })->toArray();
 
         // 4. Tiket Komplain Klien Terbaru dari Database
-        $dbTickets = Ticket::with('customer')->latest()->take(3)->get();
+        $dbTickets = Ticket::with('customer')->latest()->take(5)->get();
         $tickets = $dbTickets->map(function ($t) {
-            $priorityType = match (strtolower($t->priority)) {
-                'critical', 'p1' => 'critical',
-                'high', 'p2' => 'high',
+            $priorityLevel = $t->priority_level ?? match (true) {
+                str_contains(strtolower($t->priority ?? ''), 'critical') || str_contains(strtolower($t->priority ?? ''), 'p1') => 'critical',
+                str_contains(strtolower($t->priority ?? ''), 'high') || str_contains(strtolower($t->priority ?? ''), 'p2') => 'high',
                 default => 'medium',
             };
-            $statusColor = match (strtolower($t->status)) {
+
+            $statusType = $t->status_type ?? match (true) {
+                str_contains($t->status ?? '', 'Open') => 'open',
+                str_contains($t->status ?? '', 'Assigned') => 'assigned',
+                str_contains($t->status ?? '', 'Progress') => 'in_progress',
+                str_contains($t->status ?? '', 'Resolved') => 'resolved',
+                str_contains($t->status ?? '', 'Closed') => 'closed',
+                default => 'open',
+            };
+
+            $statusColor = match ($statusType) {
                 'open' => 'amber',
-                'in progress' => 'blue',
+                'assigned' => 'indigo',
+                'in_progress' => 'blue',
                 'resolved' => 'emerald',
                 default => 'slate',
             };
 
+            $customerName = $t->client_name ?: ($t->customer?->name ?? 'Pelanggan Enterprise');
+            $packageName = $t->project_name ?: ($t->customer?->package ?? 'Dedicated Fiber Connection');
+            $isOpen = in_array($statusType, ['open', 'assigned'], true);
+
             return [
                 'id' => $t->ticket_number ?? 'INC-'.$t->id,
-                'customer' => $t->customer ? $t->customer->company_name : ($t->customer_name ?? 'Pelanggan Enterprise'),
-                'package' => $t->service_package ?? 'Dedicated Fiber Connection',
+                'customer' => $customerName,
+                'package' => $packageName,
                 'issue' => $t->subject ?? 'Insiden Gangguan Transmisi',
-                'priority' => ucfirst($t->priority).($t->priority === 'Critical' ? ' - P1' : ''),
-                'priority_type' => $priorityType,
-                'status' => $t->status,
+                'priority' => $t->priority ?: match ($priorityLevel) {
+                    'critical' => 'P1 - CRITICAL',
+                    'high' => 'P2 - HIGH',
+                    default => 'P3 - MEDIUM',
+                },
+                'priority_type' => $priorityLevel,
+                'status' => $t->status ?? '1. Open (Baru)',
                 'status_color' => $statusColor,
                 'duration' => $t->created_at ? $t->created_at->diffForHumans(null, true) : 'Baru saja',
-                'action_label' => $t->status === 'Open' ? 'Tangani' : 'Detail',
-                'action_type' => $t->status === 'Open' ? 'primary' : 'outline',
+                'action_label' => $isOpen ? 'Tangani' : 'Detail',
+                'action_type' => $isOpen ? 'primary' : 'outline',
             ];
         })->toArray();
 

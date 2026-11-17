@@ -362,23 +362,7 @@
             }
             updateClock();
 
-            // 2. Mobile Sidebar Toggle
-            const openSidebarBtn = document.getElementById('openSidebar');
-            const closeSidebarBtn = document.getElementById('closeSidebar');
-            const sidebar = document.getElementById('sidebar');
-
-            if (openSidebarBtn && sidebar) {
-                openSidebarBtn.addEventListener('click', () => {
-                    sidebar.classList.remove('-translate-x-full');
-                });
-            }
-            if (closeSidebarBtn && sidebar) {
-                closeSidebarBtn.addEventListener('click', () => {
-                    sidebar.classList.add('-translate-x-full');
-                });
-            }
-
-            // 3. Modal: Hapus Data Teknisi
+            // 2. Modal: Hapus Data Teknisi
             const deleteModal = document.getElementById('deleteTeknisiModal');
             const deleteForm = document.getElementById('deleteTeknisiForm');
             const closeDeleteBtns = document.querySelectorAll('.close-delete-modal');

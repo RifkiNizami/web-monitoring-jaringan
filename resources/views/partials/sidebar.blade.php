@@ -1,5 +1,5 @@
 <!-- Sidebar Partial -->
-<aside id="sidebar" class="w-64 bg-white border-r border-slate-200/80 flex flex-col shrink-0 lg:translate-x-0 -translate-x-full fixed lg:static inset-y-0 left-0 h-full z-40 select-none overflow-x-hidden">
+<aside id="sidebar" class="w-64 bg-white border-r border-slate-200/80 flex flex-col shrink-0 lg:translate-x-0 -translate-x-full fixed lg:static inset-y-0 left-0 h-full z-40 select-none overflow-hidden">
     
     <!-- 1. Logo Header (Pinned Top - shrink-0) -->
     <div class="sidebar-header px-4.5 h-16 flex items-center border-b border-slate-100 shrink-0 relative overflow-hidden">
@@ -12,7 +12,7 @@
         </a>
         <!-- Mini Logo Emblem (Collapsed) -->
         <a href="{{ route('dashboard') }}" class="sidebar-mini-logo flex items-center justify-center group" title="NetFly Dashboard">
-            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-700 via-blue-600 to-sky-500 text-white font-extrabold text-sm flex items-center justify-center shadow-xs tracking-tight ring-1 ring-blue-600/30 group-hover:scale-105 transition-transform">
+            <div class="w-9 h-9 rounded-xl bg-linear-to-tr from-blue-700 via-blue-600 to-sky-500 text-white font-extrabold text-sm flex items-center justify-center shadow-xs tracking-tight ring-1 ring-blue-600/30 group-hover:scale-105 transition-transform">
                 <span>NF</span>
             </div>
         </a>
@@ -34,22 +34,25 @@
     @endphp
 
     <!-- 2. Menu Navigation (Middle scrollable area ONLY - flex-1 min-h-0 overflow-y-auto overflow-x-hidden) -->
-    <div class="px-3 py-3 space-y-4 flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+    <div class="sidebar-menu-scroll px-3 py-3 space-y-3 flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
         @if($isAdminKonten)
             <!-- ==========================================
                  MENU KHUSUS: ADMIN KONTEN
                  ========================================== -->
 
             <!-- Group 1: UTAMA -->
-            <div>
-                <p class="sidebar-group-title px-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-                    UTAMA
-                </p>
-                <div class="sidebar-group-divider hidden"></div>
+            <div class="sidebar-group">
+                <div class="sidebar-group-header relative flex items-center h-6 px-1 my-0.5">
+                    <span class="sidebar-group-title text-[10px] font-bold uppercase tracking-wider text-slate-400 truncate">
+                        UTAMA
+                    </span>
+                    <div class="sidebar-group-divider"></div>
+                </div>
                 <nav class="space-y-1">
                     <!-- Dashboard Admin Konten -->
                     @php $isDashboardActive = request()->routeIs('dashboard') || request()->routeIs('admin'); @endphp
                     <a href="{{ route('dashboard') }}"
+                        data-sidebar-tooltip="Dashboard Konten"
                         class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-colors {{ $isDashboardActive ? 'bg-blue-50 text-blue-700 font-semibold shadow-2xs ring-1 ring-blue-600/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium' }}">
                         <div class="sidebar-icon-box">
                             <svg class="w-5 h-5 shrink-0 {{ $isDashboardActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }}"
@@ -59,21 +62,23 @@
                             </svg>
                         </div>
                         <span class="sidebar-nav-label text-xs truncate">Dashboard Konten</span>
-                        <div class="sidebar-tooltip">Dashboard Konten</div>
                     </a>
                 </nav>
             </div>
 
             <!-- Group 2: LANDING PAGE -->
-            <div>
-                <p class="sidebar-group-title px-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-                    KONTEN LANDING PAGE
-                </p>
-                <div class="sidebar-group-divider hidden"></div>
+            <div class="sidebar-group">
+                <div class="sidebar-group-header relative flex items-center h-6 px-1 my-0.5">
+                    <span class="sidebar-group-title text-[10px] font-bold uppercase tracking-wider text-slate-400 truncate">
+                        KONTEN LANDING PAGE
+                    </span>
+                    <div class="sidebar-group-divider"></div>
+                </div>
                 <nav class="space-y-1">
                     <!-- Klien Landing Page -->
                     @php $isClientsActive = request()->routeIs('klien.*') || request()->routeIs('landing-clients.*'); @endphp
                     <a href="{{ route('klien.index') }}"
+                        data-sidebar-tooltip="Klien Landing Page ({{ $totalLandingClients }})"
                         class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-colors {{ $isClientsActive ? 'bg-blue-50 text-blue-700 font-semibold shadow-2xs ring-1 ring-blue-600/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium' }}">
                         <div class="sidebar-icon-box">
                             <svg class="w-5 h-5 shrink-0 {{ $isClientsActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }}"
@@ -81,7 +86,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
                                     d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                             </svg>
-                            <span class="sidebar-mini-badge inline-flex items-center justify-center min-w-4 h-4 px-1 text-[9px] font-bold rounded-full bg-slate-700 text-white shadow-xs">
+                            <span class="sidebar-mini-badge inline-flex items-center justify-center min-w-4 h-4 px-1 text-[9px] font-bold rounded-full bg-slate-700 text-white ring-2 ring-white shadow-xs">
                                 {{ $totalLandingClients > 99 ? '99+' : $totalLandingClients }}
                             </span>
                         </div>
@@ -89,21 +94,23 @@
                         <span class="sidebar-full-badge inline-flex items-center justify-center min-w-4.5 h-4.5 px-1.5 text-[10px] font-bold rounded-full {{ $isClientsActive ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600' }}">
                             {{ $totalLandingClients }}
                         </span>
-                        <div class="sidebar-tooltip">Klien Landing Page ({{ $totalLandingClients }})</div>
                     </a>
                 </nav>
             </div>
 
             <!-- Group 3: FITUR PEMBERITAHUAN -->
-            <div>
-                <p class="sidebar-group-title px-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-                    BROADCAST & PENGUMUMAN
-                </p>
-                <div class="sidebar-group-divider hidden"></div>
+            <div class="sidebar-group">
+                <div class="sidebar-group-header relative flex items-center h-6 px-1 my-0.5">
+                    <span class="sidebar-group-title text-[10px] font-bold uppercase tracking-wider text-slate-400 truncate">
+                        BROADCAST & PENGUMUMAN
+                    </span>
+                    <div class="sidebar-group-divider"></div>
+                </div>
                 <nav class="space-y-1">
                     <!-- Kelola Pemberitahuan (Maintenance, dll) -->
                     @php $isAnnouncementsActive = request()->routeIs('pemberitahuan.*') || request()->routeIs('announcements.*'); @endphp
                     <a href="{{ route('pemberitahuan.index') }}"
+                        data-sidebar-tooltip="Pemberitahuan{{ $activeAnnouncementCount > 0 ? ' (' . $activeAnnouncementCount . ')' : '' }}"
                         class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-colors {{ $isAnnouncementsActive ? 'bg-blue-50 text-blue-700 font-semibold shadow-2xs ring-1 ring-blue-600/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium' }}">
                         <div class="sidebar-icon-box">
                             <svg class="w-5 h-5 shrink-0 {{ $isAnnouncementsActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }}"
@@ -112,7 +119,7 @@
                                     d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
                             </svg>
                             @if($activeAnnouncementCount > 0)
-                                <span class="sidebar-mini-badge inline-flex items-center justify-center min-w-4 h-4 px-1 text-[9px] font-bold rounded-full bg-amber-500 text-white shadow-xs">
+                                <span class="sidebar-mini-badge inline-flex items-center justify-center min-w-4 h-4 px-1 text-[9px] font-bold rounded-full bg-amber-500 text-white ring-2 ring-white shadow-xs">
                                     {{ $activeAnnouncementCount > 99 ? '99+' : $activeAnnouncementCount }}
                                 </span>
                             @endif
@@ -123,7 +130,6 @@
                                 {{ $activeAnnouncementCount }}
                             </span>
                         @endif
-                        <div class="sidebar-tooltip">Pemberitahuan {{ $activeAnnouncementCount > 0 ? "({$activeAnnouncementCount})" : '' }}</div>
                     </a>
                 </nav>
             </div>
@@ -134,15 +140,18 @@
                  ========================================== -->
 
             <!-- Group 1: MONITORING & KENDALI -->
-            <div>
-                <p class="sidebar-group-title px-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-                    MONITORING & KENDALI
-                </p>
-                <div class="sidebar-group-divider hidden"></div>
+            <div class="sidebar-group">
+                <div class="sidebar-group-header relative flex items-center h-6 px-1 my-0.5">
+                    <span class="sidebar-group-title text-[10px] font-bold uppercase tracking-wider text-slate-400 truncate">
+                        MONITORING & KENDALI
+                    </span>
+                    <div class="sidebar-group-divider"></div>
+                </div>
                 <nav class="space-y-1">
                     <!-- Dashboard -->
                     @php $isDashboardActive = request()->routeIs('dashboard') || request()->routeIs('admin'); @endphp
                     <a href="{{ route('dashboard') }}"
+                        data-sidebar-tooltip="Dashboard"
                         class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-colors {{ $isDashboardActive ? 'bg-blue-50 text-blue-700 font-semibold shadow-2xs ring-1 ring-blue-600/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium' }}">
                         <div class="sidebar-icon-box">
                             <svg class="w-5 h-5 shrink-0 {{ $isDashboardActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }}"
@@ -152,12 +161,12 @@
                             </svg>
                         </div>
                         <span class="sidebar-nav-label text-xs truncate">Dashboard</span>
-                        <div class="sidebar-tooltip">Dashboard</div>
                     </a>
 
                     <!-- Monitoring & Alert -->
                     @php $isMonitoringActive = request()->routeIs('monitoring.*'); @endphp
                     <a href="{{ route('monitoring.index') }}"
+                        data-sidebar-tooltip="Monitoring (LIVE)"
                         class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-colors {{ $isMonitoringActive ? 'bg-blue-50 text-blue-700 font-semibold shadow-2xs ring-1 ring-blue-600/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium' }}">
                         <div class="sidebar-icon-box">
                             <svg class="w-5 h-5 shrink-0 {{ $isMonitoringActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }}"
@@ -175,12 +184,12 @@
                             <span class="w-1.5 h-1.5 mr-1 rounded-full bg-rose-500 animate-pulse"></span>
                             <span>LIVE</span>
                         </span>
-                        <div class="sidebar-tooltip">Monitoring (LIVE)</div>
                     </a>
 
                     <!-- Network Devices -->
                     @php $isDevicesActive = request()->routeIs('devices.*'); @endphp
                     <a href="{{ route('devices.index') }}"
+                        data-sidebar-tooltip="Network Devices"
                         class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-colors {{ $isDevicesActive ? 'bg-blue-50 text-blue-700 font-semibold shadow-2xs ring-1 ring-blue-600/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium' }}">
                         <div class="sidebar-icon-box">
                             <svg class="w-5 h-5 shrink-0 {{ $isDevicesActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }}"
@@ -190,12 +199,12 @@
                             </svg>
                         </div>
                         <span class="sidebar-nav-label text-xs truncate">Network Devices</span>
-                        <div class="sidebar-tooltip">Network Devices</div>
                     </a>
 
                     <!-- Ticket & Insiden -->
                     @php $isTicketsActive = request()->routeIs('tickets.*'); @endphp
                     <a href="{{ route('tickets.index') }}"
+                        data-sidebar-tooltip="Ticket & Insiden{{ $activeTicketCount > 0 ? ' (' . $activeTicketCount . ')' : '' }}"
                         class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-colors {{ $isTicketsActive ? 'bg-blue-50 text-blue-700 font-semibold shadow-2xs ring-1 ring-blue-600/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium' }}">
                         <div class="sidebar-icon-box">
                             <svg class="w-5 h-5 shrink-0 {{ $isTicketsActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }}"
@@ -204,7 +213,7 @@
                                     d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
                             </svg>
                             @if($activeTicketCount > 0)
-                                <span class="sidebar-mini-badge inline-flex items-center justify-center min-w-4 h-4 px-1 text-[9px] font-bold rounded-full bg-blue-600 text-white shadow-xs">
+                                <span class="sidebar-mini-badge inline-flex items-center justify-center min-w-4 h-4 px-1 text-[9px] font-bold rounded-full bg-blue-600 text-white ring-2 ring-white shadow-xs">
                                     {{ $activeTicketCount > 99 ? '99+' : $activeTicketCount }}
                                 </span>
                             @endif
@@ -215,21 +224,23 @@
                                 {{ $activeTicketCount }}
                             </span>
                         @endif
-                        <div class="sidebar-tooltip">Ticket & Insiden ({{ $activeTicketCount }})</div>
                     </a>
                 </nav>
             </div>
 
             <!-- Group 2: DATA & KEMITRAAN -->
-            <div>
-                <p class="sidebar-group-title px-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-                    DATA & KEMITRAAN
-                </p>
-                <div class="sidebar-group-divider hidden"></div>
+            <div class="sidebar-group">
+                <div class="sidebar-group-header relative flex items-center h-6 px-1 my-0.5">
+                    <span class="sidebar-group-title text-[10px] font-bold uppercase tracking-wider text-slate-400 truncate">
+                        DATA & KEMITRAAN
+                    </span>
+                    <div class="sidebar-group-divider"></div>
+                </div>
                 <nav class="space-y-1">
                     <!-- Customer Management -->
                     @php $isCustomersActive = request()->routeIs('customers.*') || request()->routeIs('projects.*'); @endphp
                     <a href="{{ route('customers.index') }}"
+                        data-sidebar-tooltip="Customer Management"
                         class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-colors {{ $isCustomersActive ? 'bg-blue-50 text-blue-700 font-semibold shadow-2xs ring-1 ring-blue-600/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium' }}">
                         <div class="sidebar-icon-box">
                             <svg class="w-5 h-5 shrink-0 {{ $isCustomersActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }}"
@@ -239,12 +250,12 @@
                             </svg>
                         </div>
                         <span class="sidebar-nav-label text-xs truncate">Customer Management</span>
-                        <div class="sidebar-tooltip">Customer Management</div>
                     </a>
 
                     <!-- Account Management -->
                     @php $isAccountsActive = request()->routeIs('accounts.*'); @endphp
                     <a href="{{ route('accounts.index') }}"
+                        data-sidebar-tooltip="Account Management"
                         class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-colors {{ $isAccountsActive ? 'bg-blue-50 text-blue-700 font-semibold shadow-2xs ring-1 ring-blue-600/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium' }}">
                         <div class="sidebar-icon-box">
                             <svg class="w-5 h-5 shrink-0 {{ $isAccountsActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }}"
@@ -254,12 +265,12 @@
                             </svg>
                         </div>
                         <span class="sidebar-nav-label text-xs truncate">Account Management</span>
-                        <div class="sidebar-tooltip">Account Management</div>
                     </a>
 
                     <!-- Teknisi -->
                     @php $isTeknisiActive = request()->routeIs('teknisi.*'); @endphp
                     <a href="{{ route('teknisi.index') }}"
+                        data-sidebar-tooltip="Teknisi"
                         class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-colors {{ $isTeknisiActive ? 'bg-blue-50 text-blue-700 font-semibold shadow-2xs ring-1 ring-blue-600/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium' }}">
                         <div class="sidebar-icon-box">
                             <svg class="w-5 h-5 shrink-0 {{ $isTeknisiActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }}"
@@ -269,20 +280,22 @@
                             </svg>
                         </div>
                         <span class="sidebar-nav-label text-xs truncate">Teknisi</span>
-                        <div class="sidebar-tooltip">Teknisi</div>
                     </a>
                 </nav>
             </div>
 
             <!-- Group 3: LAPORAN & AUDIT -->
-            <div>
-                <p class="sidebar-group-title px-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-                    LAPORAN & AUDIT
-                </p>
-                <div class="sidebar-group-divider hidden"></div>
+            <div class="sidebar-group">
+                <div class="sidebar-group-header relative flex items-center h-6 px-1 my-0.5">
+                    <span class="sidebar-group-title text-[10px] font-bold uppercase tracking-wider text-slate-400 truncate">
+                        LAPORAN & AUDIT
+                    </span>
+                    <div class="sidebar-group-divider"></div>
+                </div>
                 <nav class="space-y-1">
                     @php $isReportsActive = request()->routeIs('reports.*'); @endphp
                     <a href="{{ route('reports.index') }}"
+                        data-sidebar-tooltip="Report Generator"
                         class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-colors {{ $isReportsActive ? 'bg-blue-50 text-blue-700 font-semibold shadow-2xs ring-1 ring-blue-600/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium' }}">
                         <div class="sidebar-icon-box">
                             <svg class="w-5 h-5 shrink-0 {{ $isReportsActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }}"
@@ -292,12 +305,12 @@
                             </svg>
                         </div>
                         <span class="sidebar-nav-label text-xs truncate">Report Generator</span>
-                        <div class="sidebar-tooltip">Report Generator</div>
                     </a>
 
                     <!-- Log Aktivitas -->
                     @php $isActivityLogsActive = request()->routeIs('activity-logs.*'); @endphp
                     <a href="{{ route('activity-logs.index') }}"
+                        data-sidebar-tooltip="Log Aktivitas"
                         class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-colors {{ $isActivityLogsActive ? 'bg-blue-50 text-blue-700 font-semibold shadow-2xs ring-1 ring-blue-600/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium' }}">
                         <div class="sidebar-icon-box">
                             <svg class="w-5 h-5 shrink-0 {{ $isActivityLogsActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }}"
@@ -307,20 +320,22 @@
                             </svg>
                         </div>
                         <span class="sidebar-nav-label text-xs truncate">Log Aktivitas</span>
-                        <div class="sidebar-tooltip">Log Aktivitas</div>
                     </a>
                 </nav>
             </div>
 
             <!-- Group 4: INFORMASI & BROADCAST -->
-            <div>
-                <p class="sidebar-group-title px-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-                    INFORMASI & BROADCAST
-                </p>
-                <div class="sidebar-group-divider hidden"></div>
+            <div class="sidebar-group">
+                <div class="sidebar-group-header relative flex items-center h-6 px-1 my-0.5">
+                    <span class="sidebar-group-title text-[10px] font-bold uppercase tracking-wider text-slate-400 truncate">
+                        INFORMASI & BROADCAST
+                    </span>
+                    <div class="sidebar-group-divider"></div>
+                </div>
                 <nav class="space-y-1">
                     @php $isAnnouncementsActive = request()->routeIs('pemberitahuan.*') || request()->routeIs('announcements.*'); @endphp
                     <a href="{{ route('pemberitahuan.index') }}"
+                        data-sidebar-tooltip="Pemberitahuan{{ $activeAnnouncementCount > 0 ? ' (' . $activeAnnouncementCount . ')' : '' }}"
                         class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-colors {{ $isAnnouncementsActive ? 'bg-blue-50 text-blue-700 font-semibold shadow-2xs ring-1 ring-blue-600/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium' }}">
                         <div class="sidebar-icon-box">
                             <svg class="w-5 h-5 shrink-0 {{ $isAnnouncementsActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }}"
@@ -329,7 +344,7 @@
                                     d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
                             </svg>
                             @if($activeAnnouncementCount > 0)
-                                <span class="sidebar-mini-badge inline-flex items-center justify-center min-w-4 h-4 px-1 text-[9px] font-bold rounded-full bg-amber-500 text-white shadow-xs">
+                                <span class="sidebar-mini-badge inline-flex items-center justify-center min-w-4 h-4 px-1 text-[9px] font-bold rounded-full bg-amber-500 text-white ring-2 ring-white shadow-xs">
                                     {{ $activeAnnouncementCount > 99 ? '99+' : $activeAnnouncementCount }}
                                 </span>
                             @endif
@@ -340,7 +355,6 @@
                                 {{ $activeAnnouncementCount }}
                             </span>
                         @endif
-                        <div class="sidebar-tooltip">Pemberitahuan {{ $activeAnnouncementCount > 0 ? "({$activeAnnouncementCount})" : '' }}</div>
                     </a>
                 </nav>
             </div>
@@ -351,7 +365,8 @@
 
     <!-- 3. Profile Admin & Logout (Pinned Bottom - ALWAYS visible, shrink-0 mt-auto) -->
     <div class="sidebar-profile p-3 border-t border-slate-100 bg-white shrink-0 mt-auto overflow-hidden">
-        <div class="sidebar-profile-box relative flex items-center p-1.5 rounded-xl hover:bg-slate-50 transition-colors">
+        <div class="sidebar-profile-box relative flex items-center p-1.5 rounded-xl hover:bg-slate-50 transition-colors"
+             data-sidebar-tooltip="{{ Auth::user()->name ?? 'Administrator' }} ({{ $isAdminKonten ? 'Admin Konten' : 'NOC Specialist' }})">
             <div class="sidebar-avatar-box w-9 h-9 rounded-full {{ $isAdminKonten ? 'bg-blue-600' : 'bg-slate-900' }} text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-2xs">
                 {{ strtoupper(substr(Auth::user()->name ?? 'AD', 0, 2)) }}
             </div>

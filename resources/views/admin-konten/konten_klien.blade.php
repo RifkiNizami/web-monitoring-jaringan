@@ -28,10 +28,12 @@
             <!-- TOP NAVBAR / HEADER -->
             <header class="bg-white border-b border-slate-200/80 px-6 py-3.5 flex items-center justify-between sticky top-0 z-30">
                 <div class="flex items-center gap-3">
-                    <!-- Mobile Hamburger -->
-                    <button id="openSidebar" class="lg:hidden p-1.5 -ml-1 text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 cursor-pointer" aria-label="Buka Menu">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    <!-- Collapsible Sidebar Navbar Toggle Button -->
+                    <button id="openSidebar" type="button" class="sidebar-toggle-btn p-1.5 -ml-1 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors" title="Buka / Tutup Menu Navigasi (Ctrl+B)" aria-label="Toggle menu navigasi" aria-expanded="true">
+                        <svg class="w-5 h-5 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path class="bar-top" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16" />
+                            <path class="bar-mid" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12h16" />
+                            <path class="bar-bot" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 18h16" />
                         </svg>
                     </button>
 
@@ -665,28 +667,6 @@
         setInterval(updateLiveClock, 1000);
         updateLiveClock();
 
-        // Mobile Sidebar Toggle
-        const openSidebarBtn = document.getElementById('openSidebar');
-        const closeSidebarBtn = document.getElementById('closeSidebar');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarBackdrop = document.getElementById('sidebarBackdrop');
-
-        if (openSidebarBtn && sidebar && sidebarBackdrop) {
-            openSidebarBtn.addEventListener('click', () => {
-                sidebar.classList.remove('-translate-x-full');
-                sidebarBackdrop.classList.remove('hidden');
-            });
-            if (closeSidebarBtn) {
-                closeSidebarBtn.addEventListener('click', () => {
-                    sidebar.classList.add('-translate-x-full');
-                    sidebarBackdrop.classList.add('hidden');
-                });
-            }
-            sidebarBackdrop.addEventListener('click', () => {
-                sidebar.classList.add('-translate-x-full');
-                sidebarBackdrop.classList.add('hidden');
-            });
-        }
     </script>
 </body>
 </html>

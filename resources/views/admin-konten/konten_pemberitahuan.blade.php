@@ -644,28 +644,6 @@
         setInterval(updateLiveClock, 1000);
         updateLiveClock();
 
-        // Mobile Sidebar Toggle
-        const openSidebarBtn = document.getElementById('openSidebar');
-        const closeSidebarBtn = document.getElementById('closeSidebar');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarBackdrop = document.getElementById('sidebarBackdrop');
-
-        if (openSidebarBtn && sidebar && sidebarBackdrop) {
-            openSidebarBtn.addEventListener('click', () => {
-                sidebar.classList.remove('-translate-x-full');
-                sidebarBackdrop.classList.remove('hidden');
-            });
-            if (closeSidebarBtn) {
-                closeSidebarBtn.addEventListener('click', () => {
-                    sidebar.classList.add('-translate-x-full');
-                    sidebarBackdrop.classList.add('hidden');
-                });
-            }
-            sidebarBackdrop.addEventListener('click', () => {
-                sidebar.classList.add('-translate-x-full');
-                sidebarBackdrop.classList.add('hidden');
-            });
-        }
     </script>
 </body>
 </html>

@@ -27,12 +27,22 @@ export function initAdminCommon() {
     const sidebarBackdrop = document.getElementById('sidebarBackdrop');
     const STORAGE_KEY = 'netfly_sidebar_collapsed';
 
+    // Global Floating Tooltip container for collapsed sidebar items (Zero overflow risk)
+    let globalTooltip = document.getElementById('sidebarGlobalTooltip');
+    if (!globalTooltip) {
+        globalTooltip = document.createElement('div');
+        globalTooltip.id = 'sidebarGlobalTooltip';
+        globalTooltip.className = 'fixed z-[99999] pointer-events-none px-2.5 py-1 text-[11px] font-semibold text-white bg-slate-900 rounded-lg shadow-xl opacity-0 transition-opacity duration-150 transform -translate-y-1/2 whitespace-nowrap';
+        document.body.appendChild(globalTooltip);
+    }
+
     function isDesktop() {
         return window.innerWidth >= 1024;
     }
 
     function applyDesktopCollapsedState(collapsed) {
         if (!sidebar) return;
+        if (globalTooltip) globalTooltip.classList.add('opacity-0');
         if (isDesktop()) {
             sidebar.classList.toggle('is-collapsed', collapsed);
             toggleButtons.forEach(btn => {
@@ -130,7 +140,34 @@ export function initAdminCommon() {
         window._sidebarKeydownAttached = true;
     }
 
-    // 3. Staggered Entrance Animation for Admin Page Content
+    // 3. Floating Tooltip Event Listeners for Collapsed State
+    if (!window._sidebarTooltipAttached) {
+        document.addEventListener('mouseover', (e) => {
+            const target = e.target.closest('[data-sidebar-tooltip]');
+            if (!target) return;
+            const currentSidebar = document.getElementById('sidebar');
+            if (!currentSidebar || !currentSidebar.classList.contains('is-collapsed') || window.innerWidth < 1024) return;
+
+            const text = target.getAttribute('data-sidebar-tooltip');
+            if (!text) return;
+
+            globalTooltip.textContent = text;
+            const rect = target.getBoundingClientRect();
+            globalTooltip.style.left = `${rect.right + 10}px`;
+            globalTooltip.style.top = `${rect.top + rect.height / 2}px`;
+            globalTooltip.classList.remove('opacity-0');
+        });
+
+        document.addEventListener('mouseout', (e) => {
+            const target = e.target.closest('[data-sidebar-tooltip]');
+            if (!target) return;
+            globalTooltip.classList.add('opacity-0');
+        });
+
+        window._sidebarTooltipAttached = true;
+    }
+
+    // 4. Staggered Entrance Animation for Admin Page Content
     const adminMain = document.querySelector('main');
     if (adminMain && sidebar) {
         const blocks = Array.from(adminMain.children);
@@ -140,7 +177,7 @@ export function initAdminCommon() {
         });
     }
 
-    // 4. Dynamic Progress Bars (data-progress-width)
+    // 5. Dynamic Progress Bars (data-progress-width)
     document.querySelectorAll('[data-progress-width]').forEach((bar) => {
         const widthVal = bar.getAttribute('data-progress-width') || '0';
         bar.style.width = `${widthVal}%`;

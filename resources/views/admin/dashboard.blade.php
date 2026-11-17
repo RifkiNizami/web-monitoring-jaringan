@@ -196,7 +196,7 @@
                 </div>
 
                 <!-- PETA SEBARAN LOKASI CUSTOMER (DARI ACCOUNT MANAGEMENT) -->
-                <div class="bg-white rounded-xl border border-slate-200/80 shadow-2xs overflow-hidden">
+                <div id="dashboardMapCard" class="bg-white rounded-xl border border-slate-200/80 shadow-2xs overflow-hidden">
                     <!-- Map Header -->
                     <div class="p-4 sm:p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50/50">
                         <div class="flex items-center gap-2.5">
@@ -211,7 +211,7 @@
                                     <h3 class="text-sm font-bold text-slate-900">
                                         Peta Sebaran Customer Terdaftar
                                     </h3>
-                                    <span class="px-2 py-0.5 text-[10px] font-semibold text-blue-700 bg-blue-50 rounded-full border border-blue-200/60">
+                                    <span id="dashboardMapCountBadge" class="px-2 py-0.5 text-[10px] font-semibold text-blue-700 bg-blue-50 rounded-full border border-blue-200/60">
                                         {{ count($customerAccounts) }} Titik Lokasi
                                     </span>
                                 </div>
@@ -221,23 +221,45 @@
                             </div>
                         </div>
 
-                        <!-- Right Controls / Legend -->
-                        <div class="flex flex-wrap items-center gap-2.5 text-xs font-semibold">
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-200 text-[11px]">
-                                <span class="w-2 h-2 rounded-full bg-blue-600"></span>
-                                Korporat (B2B)
-                            </span>
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px]">
-                                <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
-                                Rumahan (Home)
-                            </span>
+                        <!-- Right Controls / Legend / Fullscreen -->
+                        <div class="flex flex-wrap items-center gap-2 text-xs font-semibold">
+                            <!-- Filter Buttons -->
+                            <div class="inline-flex rounded-lg border border-slate-200 p-0.5 bg-white text-[11px] shadow-2xs">
+                                <button type="button" class="btn-dashboard-map-filter px-2.5 py-1 rounded-md font-semibold text-slate-800 bg-slate-100 transition-colors cursor-pointer" data-filter="all">Semua</button>
+                                <button type="button" class="btn-dashboard-map-filter px-2.5 py-1 rounded-md font-semibold text-slate-500 hover:text-blue-600 transition-colors cursor-pointer flex items-center gap-1" data-filter="perusahaan">
+                                    <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                                    <span>B2B</span>
+                                </button>
+                                <button type="button" class="btn-dashboard-map-filter px-2.5 py-1 rounded-md font-semibold text-slate-500 hover:text-emerald-600 transition-colors cursor-pointer flex items-center gap-1" data-filter="rumahan">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                                    <span>Rumahan</span>
+                                </button>
+                            </div>
+
                             <button
                                 type="button"
                                 id="btnResetDashboardMap"
-                                class="px-2.5 py-1 rounded-md bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-[11px] font-semibold transition-colors cursor-pointer"
+                                class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-[11px] font-semibold transition-colors cursor-pointer shadow-2xs"
+                                title="Reset posisi dan zoom peta"
                             >
-                                Reset Zoom
+                                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                <span>Reset Zoom</span>
                             </button>
+
+                            <button
+                                type="button"
+                                id="btnFullscreenDashboardMap"
+                                class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-[11px] font-semibold transition-colors cursor-pointer shadow-2xs"
+                                title="Layar Penuh"
+                            >
+                                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                                </svg>
+                                <span>Layar Penuh</span>
+                            </button>
+
                             <a
                                 href="{{ route('accounts.index') }}"
                                 class="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 transition-colors ml-1"
@@ -248,34 +270,96 @@
                         </div>
                     </div>
 
-                    <!-- Quick Customer Focus Bar -->
-                    <div class="px-4 py-2.5 bg-slate-50/80 border-b border-slate-100 flex items-center gap-2 overflow-x-auto text-[11px]">
-                        <span class="text-slate-400 font-bold uppercase tracking-wider text-[10px] shrink-0">Fokus Lokasi:</span>
-                        @foreach ($customerAccounts as $acc)
-                            @if (!empty($acc['latitude']) && !empty($acc['longitude']))
-                                <button
-                                    type="button"
-                                    class="btn-dashboard-focus-customer shrink-0 px-2.5 py-1 rounded-md bg-white hover:bg-blue-50 border border-slate-200/80 hover:border-blue-200 text-slate-700 hover:text-blue-700 font-medium transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
-                                    data-lat="{{ $acc['latitude'] }}"
-                                    data-lng="{{ $acc['longitude'] }}"
-                                    data-name="{{ $acc['customer_name'] }}"
-                                    data-id="{{ $acc['id'] }}"
-                                >
-                                    <span class="w-1.5 h-1.5 rounded-full {{ ($acc['customer_type'] ?? '') === 'rumahan' ? 'bg-emerald-500' : 'bg-blue-600' }}"></span>
-                                    <span>{{ \Illuminate\Support\Str::limit($acc['customer_name'], 22) }}</span>
-                                </button>
-                            @endif
-                        @endforeach
-                    </div>
+                    <!-- Split Map & Navigator Body (Proportional Aspect Ratio ~16:10) -->
+                    <div class="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
+                        <!-- Left: Map Canvas (Y-Axis enhanced to 580px - 620px) -->
+                        <div class="lg:col-span-8 xl:col-span-9 relative">
+                            <div id="dashboardCustomerMap" class="w-full h-[460px] sm:h-[520px] lg:h-[580px] xl:h-[620px] z-10 bg-slate-100"></div>
+                        </div>
 
-                    <!-- Map Container -->
-                    <div id="dashboardCustomerMap" class="w-full h-80 sm:h-96 z-10 bg-slate-100"></div>
+                        <!-- Right: Customer Location Navigator -->
+                        <div class="lg:col-span-4 xl:col-span-3 flex flex-col h-[380px] sm:h-[420px] lg:h-[580px] xl:h-[620px] bg-white">
+                            <!-- Navigator Search Bar -->
+                            <div class="p-3 border-b border-slate-100 bg-slate-50/50">
+                                <div class="relative">
+                                    <svg class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                    <input
+                                        type="text"
+                                        id="inputSearchDashboardMapCustomer"
+                                        placeholder="Cari customer terpetakan..."
+                                        class="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs"
+                                    >
+                                </div>
+                            </div>
+
+                            <!-- Scrollable Customer Cards List -->
+                            <div id="dashboardCustomerMapList" class="flex-1 overflow-y-auto divide-y divide-slate-100 text-xs">
+                                @forelse ($customerAccounts as $acc)
+                                    @php
+                                        $hasCoords = !empty($acc['latitude']) && !empty($acc['longitude']);
+                                        $isHome = ($acc['customer_type'] ?? '') === 'rumahan';
+                                    @endphp
+                                    <div
+                                        class="dashboard-customer-list-item p-3 hover:bg-blue-50/60 transition-colors cursor-pointer group"
+                                        data-id="{{ $acc['id'] }}"
+                                        data-name="{{ strtolower($acc['customer_name'] ?? '') }}"
+                                        data-type="{{ $isHome ? 'rumahan' : 'perusahaan' }}"
+                                        data-lat="{{ $acc['latitude'] ?? '' }}"
+                                        data-lng="{{ $acc['longitude'] ?? '' }}"
+                                    >
+                                        <div class="flex items-start justify-between gap-2">
+                                            <div class="min-w-0 flex-1">
+                                                <div class="flex items-center gap-1.5">
+                                                    <span class="w-2 h-2 rounded-full shrink-0 {{ $isHome ? 'bg-emerald-500' : 'bg-blue-600' }}"></span>
+                                                    <p class="font-bold text-slate-800 truncate group-hover:text-blue-700 transition-colors text-xs">
+                                                        {{ $acc['customer_name'] }}
+                                                    </p>
+                                                </div>
+                                                <p class="text-[11px] text-slate-500 truncate mt-0.5">
+                                                    PIC: {{ $acc['name'] ?? '-' }} • <span class="font-mono text-slate-400">{{ $acc['username'] ?? '-' }}</span>
+                                                </p>
+                                                <p class="text-[10px] text-slate-400 truncate mt-0.5">
+                                                    {{ $acc['address'] ?? 'Alamat tidak terdata' }}
+                                                </p>
+                                            </div>
+                                            <div class="shrink-0 text-right">
+                                                @if ($hasCoords)
+                                                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-600 border border-blue-200/60 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                        </svg>
+                                                        <span>Fokus</span>
+                                                    </span>
+                                                @else
+                                                    <span class="text-[10px] text-slate-300 font-medium">No GPS</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div class="p-6 text-center text-slate-400 text-xs">
+                                        Tidak ada akun customer.
+                                    </div>
+                                @endforelse
+                            </div>
+
+                            <!-- Navigator Footer Summary -->
+                            <div class="p-2.5 bg-slate-50/80 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                                <span class="text-slate-400">Terdaftar: <b id="dashboardNavigatorCount" class="text-slate-700">{{ count($customerAccounts) }}</b></span>
+                                <span class="text-[10px] text-slate-400">Klik item untuk fly to lokasi</span>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Map Footer Subrow -->
                     <div class="p-3 bg-white border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-[11px] text-slate-500">
-                        <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-3">
                             <span class="text-slate-400">Total Terpetakan: <b class="text-slate-800">{{ count($customerAccounts) }} Titik</b></span>
-                            <span class="text-slate-400">•</span>
+                            <span class="text-slate-300">•</span>
+                            <span class="text-slate-400">Proyeksi: <b class="text-slate-700">WGS84 / EPSG:3857</b></span>
+                            <span class="text-slate-300">•</span>
                             <span class="text-slate-400">Peta: <b class="text-slate-700">OpenStreetMap Interactive</b></span>
                         </div>
                         <div class="text-[10px] text-slate-400">
@@ -500,23 +584,121 @@
                     };
                 }
 
-                // Tombol Fokus Pelanggan di Quick Bar
-                document.querySelectorAll('.btn-dashboard-focus-customer').forEach(btn => {
+                // Filter Peta (Semua, B2B, Rumahan)
+                const filterBtns = document.querySelectorAll('.btn-dashboard-map-filter');
+                filterBtns.forEach(btn => {
                     btn.onclick = function() {
+                        const filter = this.getAttribute('data-filter');
+                        filterBtns.forEach(b => {
+                            b.classList.remove('bg-slate-100', 'text-slate-800');
+                            b.classList.add('text-slate-500');
+                        });
+                        this.classList.add('bg-slate-100', 'text-slate-800');
+                        this.classList.remove('text-slate-500');
+
+                        const visibleBounds = [];
+                        let visibleCount = 0;
+
+                        customerData.forEach(acc => {
+                            const marker = dashboardCustomerMarkers[acc.id];
+                            if (!marker) return;
+                            const isHome = (acc.customer_type || '') === 'rumahan';
+                            const match = (filter === 'all')
+                                || (filter === 'rumahan' && isHome)
+                                || (filter === 'perusahaan' && !isHome);
+
+                            if (match) {
+                                if (!dashboardMarkersLayer.hasLayer(marker)) {
+                                    dashboardMarkersLayer.addLayer(marker);
+                                }
+                                const lat = parseFloat(acc.latitude);
+                                const lng = parseFloat(acc.longitude);
+                                if (!isNaN(lat) && !isNaN(lng)) {
+                                    visibleBounds.push([lat, lng]);
+                                }
+                                visibleCount++;
+                            } else {
+                                if (dashboardMarkersLayer.hasLayer(marker)) {
+                                    dashboardMarkersLayer.removeLayer(marker);
+                                }
+                            }
+                        });
+
+                        // Filter daftar di navigator kanan
+                        document.querySelectorAll('.dashboard-customer-list-item').forEach(item => {
+                            const itemType = item.getAttribute('data-type');
+                            const match = (filter === 'all') || (itemType === filter);
+                            item.style.display = match ? '' : 'none';
+                        });
+
+                        const countNav = document.getElementById('dashboardNavigatorCount');
+                        if (countNav) countNav.textContent = visibleCount;
+
+                        if (dashboardCustomerMapInstance && visibleBounds.length > 0) {
+                            dashboardCustomerMapInstance.fitBounds(visibleBounds, { padding: [35, 35], maxZoom: 14 });
+                        }
+                    };
+                });
+
+                // Live Search pada Navigator Kanan
+                const searchInput = document.getElementById('inputSearchDashboardMapCustomer');
+                if (searchInput) {
+                    searchInput.addEventListener('input', function() {
+                        const q = this.value.trim().toLowerCase();
+                        let count = 0;
+                        document.querySelectorAll('.dashboard-customer-list-item').forEach(item => {
+                            const name = item.getAttribute('data-name') || '';
+                            const match = !q || name.includes(q);
+                            item.style.display = match ? '' : 'none';
+                            if (match) count++;
+                        });
+                        const countNav = document.getElementById('dashboardNavigatorCount');
+                        if (countNav) countNav.textContent = count;
+                    });
+                }
+
+                // Klik item di Navigator Kanan untuk fokus ke titik peta
+                document.querySelectorAll('.dashboard-customer-list-item').forEach(item => {
+                    item.onclick = function() {
                         const lat = parseFloat(this.getAttribute('data-lat'));
                         const lng = parseFloat(this.getAttribute('data-lng'));
                         const id = this.getAttribute('data-id');
                         if (isNaN(lat) || isNaN(lng) || !dashboardCustomerMapInstance) return;
 
-                        mapEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         dashboardCustomerMapInstance.flyTo([lat, lng], 16, { duration: 0.9 });
-
                         const marker = dashboardCustomerMarkers[id];
                         if (marker) {
-                            setTimeout(() => marker.openPopup(), 500);
+                            setTimeout(() => marker.openPopup(), 450);
                         }
                     };
                 });
+
+                // Tombol Layar Penuh (Fullscreen)
+                const btnFullscreen = document.getElementById('btnFullscreenDashboardMap');
+                const mapCard = document.getElementById('dashboardMapCard');
+                if (btnFullscreen && mapCard) {
+                    btnFullscreen.onclick = function() {
+                        const isFull = mapCard.classList.toggle('is-map-fullscreen');
+                        document.body.classList.toggle('overflow-hidden', isFull);
+                        setTimeout(() => {
+                            if (dashboardCustomerMapInstance) {
+                                dashboardCustomerMapInstance.invalidateSize();
+                            }
+                        }, 200);
+                    };
+
+                    document.addEventListener('keydown', function(e) {
+                        if (e.key === 'Escape' && mapCard.classList.contains('is-map-fullscreen')) {
+                            mapCard.classList.remove('is-map-fullscreen');
+                            document.body.classList.remove('overflow-hidden');
+                            setTimeout(() => {
+                                if (dashboardCustomerMapInstance) {
+                                    dashboardCustomerMapInstance.invalidateSize();
+                                }
+                            }, 200);
+                        }
+                    });
+                }
             }
 
             if (document.readyState === 'loading') {
