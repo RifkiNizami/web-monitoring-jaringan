@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Exports\DevicesReportExport;
+use App\Exports\FullReportExport;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Device;
@@ -115,7 +115,7 @@ class ReportController extends Controller
     }
 
     /**
-     * Ekspor data perangkat laporan ke format spreadsheet Excel (.xlsx).
+     * Ekspor data laporan lengkap (perangkat & tiket) ke format spreadsheet Excel (.xlsx).
      */
     public function exportExcel(Request $request): Response
     {
@@ -123,18 +123,13 @@ class ReportController extends Controller
 
         $customerSlug = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', $reportData['evaluatedPartner']));
         $filename = sprintf(
-            'NetFly_Device_Report_%s_%s_%s.xlsx',
+            'NetFly_Report_%s_%s_%s.xlsx',
             $customerSlug,
             $reportData['selectedMonthName'],
             $reportData['selectedYear']
         );
 
-        /** @var FromCollection $export */
-        $export = new DevicesReportExport(
-            $reportData['devices'],
-            $reportData['evaluatedPartner'],
-            $reportData['formattedPeriod']
-        );
+        $export = new FullReportExport($reportData);
 
         return Excel::download(
             $export,
