@@ -5,6 +5,7 @@ namespace App\Http\Controllers\AdminKonten;
 use App\Http\Controllers\Controller;
 use App\Models\Announcement;
 use App\Services\ActivityLogger;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -77,6 +78,32 @@ class KontenPemberitahuanController extends Controller
             'category',
             'status'
         ));
+    }
+
+    /**
+     * Tampilkan formulir pembuatan pemberitahuan baru (khusus Admin Konten).
+     */
+    public function create(): View|RedirectResponse
+    {
+        if (Auth::user()->role !== 'admin_konten') {
+            return redirect()->route('pemberitahuan.index')->with('error', 'Akses dibatasi hanya untuk Admin Konten.');
+        }
+
+        return view('admin-konten.pemberitahuan.create');
+    }
+
+    /**
+     * Tampilkan formulir edit pemberitahuan (khusus Admin Konten).
+     */
+    public function edit(Request $request, $id): View|RedirectResponse
+    {
+        if (Auth::user()->role !== 'admin_konten') {
+            return redirect()->route('pemberitahuan.index')->with('error', 'Akses dibatasi hanya untuk Admin Konten.');
+        }
+
+        $announcement = Announcement::findOrFail($id);
+
+        return view('admin-konten.pemberitahuan.edit', compact('announcement'));
     }
 
     /**

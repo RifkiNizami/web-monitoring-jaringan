@@ -154,7 +154,7 @@
                   data-base-ping="{{ $pingMs }}"
                   data-base-rx="{{ $rxValue }}"
                   data-base-tx="{{ $txValue }}"
-                  class="flex-1 p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full">
+                  class="p-6 lg:p-8 space-y-6">
 
                 <!-- 1. DEVICE HEADER -->
                 <section class="bg-white rounded-xl border border-slate-200">

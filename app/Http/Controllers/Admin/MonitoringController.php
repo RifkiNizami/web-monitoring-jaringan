@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Device;
 use App\Models\MonitoringAlert;
 use App\Models\MonitoringDevice;
 use App\Services\MikrotikService;
@@ -12,6 +13,38 @@ use Illuminate\View\View;
 
 class MonitoringController extends Controller
 {
+    /**
+     * Format teks rate bandwidth menjadi string rapi dengan unit standar (e.g. '480.5 Mbps').
+     */
+    public static function formatRate(?string $rate, string $fallback = '0.0 Mbps'): string
+    {
+        if (empty($rate) || $rate === '0' || $rate === '0.0') {
+            return $fallback;
+        }
+
+        $trimmed = trim($rate);
+
+        if (preg_match('/^([\d.]+)\s*([KkMmGgTt]?)bps?$/i', $trimmed, $matches)) {
+            $val = $matches[1];
+            $unit = strtoupper($matches[2] ?: 'M');
+
+            return "{$val} {$unit}bps";
+        }
+
+        if (preg_match('/^([\d.]+)\s*([KkMmGgTt])$/i', $trimmed, $matches)) {
+            $val = $matches[1];
+            $unit = strtoupper($matches[2]);
+
+            return "{$val} {$unit}bps";
+        }
+
+        if (is_numeric($trimmed)) {
+            return "{$trimmed} Mbps";
+        }
+
+        return $trimmed;
+    }
+
     /**
      * Format instance Model MonitoringDevice menjadi struktur array standar.
      */
@@ -59,7 +92,7 @@ class MonitoringController extends Controller
     {
         return MonitoringDevice::orderBy('id', 'asc')
             ->get()
-            ->mapWithKeys(fn (MonitoringDevice $dev) => [$dev->id => self::formatMonitoringDevice($dev)])
+            ->mapWithKeys(fn ($dev) => [(int) $dev->id => self::formatMonitoringDevice($dev)])
             ->all();
     }
 
@@ -102,81 +135,237 @@ class MonitoringController extends Controller
     }
 
     /**
+     * Inisialisasi perangkat monitoring jika tabel masih kosong dari master Device.
+     */
+    public static function seedInitialMonitoringDevices(): void
+    {
+        if (MonitoringDevice::count() > 0) {
+            return;
+        }
+
+        $devices = Device::with('customer', 'project')->get();
+
+        if ($devices->isNotEmpty()) {
+            foreach ($devices as $dev) {
+                $isOffline = $dev->status_state === 'out_of_stock';
+                $status = $isOffline ? 'offline' : 'online';
+                $rxRate = self::formatRate($dev->rx_rate, '50.0 Mbps');
+                $txRate = self::formatRate($dev->tx_rate, '35.0 Mbps');
+
+                MonitoringDevice::create([
+                    'id' => $dev->id,
+                    'hostname' => $dev->hostname,
+                    'unit_type' => $dev->type ?? 'Router',
+                    'ip_address' => $dev->ip_address ?: ('10.200.10.'.(10 + ($dev->id % 200))),
+                    'customer' => $dev->customer ? $dev->customer->name : 'Infrastruktur Backbone NetFly',
+                    'project' => $dev->project ? $dev->project->name : 'Dedicated Core Interconnect',
+                    'model' => $dev->brand_model ?: ($dev->type.' Node'),
+                    'rack_location' => $dev->rack_location ?: 'POP Distribusi NetFly',
+                    'status' => $status,
+                    'status_label' => strtoupper($status),
+                    'uptime' => $isOffline ? 'Offline (Timeout)' : '14 hari 06 jam',
+                    'rx_mbps' => $isOffline ? '0.0 Mbps' : $rxRate,
+                    'tx_mbps' => $isOffline ? '0.0 Mbps' : $txRate,
+                    'cpu_load' => $isOffline ? 0.0 : round(18.0 + (($dev->id * 7) % 35), 1),
+                    'ram_load' => $isOffline ? 0.0 : round(35.0 + (($dev->id * 11) % 40), 1),
+                    'packet_loss' => $isOffline ? 100.0 : 0.0,
+                    'last_ping_ms' => $isOffline ? null : (8 + ($dev->id % 15)),
+                    'connection_type' => 'lan',
+                    'api_port' => 8728,
+                    'api_username' => 'admin',
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Jalankan polling telemetri individual pada satu node (Kondisi A vs Kondisi B).
+     */
+    public static function pollSingleNode(MonitoringDevice $node, MikrotikService $mikrotikService): void
+    {
+        if (empty($node->ip_address)) {
+            return;
+        }
+
+        $isNonMikrotik = MikrotikService::isNonMikrotik($node->unit_type, $node->api_port);
+
+        if ($isNonMikrotik) {
+            $port = (int) ($node->api_port ?: 80);
+            $check = $mikrotikService->checkHttpSocket($node->ip_address, $port, 2);
+
+            if ($check['online']) {
+                $node->update([
+                    'status' => 'online',
+                    'status_label' => 'ONLINE',
+                    'uptime' => $check['uptime'],
+                    'last_ping_ms' => $check['latency_ms'],
+                    'packet_loss' => 0.0,
+                    'interfaces' => ! empty($check['interfaces']) ? $check['interfaces'] : $node->interfaces,
+                ]);
+            } else {
+                $node->update([
+                    'status' => 'offline',
+                    'status_label' => 'OFFLINE',
+                    'cpu_load' => 0.0,
+                    'ram_load' => 0.0,
+                    'rx_mbps' => '0.0 Mbps',
+                    'tx_mbps' => '0.0 Mbps',
+                    'uptime' => 'Offline (Timeout)',
+                    'last_ping_ms' => null,
+                    'packet_loss' => 100.0,
+                ]);
+            }
+        } elseif (! empty($node->api_username)) {
+            $telemetry = $mikrotikService->getDeviceTelemetry(
+                $node->ip_address,
+                $node->api_username,
+                (string) ($node->api_password ?? ''),
+                (int) ($node->api_port ?? 8728),
+                2,
+                $node->unit_type
+            );
+
+            if ($telemetry) {
+                $node->update([
+                    'status' => 'online',
+                    'status_label' => 'ONLINE',
+                    'cpu_load' => $telemetry['resource']['cpu_load'],
+                    'ram_load' => $telemetry['resource']['ram_load'],
+                    'uptime' => $telemetry['resource']['uptime'],
+                    'last_ping_ms' => (int) $telemetry['latency_ms'],
+                    'packet_loss' => 0.0,
+                    'interfaces' => $telemetry['interfaces'] ?? $node->interfaces,
+                ]);
+            } else {
+                $node->update([
+                    'status' => 'offline',
+                    'status_label' => 'OFFLINE',
+                    'cpu_load' => 0.0,
+                    'ram_load' => 0.0,
+                    'rx_mbps' => '0.0 Mbps',
+                    'tx_mbps' => '0.0 Mbps',
+                    'uptime' => 'Offline (Timeout)',
+                    'last_ping_ms' => null,
+                    'packet_loss' => 100.0,
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Sinkronisasi alert poller otomatis berdasarkan kondisi nyata setiap node.
+     */
+    public static function syncPollerAlerts(): void
+    {
+        $nodes = MonitoringDevice::all();
+        $deviceMap = Device::pluck('id', 'hostname')->all();
+
+        foreach ($nodes as $node) {
+            $isOffline = $node->status === 'offline' || (float) $node->packet_loss >= 100.0;
+            $hasPacketLoss = (float) $node->packet_loss > 10.0 && (float) $node->packet_loss < 100.0;
+            $hasHighCpu = (float) $node->cpu_load >= 80.0;
+            $deviceId = $deviceMap[$node->hostname] ?? (is_numeric($node->id) && Device::whereKey($node->id)->exists() ? (int) $node->id : null);
+
+            // 1. Kondisi Offline (Perangkat Padam / Loss of Signal)
+            if ($isOffline) {
+                $exists = MonitoringAlert::where('host', $node->hostname)
+                    ->where('type', 'Perangkat Padam')
+                    ->where('is_resolved', false)
+                    ->exists();
+
+                if (! $exists) {
+                    MonitoringAlert::create([
+                        'device_id' => $deviceId,
+                        'customer_id' => null,
+                        'host' => $node->hostname,
+                        'customer_name' => $node->customer ?: 'Infrastruktur Jaringan',
+                        'severity' => 'critical',
+                        'type' => 'Perangkat Padam',
+                        'message' => "Node {$node->hostname} ({$node->ip_address}) tidak merespons poller ICMP/API (Loss of Signal / RTO).",
+                        'is_resolved' => false,
+                        'resolved_at' => null,
+                    ]);
+                }
+            } else {
+                // Auto-resolve jika perangkat sudah kembali online
+                MonitoringAlert::where('host', $node->hostname)
+                    ->where('type', 'Perangkat Padam')
+                    ->where('is_resolved', false)
+                    ->update([
+                        'is_resolved' => true,
+                        'resolved_at' => now(),
+                    ]);
+            }
+
+            // 2. Kondisi Degradasi Link / Packet Loss Tinggi
+            if ($hasPacketLoss) {
+                $exists = MonitoringAlert::where('host', $node->hostname)
+                    ->where('type', 'Degradasi Jaringan')
+                    ->where('is_resolved', false)
+                    ->exists();
+
+                if (! $exists) {
+                    MonitoringAlert::create([
+                        'device_id' => $deviceId,
+                        'customer_id' => null,
+                        'host' => $node->hostname,
+                        'customer_name' => $node->customer ?: 'Infrastruktur Jaringan',
+                        'severity' => 'warning',
+                        'type' => 'Degradasi Jaringan',
+                        'message' => "Node {$node->hostname} mengalami degradasi link (Packet loss {$node->packet_loss}%).",
+                        'is_resolved' => false,
+                        'resolved_at' => null,
+                    ]);
+                }
+            } elseif (! $isOffline && (float) $node->packet_loss <= 2.0) {
+                MonitoringAlert::where('host', $node->hostname)
+                    ->where('type', 'Degradasi Jaringan')
+                    ->where('is_resolved', false)
+                    ->update([
+                        'is_resolved' => true,
+                        'resolved_at' => now(),
+                    ]);
+            }
+
+            // 3. Kondisi Beban CPU Tinggi
+            if ($hasHighCpu) {
+                $exists = MonitoringAlert::where('host', $node->hostname)
+                    ->where('type', 'Beban CPU Tinggi')
+                    ->where('is_resolved', false)
+                    ->exists();
+
+                if (! $exists) {
+                    MonitoringAlert::create([
+                        'device_id' => $deviceId,
+                        'customer_id' => null,
+                        'host' => $node->hostname,
+                        'customer_name' => $node->customer ?: 'Infrastruktur Jaringan',
+                        'severity' => 'warning',
+                        'type' => 'Beban CPU Tinggi',
+                        'message' => "Beban prosessor node {$node->hostname} mencapai {$node->cpu_load}%, terdeteksi potensi antrean trafik.",
+                        'is_resolved' => false,
+                        'resolved_at' => null,
+                    ]);
+                }
+            } elseif (! $isOffline && (float) $node->cpu_load < 70.0) {
+                MonitoringAlert::where('host', $node->hostname)
+                    ->where('type', 'Beban CPU Tinggi')
+                    ->where('is_resolved', false)
+                    ->update([
+                        'is_resolved' => true,
+                        'resolved_at' => now(),
+                    ]);
+            }
+        }
+    }
+
+    /**
      * Tampilkan halaman telemetri pemantauan real-time & live alert NOC.
      */
     public function index(Request $request): View
     {
-        // Jalankan polling update real-time untuk perangkat MikroTik (Kondisi A) & Non-MikroTik (Kondisi B)
-        if (! app()->runningUnitTests()) {
-            $mikrotikService = new MikrotikService;
-            $nodesToPoll = MonitoringDevice::whereNotNull('ip_address')->get();
-
-            foreach ($nodesToPoll as $node) {
-                $isNonMikrotik = MikrotikService::isNonMikrotik($node->unit_type, $node->api_port);
-
-                if ($isNonMikrotik) {
-                    // Kondisi B: Non-MikroTik / TOTOLINK HTTP & Ping (Port 80/8080 atau Access Point / Generic Router)
-                    $port = (int) ($node->api_port ?: 80);
-                    $check = $mikrotikService->checkHttpSocket($node->ip_address, $port, 2);
-
-                    if ($check['online']) {
-                        $node->update([
-                            'status' => 'online',
-                            'status_label' => 'ONLINE',
-                            'cpu_load' => 0.0,
-                            'ram_load' => 0.0,
-                            'uptime' => $check['uptime'],
-                            'last_ping_ms' => $check['latency_ms'],
-                            'packet_loss' => 0.0,
-                            'interfaces' => ! empty($check['interfaces']) ? $check['interfaces'] : $node->interfaces,
-                        ]);
-                    } else {
-                        $node->update([
-                            'status' => 'offline',
-                            'status_label' => 'OFFLINE',
-                            'cpu_load' => 0.0,
-                            'ram_load' => 0.0,
-                            'uptime' => 'Offline (Timeout)',
-                            'last_ping_ms' => null,
-                            'packet_loss' => 100.0,
-                        ]);
-                    }
-                } elseif (! empty($node->api_username)) {
-                    // Kondisi A: MikroTik RouterOS API (Port 8728 / 8729)
-                    $telemetry = $mikrotikService->getDeviceTelemetry(
-                        $node->ip_address,
-                        $node->api_username,
-                        (string) ($node->api_password ?? ''),
-                        (int) ($node->api_port ?? 8728),
-                        2,
-                        $node->unit_type
-                    );
-
-                    if ($telemetry) {
-                        $node->update([
-                            'status' => 'online',
-                            'status_label' => 'ONLINE',
-                            'cpu_load' => $telemetry['resource']['cpu_load'],
-                            'ram_load' => $telemetry['resource']['ram_load'],
-                            'uptime' => $telemetry['resource']['uptime'],
-                            'last_ping_ms' => (int) $telemetry['latency_ms'],
-                            'packet_loss' => 0.0,
-                            'interfaces' => $telemetry['interfaces'] ?? $node->interfaces,
-                        ]);
-                    } else {
-                        $node->update([
-                            'status' => 'offline',
-                            'status_label' => 'OFFLINE',
-                            'cpu_load' => 0.0,
-                            'ram_load' => 0.0,
-                            'uptime' => 'Offline (Timeout)',
-                            'last_ping_ms' => null,
-                            'packet_loss' => 100.0,
-                        ]);
-                    }
-                }
-            }
-        }
+        // Sinkronisasi alert poller otomatis jika terdapat node monitoring
+        self::syncPollerAlerts();
 
         $telemetryDevices = array_values(self::getTelemetryDevicesList());
         $deviceCollection = collect($telemetryDevices);
@@ -254,21 +443,34 @@ class MonitoringController extends Controller
 
         $device = self::formatMonitoringDevice($deviceModel);
 
-        // Filter alert khusus device ini
-        $alerts = [
-            [
-                'severity' => $device['status'] === 'warning' ? 'warning' : 'info',
-                'time' => '10:45:00 WIB',
-                'title' => 'Telemetri Realtime Terpantau Stabil',
-                'desc' => 'Sensor CPU, RAM, dan link port beroperasi dalam batas toleransi aman.',
-            ],
-            [
-                'severity' => 'info',
-                'time' => '08:00:00 WIB',
-                'title' => 'Diagnostic Poller Otomatis Selesai',
-                'desc' => 'Hasil ping latency rata-rata '.$device['last_ping_ms'].' ms dengan packet loss '.$device['packet_loss'].'%.',
-            ],
-        ];
+        // Ambil riwayat insiden nyata khusus node ini
+        $realAlerts = MonitoringAlert::where('host', $device['hostname'])
+            ->orWhere('device_id', $device['id'])
+            ->latest()
+            ->take(10)
+            ->get();
+
+        if ($realAlerts->isNotEmpty()) {
+            $alerts = $realAlerts->map(function ($a) {
+                return [
+                    'severity' => $a->severity,
+                    'time' => $a->created_at ? $a->created_at->format('H:i:s').' WIB' : now()->format('H:i:s').' WIB',
+                    'title' => "{$a->type} (".($a->is_resolved ? 'Selesai' : 'Aktif').')',
+                    'desc' => $a->message,
+                ];
+            })->all();
+        } else {
+            $alerts = [
+                [
+                    'severity' => $device['status'] === 'offline' ? 'critical' : ($device['status'] === 'warning' ? 'warning' : 'info'),
+                    'time' => now()->format('H:i:s').' WIB',
+                    'title' => $device['status'] === 'offline' ? 'Node Terputus (Timeout)' : 'Telemetri Realtime Terpantau Stabil',
+                    'desc' => $device['status'] === 'offline'
+                        ? "Perangkat tidak merespons poller socket/API pada IP {$device['ip_address']}."
+                        : "Sensor CPU ({$device['cpu_load']}%), RAM ({$device['ram_load']}%), dan link port beroperasi dalam batas toleransi aman.",
+                ],
+            ];
+        }
 
         return view('admin.monitoring.detail', compact('device', 'alerts'));
     }
@@ -287,66 +489,7 @@ class MonitoringController extends Controller
         // Ambil data telemetri langsung (Kondisi A: MikroTik RouterOS API, Kondisi B: Non-MikroTik HTTP/TCP Socket)
         if (! empty($deviceModel->ip_address) && ! app()->runningUnitTests()) {
             $mikrotikService = new MikrotikService;
-            $isNonMikrotik = MikrotikService::isNonMikrotik($deviceModel->unit_type, $deviceModel->api_port);
-
-            if ($isNonMikrotik) {
-                $port = (int) ($deviceModel->api_port ?: 80);
-                $check = $mikrotikService->checkHttpSocket($deviceModel->ip_address, $port, 2);
-
-                if ($check['online']) {
-                    $deviceModel->update([
-                        'cpu_load' => 0.0,
-                        'ram_load' => 0.0,
-                        'uptime' => $check['uptime'],
-                        'last_ping_ms' => $check['latency_ms'],
-                        'packet_loss' => 0.0,
-                        'status' => 'online',
-                        'status_label' => 'ONLINE',
-                    ]);
-                } else {
-                    $deviceModel->update([
-                        'cpu_load' => 0.0,
-                        'ram_load' => 0.0,
-                        'uptime' => 'Offline (Timeout)',
-                        'last_ping_ms' => null,
-                        'packet_loss' => 100.0,
-                        'status' => 'offline',
-                        'status_label' => 'OFFLINE',
-                    ]);
-                }
-            } elseif (! empty($deviceModel->api_username)) {
-                $telemetry = $mikrotikService->getDeviceTelemetry(
-                    $deviceModel->ip_address,
-                    $deviceModel->api_username,
-                    (string) ($deviceModel->api_password ?? ''),
-                    (int) ($deviceModel->api_port ?? 8728),
-                    2,
-                    $deviceModel->unit_type
-                );
-
-                if ($telemetry) {
-                    $updates = [
-                        'cpu_load' => $telemetry['resource']['cpu_load'],
-                        'ram_load' => $telemetry['resource']['ram_load'],
-                        'uptime' => $telemetry['resource']['uptime'],
-                        'last_ping_ms' => (int) $telemetry['latency_ms'],
-                        'packet_loss' => 0.0,
-                        'status' => 'online',
-                        'status_label' => 'ONLINE',
-                    ];
-                    if (! empty($telemetry['interfaces'])) {
-                        $updates['interfaces'] = $telemetry['interfaces'];
-                    }
-                    $deviceModel->update($updates);
-                } else {
-                    $deviceModel->update([
-                        'last_ping_ms' => null,
-                        'packet_loss' => 100.0,
-                        'status' => 'offline',
-                        'status_label' => 'OFFLINE',
-                    ]);
-                }
-            }
+            self::pollSingleNode($deviceModel, $mikrotikService);
         }
 
         $device = self::formatMonitoringDevice($deviceModel);
@@ -385,6 +528,59 @@ class MonitoringController extends Controller
             'success' => true,
             'message' => 'Insiden telemetri berhasil ditandai selesai (Resolved).',
             'alert_id' => $id,
+        ]);
+    }
+
+    /**
+     * Tandai seluruh alert / insiden yang belum selesai menjadi terselesaikan (Resolved).
+     */
+    public function resolveAllAlerts(Request $request): JsonResponse
+    {
+        $count = MonitoringAlert::where('is_resolved', false)->update([
+            'is_resolved' => true,
+            'resolved_at' => now(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "{$count} peringatan berhasil ditandai selesai.",
+            'resolved_count' => $count,
+        ]);
+    }
+
+    /**
+     * Jalankan poller serentak ke semua node perangkat dan perbarui log alert secara realtime.
+     */
+    public function pollAllNodes(Request $request): JsonResponse
+    {
+        if (! app()->runningUnitTests()) {
+            self::seedInitialMonitoringDevices();
+
+            $mikrotikService = new MikrotikService;
+            $nodes = MonitoringDevice::all();
+
+            foreach ($nodes as $node) {
+                self::pollSingleNode($node, $mikrotikService);
+            }
+        }
+
+        self::syncPollerAlerts();
+
+        $nodes = MonitoringDevice::all();
+        $online = $nodes->where('status', 'online')->count();
+        $offline = $nodes->where('status', 'offline')->count();
+        $warning = $nodes->where('status', 'warning')->count();
+        $unresolvedAlerts = MonitoringAlert::where('is_resolved', false)->count();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Poller berhasil menyinkronkan {$nodes->count()} perangkat.",
+            'total' => $nodes->count(),
+            'online' => $online,
+            'offline' => $offline,
+            'warning' => $warning,
+            'unresolved_alerts' => $unresolvedAlerts,
+            'timestamp' => now()->format('H:i:s').' WIB',
         ]);
     }
 

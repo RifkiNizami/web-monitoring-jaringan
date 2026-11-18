@@ -44,28 +44,36 @@ Route::middleware('auth')->group(function () {
 
         // Kelola Klien Landing Page (CRUD)
         Route::get('/klien', [KontenKlienController::class, 'index'])->name('klien.index');
+        Route::get('/klien/create', [KontenKlienController::class, 'create'])->name('klien.create');
         Route::post('/klien', [KontenKlienController::class, 'store'])->name('klien.store');
+        Route::get('/klien/{id}/edit', [KontenKlienController::class, 'edit'])->name('klien.edit');
         Route::match(['post', 'put'], '/klien/{id}', [KontenKlienController::class, 'update'])->name('klien.update');
         Route::delete('/klien/{id}', [KontenKlienController::class, 'destroy'])->name('klien.destroy');
         Route::match(['post', 'put'], '/klien/{id}/toggle-status', [KontenKlienController::class, 'toggleStatus'])->name('klien.toggle-status');
 
         // Alias URL /landing-clients agar tautan & test kompatibel
         Route::get('/landing-clients', [KontenKlienController::class, 'index'])->name('landing-clients.index');
+        Route::get('/landing-clients/create', [KontenKlienController::class, 'create'])->name('landing-clients.create');
         Route::post('/landing-clients', [KontenKlienController::class, 'store'])->name('landing-clients.store');
+        Route::get('/landing-clients/{id}/edit', [KontenKlienController::class, 'edit'])->name('landing-clients.edit');
         Route::match(['post', 'put'], '/landing-clients/{id}', [KontenKlienController::class, 'update'])->name('landing-clients.update');
         Route::delete('/landing-clients/{id}', [KontenKlienController::class, 'destroy'])->name('landing-clients.destroy');
         Route::match(['post', 'put'], '/landing-clients/{id}/toggle-status', [KontenKlienController::class, 'toggleStatus'])->name('landing-clients.toggle-status');
 
         // Pemberitahuan / Announcements (Index: Admin Konten kelola, Admin Biasa tinjau)
         Route::get('/pemberitahuan', [KontenPemberitahuanController::class, 'index'])->name('pemberitahuan.index');
+        Route::get('/pemberitahuan/create', [KontenPemberitahuanController::class, 'create'])->name('pemberitahuan.create');
         Route::post('/pemberitahuan', [KontenPemberitahuanController::class, 'store'])->name('pemberitahuan.store');
+        Route::get('/pemberitahuan/{id}/edit', [KontenPemberitahuanController::class, 'edit'])->name('pemberitahuan.edit');
         Route::match(['post', 'put'], '/pemberitahuan/{id}', [KontenPemberitahuanController::class, 'update'])->name('pemberitahuan.update');
         Route::delete('/pemberitahuan/{id}', [KontenPemberitahuanController::class, 'destroy'])->name('pemberitahuan.destroy');
         Route::match(['post', 'put'], '/pemberitahuan/{id}/toggle-status', [KontenPemberitahuanController::class, 'toggleStatus'])->name('pemberitahuan.toggle-status');
 
         // Alias URL /announcements agar tautan & test kompatibel
         Route::get('/announcements', [KontenPemberitahuanController::class, 'index'])->name('announcements.index');
+        Route::get('/announcements/create', [KontenPemberitahuanController::class, 'create'])->name('announcements.create');
         Route::post('/announcements', [KontenPemberitahuanController::class, 'store'])->name('announcements.store');
+        Route::get('/announcements/{id}/edit', [KontenPemberitahuanController::class, 'edit'])->name('announcements.edit');
         Route::match(['post', 'put'], '/announcements/{id}', [KontenPemberitahuanController::class, 'update'])->name('announcements.update');
         Route::delete('/announcements/{id}', [KontenPemberitahuanController::class, 'destroy'])->name('announcements.destroy');
         Route::match(['post', 'put'], '/announcements/{id}/toggle-status', [KontenPemberitahuanController::class, 'toggleStatus'])->name('announcements.toggle-status');
@@ -123,6 +131,7 @@ Route::middleware('auth')->group(function () {
         // Inventaris Perangkat Jaringan (Network Devices Management)
         Route::get('/devices', [DeviceController::class, 'index'])->name('devices.index');
         Route::get('/devices/create', [DeviceController::class, 'create'])->name('devices.create');
+        Route::get('/devices/export-excel', [DeviceController::class, 'exportExcel'])->name('devices.exportExcel');
         Route::post('/devices', [DeviceController::class, 'store'])->name('devices.store');
         Route::get('/devices/{id}/edit', [DeviceController::class, 'edit'])->name('devices.edit');
         Route::match(['put', 'post'], '/devices/{id}', [DeviceController::class, 'update'])->name('devices.update');
@@ -138,7 +147,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/monitoring/devices/{id}', [MonitoringController::class, 'show'])->name('monitoring.show');
         Route::get('/monitoring/devices/{id}/telemetry', [MonitoringController::class, 'telemetryStream'])->name('monitoring.telemetry');
         Route::post('/monitoring/devices/{id}/ping', [MonitoringController::class, 'pollDevice'])->name('monitoring.devices.ping');
+        Route::post('/monitoring/poll-all', [MonitoringController::class, 'pollAllNodes'])->name('monitoring.poll-all');
         Route::post('/monitoring/alerts/{id}/resolve', [MonitoringController::class, 'resolveAlert'])->name('monitoring.alerts.resolve');
+        Route::post('/monitoring/alerts/resolve-all', [MonitoringController::class, 'resolveAllAlerts'])->name('monitoring.alerts.resolve-all');
         Route::post('/monitoring/settings', [MonitoringDeviceController::class, 'saveSettings'])->name('monitoring.settings.save');
 
         // Laporan Kinerja SLA & Audit (Executive Report Generator & PDF/Excel Export)

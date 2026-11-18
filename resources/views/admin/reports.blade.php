@@ -45,16 +45,6 @@
 
                 <!-- Right Header Tools -->
                 <div class="flex items-center gap-4">
-                    <!-- Notification Bell -->
-                    <button class="relative p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer" aria-label="Notifikasi">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                        </svg>
-                        <span class="absolute top-1 right-1 w-3.5 h-3.5 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-white">
-                            3
-                        </span>
-                    </button>
-
                     <!-- Realtime Digital Clock -->
                     <div class="hidden sm:flex items-center gap-1.5 text-xs font-mono text-slate-600 bg-slate-100/80 px-2.5 py-1 rounded-md border border-slate-200/60">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -228,41 +218,17 @@
                     </form>
                 </div>
 
-                <!-- 4 SUMMARY METRIC CARDS -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-                    
-                    <!-- Card 1: Ketersediaan SLA Bulanan -->
-                    <div class="bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-2xs flex flex-col justify-between">
-                        <div>
-                            <div class="flex items-center justify-between mb-3">
-                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">
-                                    KETERSEDIAAN SLA BULANAN
-                                </span>
-                                <span class="px-2 py-0.5 text-[10px] font-semibold {{ $slaStatusColor === 'emerald' ? 'bg-emerald-50 text-emerald-700 border-emerald-200/60' : 'bg-amber-50 text-amber-700 border-amber-200/60' }} border rounded-full">
-                                    {{ $slaStatusLabel }}
-                                </span>
-                            </div>
-                            <div class="flex items-baseline gap-2 mb-2">
-                                <span class="text-2xl font-black text-slate-900 tracking-tight">{{ number_format($actualSla, 1) }}%</span>
-                                <span class="text-xs font-medium text-slate-400">/ Min {{ $targetSlaMin }}</span>
-                            </div>
-                        </div>
-                        <div class="pt-2 border-t border-slate-100 flex items-center gap-1.5 text-[11px] {{ $slaStatusColor === 'emerald' ? 'text-emerald-600' : 'text-amber-600' }} font-medium">
-                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-                            </svg>
-                            <span>{{ $slaCommitmentText }}</span>
-                        </div>
-                    </div>
+                <!-- 3 SUMMARY METRIC CARDS -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-                    <!-- Card 2: Total Insiden & Tiket -->
-                    <div class="bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-2xs flex flex-col justify-between">
+                    <!-- Card 1: Total Insiden & Tiket -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200/80 shadow-2xs flex flex-col justify-between">
                         <div>
                             <div class="flex items-center justify-between mb-3">
                                 <span class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">
                                     TOTAL INSIDEN & TIKET
                                 </span>
-                                <span class="px-2 py-0.5 text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200/60 rounded-full">
+                                <span class="text-[11px] font-semibold text-slate-500">
                                     {{ $totalTickets }} Tiket
                                 </span>
                             </div>
@@ -271,28 +237,29 @@
                                 <span class="text-xs font-medium text-slate-500">Terselesaikan</span>
                             </div>
                         </div>
-                        <div class="pt-2 border-t border-slate-100 text-[11px] text-slate-500">
+                        <div class="pt-2.5 border-t border-slate-100 text-[11px] text-slate-500">
                             Rata-rata waktu penyelesaian: <span class="font-semibold text-slate-700">{{ $avgResolutionTime }}</span>
                         </div>
                     </div>
 
-                    <!-- Card 3: Cakupan Node Hardware -->
-                    <div class="bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-2xs flex flex-col justify-between">
+                    <!-- Card 2: Cakupan Node Hardware -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200/80 shadow-2xs flex flex-col justify-between">
                         <div>
                             <div class="flex items-center justify-between mb-3">
                                 <span class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">
                                     CAKUPAN NODE HARDWARE
                                 </span>
-                                <span class="px-2 py-0.5 text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200/60 rounded-full">
-                                    Aktif
-                                </span>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                    <span class="text-[11px] font-bold text-slate-600">Aktif</span>
+                                </div>
                             </div>
                             <div class="flex items-baseline gap-2 mb-2">
                                 <span class="text-2xl font-black text-slate-900 tracking-tight">{{ $totalDevices }}</span>
                                 <span class="text-xs font-medium text-slate-500">Perangkat Terpantau</span>
                             </div>
                         </div>
-                        <div class="pt-2 border-t border-slate-100 text-[11px] text-slate-500">
+                        <div class="pt-2.5 border-t border-slate-100 text-[11px] text-slate-500">
                             <span class="font-semibold text-emerald-600">{{ $normalDevices }} unit</span> beroperasi normal
                             @if($warningDevices > 0)
                                 • <span class="font-semibold text-amber-600">{{ $warningDevices }} warning</span>
@@ -300,8 +267,8 @@
                         </div>
                     </div>
 
-                    <!-- Card 4: Mitra Yang Dievaluasi -->
-                    <div class="bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-2xs flex flex-col justify-between">
+                    <!-- Card 3: Mitra Yang Dievaluasi -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200/80 shadow-2xs flex flex-col justify-between">
                         <div>
                             <div class="flex items-center justify-between mb-3">
                                 <span class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">
@@ -317,55 +284,12 @@
                                 </h3>
                             </div>
                         </div>
-                        <div class="pt-2 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-between">
+                        <div class="pt-2.5 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-between">
                             <span>Periode: <strong class="text-slate-700 font-semibold">{{ $formattedPeriod }}</strong></span>
                             <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
                         </div>
                     </div>
 
-                </div>
-
-                <!-- 30-DAY UPTIME TIMELINE STRIP ("JALUR" - DESAIN SYSTEM SPEC) -->
-                <div class="bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-2xs">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                                Uptime Timeline Tracker (30 Hari Terakhir — {{ $formattedPeriod }})
-                            </h4>
-                        </div>
-                        <div class="flex items-center gap-4 text-[11px] text-slate-500">
-                            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-xs bg-emerald-500"></span> Normal 100%</span>
-                            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-xs bg-amber-400"></span> Degradasi / Flap</span>
-                            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-xs bg-red-500"></span> Outage</span>
-                        </div>
-                    </div>
-                    <!-- Segmen Bar 30 Hari -->
-                    <div class="flex items-center gap-1 w-full overflow-hidden py-1">
-                        @for($d = 1; $d <= 30; $d++)
-                            @php
-                                $barColor = 'bg-emerald-500 hover:bg-emerald-600';
-                                $dayStatus = 'Normal (100% Uptime)';
-                                if ($d === 10) {
-                                    $barColor = 'bg-amber-400 hover:bg-amber-500';
-                                    $dayStatus = 'Degradasi (98.2% - High Packet Loss)';
-                                } elseif ($d === 18 && $selectedCustomer === 'shopee') {
-                                    $barColor = 'bg-red-500 hover:bg-red-600';
-                                    $dayStatus = 'Padam Total (SW Padam 2 Jam)';
-                                }
-                            @endphp
-                            <div 
-                                class="flex-1 h-3 rounded-2xs {{ $barColor }} transition-all cursor-pointer group relative"
-                                title="Hari ke-{{ $d }}: {{ $dayStatus }}"
-                            >
-                            </div>
-                        @endfor
-                    </div>
-                    <div class="flex items-center justify-between text-[10px] text-slate-400 font-mono mt-1.5">
-                        <span>1 {{ $selectedMonthName }}</span>
-                        <span>15 {{ $selectedMonthName }}</span>
-                        <span>30 {{ $selectedMonthName }}</span>
-                    </div>
                 </div>
 
                 <!-- TWO CONTENT PANELS: DAFTAR PERANGKAT & RIWAYAT TIKET -->

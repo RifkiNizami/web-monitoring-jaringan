@@ -103,12 +103,12 @@
                     </div>
 
                     <!-- Tombol Tambah Pemberitahuan -->
-                    <button onclick="openModal('addAnnouncementModal')" class="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-white bg-netfly-blue hover:bg-blue-700 rounded-xl shadow-sm transition-all cursor-pointer">
+                    <a href="{{ route('pemberitahuan.create') }}" class="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-white bg-netfly-blue hover:bg-blue-700 rounded-xl shadow-sm transition-all cursor-pointer">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4" />
                         </svg>
                         <span>Buat Pemberitahuan Baru</span>
-                    </button>
+                    </a>
                 </div>
 
                 <!-- 4 STATS PILLS -->
@@ -280,12 +280,12 @@
                                     </button>
                                 </form>
 
-                                <button onclick="openEditModal({{ json_encode($item) }})" class="w-full px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1">
+                                <a href="{{ route('pemberitahuan.edit', $item->id) }}" class="w-full px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1">
                                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                     </svg>
                                     <span>Edit</span>
-                                </button>
+                                </a>
 
                                 <button onclick="openDeleteModal({{ $item->id }}, '{{ addslashes($item->title) }}')" class="w-full px-3 py-1.5 text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1">
                                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -317,240 +317,7 @@
     </div>
 
     <!-- ==========================================
-         MODAL 1: TAMBAH PEMBERITAHUAN
-         ========================================== -->
-    <div id="addAnnouncementModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-lg overflow-hidden animate-scale">
-            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                <div>
-                    <h3 class="text-base font-bold text-slate-900">Buat Pemberitahuan Baru</h3>
-                    <p class="text-xs text-slate-400">Siarkan informasi ke dashboard administrator</p>
-                </div>
-                <button onclick="closeModal('addAnnouncementModal')" class="text-slate-400 hover:text-slate-600 p-1 rounded-md">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-
-            <form action="{{ route('pemberitahuan.store') }}" method="POST" class="p-6 space-y-4">
-                @csrf
-
-                <!-- Judul -->
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">
-                        Judul Pemberitahuan <span class="text-rose-500">*</span>
-                    </label>
-                    <input 
-                        type="text" 
-                        name="title" 
-                        required 
-                        placeholder="Contoh: Jadwal Pemeliharaan (Maintenance) Router Surabaya"
-                        class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:bg-white focus:border-blue-500"
-                    >
-                </div>
-
-                <!-- Kategori & Prioritas -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">
-                            Kategori <span class="text-rose-500">*</span>
-                        </label>
-                        <select name="category" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:bg-white focus:border-blue-500">
-                            <option value="maintenance">Maintenance (Pemeliharaan)</option>
-                            <option value="pembaruan">Pembaruan Sistem</option>
-                            <option value="gangguan">Gangguan Jaringan</option>
-                            <option value="info">Pengumuman Info</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">
-                            Tingkat Urgensi / Prioritas <span class="text-rose-500">*</span>
-                        </label>
-                        <select name="priority" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:bg-white focus:border-blue-500">
-                            <option value="normal">Normal</option>
-                            <option value="tinggi">Tinggi</option>
-                            <option value="urgent">Mendesak (Urgent)</option>
-                            <option value="rendah">Rendah</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Jadwal Pelaksanaan (Opsional) -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">
-                            Jadwal Mulai (Opsional)
-                        </label>
-                        <input 
-                            type="datetime-local" 
-                            name="scheduled_at" 
-                            class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:bg-white focus:border-blue-500 font-mono"
-                        >
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">
-                            Estimasi Selesai (Opsional)
-                        </label>
-                        <input 
-                            type="datetime-local" 
-                            name="expires_at" 
-                            class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:bg-white focus:border-blue-500 font-mono"
-                        >
-                    </div>
-                </div>
-
-                <!-- Pesan / Detail Pengumuman -->
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">
-                        Detail Pesan & Instruksi <span class="text-rose-500">*</span>
-                    </label>
-                    <textarea 
-                        name="message" 
-                        rows="4" 
-                        required 
-                        placeholder="Tuliskan deskripsi lengkap, rute perangkat yang terimbas, atau penanganan redundansi..."
-                        class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:bg-white focus:border-blue-500"
-                    ></textarea>
-                </div>
-
-                <!-- Status Langsung Aktif -->
-                <input type="hidden" name="status" value="aktif">
-
-                <!-- Modal Actions -->
-                <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-2.5">
-                    <button type="button" onclick="closeModal('addAnnouncementModal')" class="px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer">
-                        Batal
-                    </button>
-                    <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-netfly-blue hover:bg-blue-700 rounded-lg shadow-sm transition-all cursor-pointer">
-                        Publikasikan Siaran
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- ==========================================
-         MODAL 2: EDIT PEMBERITAHUAN
-         ========================================== -->
-    <div id="editAnnouncementModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-lg overflow-hidden animate-scale">
-            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                <div>
-                    <h3 class="text-base font-bold text-slate-900">Perbarui Pemberitahuan</h3>
-                    <p class="text-xs text-slate-400">Edit isi pesan atau status jadwal pemeliharaan</p>
-                </div>
-                <button onclick="closeModal('editAnnouncementModal')" class="text-slate-400 hover:text-slate-600 p-1 rounded-md">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-
-            <form id="editAnnouncementForm" method="POST" class="p-6 space-y-4">
-                @csrf
-                @method('PUT')
-
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">
-                        Judul Pemberitahuan <span class="text-rose-500">*</span>
-                    </label>
-                    <input 
-                        type="text" 
-                        id="edit_title"
-                        name="title" 
-                        required 
-                        class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:bg-white focus:border-blue-500"
-                    >
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">
-                            Kategori <span class="text-rose-500">*</span>
-                        </label>
-                        <select id="edit_category" name="category" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:bg-white focus:border-blue-500">
-                            <option value="maintenance">Maintenance</option>
-                            <option value="pembaruan">Pembaruan Sistem</option>
-                            <option value="gangguan">Gangguan</option>
-                            <option value="info">Info</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">
-                            Prioritas <span class="text-rose-500">*</span>
-                        </label>
-                        <select id="edit_priority" name="priority" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:bg-white focus:border-blue-500">
-                            <option value="normal">Normal</option>
-                            <option value="tinggi">Tinggi</option>
-                            <option value="urgent">Mendesak</option>
-                            <option value="rendah">Rendah</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">
-                            Status <span class="text-rose-500">*</span>
-                        </label>
-                        <select id="edit_status" name="status" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:bg-white focus:border-blue-500">
-                            <option value="aktif">Aktif</option>
-                            <option value="selesai">Selesai</option>
-                            <option value="diarsipkan">Diarsipkan</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">
-                            Jadwal Mulai
-                        </label>
-                        <input 
-                            type="datetime-local" 
-                            id="edit_scheduled_at"
-                            name="scheduled_at" 
-                            class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:bg-white focus:border-blue-500 font-mono"
-                        >
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">
-                            Estimasi Selesai
-                        </label>
-                        <input 
-                            type="datetime-local" 
-                            id="edit_expires_at"
-                            name="expires_at" 
-                            class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:bg-white focus:border-blue-500 font-mono"
-                        >
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">
-                        Detail Pesan & Instruksi <span class="text-rose-500">*</span>
-                    </label>
-                    <textarea 
-                        id="edit_message"
-                        name="message" 
-                        rows="4" 
-                        required 
-                        class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:bg-white focus:border-blue-500"
-                    ></textarea>
-                </div>
-
-                <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-2.5">
-                    <button type="button" onclick="closeModal('editAnnouncementModal')" class="px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer">
-                        Batal
-                    </button>
-                    <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-netfly-blue hover:bg-blue-700 rounded-lg shadow-sm transition-all cursor-pointer">
-                        Simpan Perubahan
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- ==========================================
-         MODAL 3: KONFIRMASI HAPUS
+         MODAL KONFIRMASI HAPUS
          ========================================== -->
     <div id="deleteAnnouncementModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-sm overflow-hidden animate-scale">
@@ -595,33 +362,6 @@
                 modal.classList.add('hidden');
                 modal.classList.remove('flex');
             }
-        }
-
-        function openEditModal(item) {
-            const form = document.getElementById('editAnnouncementForm');
-            form.action = `/pemberitahuan/${item.id}`;
-            document.getElementById('edit_title').value = item.title || '';
-            document.getElementById('edit_category').value = item.category || 'maintenance';
-            document.getElementById('edit_priority').value = item.priority || 'normal';
-            document.getElementById('edit_status').value = item.status || 'aktif';
-            document.getElementById('edit_message').value = item.message || '';
-
-            // Format datetime for datetime-local input (YYYY-MM-DDTHH:mm)
-            if (item.scheduled_at) {
-                const date = new Date(item.scheduled_at);
-                document.getElementById('edit_scheduled_at').value = date.toISOString().slice(0, 16);
-            } else {
-                document.getElementById('edit_scheduled_at').value = '';
-            }
-
-            if (item.expires_at) {
-                const date = new Date(item.expires_at);
-                document.getElementById('edit_expires_at').value = date.toISOString().slice(0, 16);
-            } else {
-                document.getElementById('edit_expires_at').value = '';
-            }
-
-            openModal('editAnnouncementModal');
         }
 
         function openDeleteModal(id, title) {

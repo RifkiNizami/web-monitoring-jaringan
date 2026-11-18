@@ -3,10 +3,13 @@
 namespace Tests\Feature;
 
 use App\Models\Ticket;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class TicketApiTest extends TestCase
 {
+    use DatabaseTransactions;
+
     protected function setUp(): void
     {
         parent::setUp();

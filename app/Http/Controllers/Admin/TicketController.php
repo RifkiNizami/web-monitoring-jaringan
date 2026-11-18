@@ -44,32 +44,28 @@ class TicketController extends Controller
         // 3. Ambil data antrean tiket dari database
         $dbTickets = Ticket::orderBy('id', 'asc')->get();
 
-        if ($dbTickets->isEmpty()) {
-            $tickets = $this->getDefaultTickets();
-        } else {
-            $tickets = $dbTickets->map(function ($ticket) {
-                $reportedAt = $ticket->reported_at ?? $ticket->created_at;
+        $tickets = $dbTickets->map(function ($ticket) {
+            $reportedAt = $ticket->reported_at ?? $ticket->created_at;
 
-                return [
-                    'id' => $ticket->ticket_number ?? 'INC-'.$ticket->id,
-                    'db_id' => $ticket->id,
-                    'priority' => $ticket->priority ?? 'P3 - MEDIUM',
-                    'priority_level' => $ticket->priority_level ?? 'medium',
-                    'client_name' => $ticket->client_name ?? 'Pelanggan Enterprise',
-                    'project_name' => $ticket->project_name ?? 'Layanan Infrastruktur',
-                    'node_code' => $ticket->node_code,
-                    'subject' => $ticket->subject,
-                    'description' => $ticket->description,
-                    'assigned_technician' => $ticket->assigned_technician,
-                    'is_tech_warning' => (bool) $ticket->is_tech_warning,
-                    'status' => $ticket->status ?? '1. Open (Baru)',
-                    'status_type' => $ticket->status_type ?? 'open',
-                    'status_note' => $ticket->status_note,
-                    'report_date' => $reportedAt ? $reportedAt->format('d M Y') : '10 Okt 2026',
-                    'report_time' => $reportedAt ? $reportedAt->format('H:i').' WIB' : '04:06 WIB',
-                ];
-            })->toArray();
-        }
+            return [
+                'id' => $ticket->ticket_number ?? 'INC-'.$ticket->id,
+                'db_id' => $ticket->id,
+                'priority' => $ticket->priority ?? 'P3 - MEDIUM',
+                'priority_level' => $ticket->priority_level ?? 'medium',
+                'client_name' => $ticket->client_name ?? 'Pelanggan Enterprise',
+                'project_name' => $ticket->project_name ?? 'Layanan Infrastruktur',
+                'node_code' => $ticket->node_code,
+                'subject' => $ticket->subject,
+                'description' => $ticket->description,
+                'assigned_technician' => $ticket->assigned_technician,
+                'is_tech_warning' => (bool) $ticket->is_tech_warning,
+                'status' => $ticket->status ?? '1. Open (Baru)',
+                'status_type' => $ticket->status_type ?? 'open',
+                'status_note' => $ticket->status_note,
+                'report_date' => $reportedAt ? $reportedAt->format('d M Y') : '-',
+                'report_time' => $reportedAt ? $reportedAt->format('H:i').' WIB' : '-',
+            ];
+        })->toArray();
 
         // 4. Hitung ringkasan status tiket dinamis
         $summary = [

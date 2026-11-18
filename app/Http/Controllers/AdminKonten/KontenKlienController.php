@@ -5,6 +5,7 @@ namespace App\Http\Controllers\AdminKonten;
 use App\Http\Controllers\Controller;
 use App\Models\LandingClient;
 use App\Services\ActivityLogger;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
@@ -57,6 +58,36 @@ class KontenKlienController extends Controller
             'category',
             'status'
         ));
+    }
+
+    /**
+     * Tampilkan formulir tambah klien baru.
+     */
+    public function create(): View|RedirectResponse
+    {
+        if (Auth::user()->role !== 'admin_konten') {
+            return redirect()->route('klien.index')->with('error', 'Akses dibatasi hanya untuk Admin Konten.');
+        }
+
+        $nextOrder = (LandingClient::max('order') ?? 0) + 1;
+        $existingCategories = LandingClient::select('category')->distinct()->pluck('category')->filter()->values();
+
+        return view('admin-konten.klien.create', compact('nextOrder', 'existingCategories'));
+    }
+
+    /**
+     * Tampilkan formulir edit data klien.
+     */
+    public function edit(Request $request, $id): View|RedirectResponse
+    {
+        if (Auth::user()->role !== 'admin_konten') {
+            return redirect()->route('klien.index')->with('error', 'Akses dibatasi hanya untuk Admin Konten.');
+        }
+
+        $client = LandingClient::findOrFail($id);
+        $existingCategories = LandingClient::select('category')->distinct()->pluck('category')->filter()->values();
+
+        return view('admin-konten.klien.edit', compact('client', 'existingCategories'));
     }
 
     /**

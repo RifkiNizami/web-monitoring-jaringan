@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AnnouncementApiController;
 use App\Http\Controllers\Api\TicketApiController;
 use Illuminate\Support\Facades\Route;
 
@@ -16,4 +17,9 @@ Route::prefix('tickets')->group(function () {
     Route::put('/{id}', [TicketApiController::class, 'update'])->name('api.tickets.update');
     Route::post('/{id}', [TicketApiController::class, 'update'])->name('api.tickets.update.post');
     Route::post('/{id}/reply', [TicketApiController::class, 'update'])->name('api.tickets.reply');
+});
+
+Route::prefix('announcements')->group(function () {
+    Route::get('/', [AnnouncementApiController::class, 'index'])->name('api.announcements.index');
+    Route::get('/{id}', [AnnouncementApiController::class, 'show'])->name('api.announcements.show');
 });

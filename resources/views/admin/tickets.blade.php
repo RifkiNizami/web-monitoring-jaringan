@@ -47,16 +47,6 @@
 
                 <!-- Right Header Tools -->
                 <div class="flex items-center gap-4">
-                    <!-- Notification Bell -->
-                    <button class="relative p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer" aria-label="Notifikasi">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                        </svg>
-                        <span class="absolute top-1 right-1 w-3.5 h-3.5 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-white">
-                            3
-                        </span>
-                    </button>
-
                     <!-- Realtime Digital Clock -->
                     <div class="hidden sm:flex items-center gap-1.5 text-xs font-mono text-slate-600 bg-slate-100/80 px-2.5 py-1 rounded-md border border-slate-200/60">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -138,7 +128,7 @@
                             SEMUA ANTREAN
                         </p>
                         <p class="text-2xl font-black text-slate-900 tracking-tight" id="countAll">
-                            {{ $summary['all'] ?? 4 }}
+                            {{ $summary['all'] ?? 0 }}
                         </p>
                     </div>
 
@@ -151,7 +141,7 @@
                             </p>
                         </div>
                         <p class="text-2xl font-black text-slate-900 tracking-tight" id="countOpen">
-                            {{ $summary['open'] ?? 1 }}
+                            {{ $summary['open'] ?? 0 }}
                         </p>
                     </div>
 
@@ -161,7 +151,7 @@
                             ASSIGNED
                         </p>
                         <p class="text-2xl font-black text-slate-900 tracking-tight" id="countAssigned">
-                            {{ $summary['assigned'] ?? 1 }}
+                            {{ $summary['assigned'] ?? 0 }}
                         </p>
                     </div>
 
@@ -171,7 +161,7 @@
                             IN PROGRESS
                         </p>
                         <p class="text-2xl font-black text-slate-900 tracking-tight" id="countInProgress">
-                            {{ $summary['in_progress'] ?? 1 }}
+                            {{ $summary['in_progress'] ?? 0 }}
                         </p>
                     </div>
 
@@ -181,7 +171,7 @@
                             RESOLVED
                         </p>
                         <p class="text-2xl font-black text-slate-900 tracking-tight" id="countResolved">
-                            {{ $summary['resolved'] ?? 1 }}
+                            {{ $summary['resolved'] ?? 0 }}
                         </p>
                     </div>
 

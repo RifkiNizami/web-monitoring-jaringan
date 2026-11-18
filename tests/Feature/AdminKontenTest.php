@@ -2,12 +2,16 @@
 
 namespace Tests\Feature;
 
+use App\Models\Announcement;
 use App\Models\LandingClient;
 use App\Models\User;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class AdminKontenTest extends TestCase
 {
+    use DatabaseTransactions;
+
     protected function getAdminKonten(): User
     {
         return User::firstOrCreate(
@@ -117,6 +121,82 @@ class AdminKontenTest extends TestCase
         ]);
     }
 
+    public function test_admin_konten_can_access_create_client_page(): void
+    {
+        $user = $this->getAdminKonten();
+
+        // Route Bahasa Indonesia
+        $response = $this->actingAs($user)->get('/klien/create');
+        $response->assertStatus(200);
+        $response->assertViewIs('admin-konten.klien.create');
+        $response->assertSee('Tambah Klien Landing Page');
+        $response->assertSee('Nama Instansi / Perusahaan');
+
+        // Alias Route
+        $this->actingAs($user)->get('/landing-clients/create')
+            ->assertStatus(200)
+            ->assertViewIs('admin-konten.klien.create');
+    }
+
+    public function test_admin_konten_can_access_edit_client_page(): void
+    {
+        $user = $this->getAdminKonten();
+
+        $client = LandingClient::create([
+            'name' => 'PT Bank Danamon Test',
+            'category' => 'Perbankan',
+            'location' => 'Jakarta',
+            'order' => 1,
+            'is_active' => true,
+            'created_by' => $user->id,
+        ]);
+
+        // Route Bahasa Indonesia
+        $response = $this->actingAs($user)->get("/klien/{$client->id}/edit");
+        $response->assertStatus(200);
+        $response->assertViewIs('admin-konten.klien.edit');
+        $response->assertSee('Edit Data Klien');
+        $response->assertSee('PT Bank Danamon Test');
+
+        // Alias Route
+        $this->actingAs($user)->get("/landing-clients/{$client->id}/edit")
+            ->assertStatus(200)
+            ->assertViewIs('admin-konten.klien.edit');
+    }
+
+    public function test_admin_konten_can_update_landing_client(): void
+    {
+        $user = $this->getAdminKonten();
+
+        $client = LandingClient::create([
+            'name' => 'PT Lama Klien',
+            'category' => 'Retail',
+            'location' => 'Bandung',
+            'order' => 5,
+            'is_active' => false,
+            'created_by' => $user->id,
+        ]);
+
+        $response = $this->actingAs($user)->put("/klien/{$client->id}", [
+            'name' => 'PT Baru Klien',
+            'category' => 'E-Commerce',
+            'location' => 'Surabaya',
+            'order' => 10,
+            'is_active' => '1',
+        ]);
+
+        $response->assertRedirect('/klien');
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('landing_clients', [
+            'id' => $client->id,
+            'name' => 'PT Baru Klien',
+            'category' => 'E-Commerce',
+            'location' => 'Surabaya',
+            'is_active' => 1,
+        ]);
+    }
+
     public function test_admin_konten_can_create_announcement(): void
     {
         $user = $this->getAdminKonten();
@@ -165,11 +245,87 @@ class AdminKontenTest extends TestCase
         $response->assertStatus(200);
         $response->assertViewIs('admin-konten.konten_pemberitahuan');
         $response->assertSee('Kelola Pemberitahuan');
+        $response->assertSee('Buat Pemberitahuan Baru');
 
         // Alias Route
         $this->actingAs($user)->get('/announcements')
             ->assertStatus(200)
             ->assertViewIs('admin-konten.konten_pemberitahuan');
+    }
+
+    public function test_admin_konten_can_access_create_announcement_page(): void
+    {
+        $user = $this->getAdminKonten();
+
+        // Route Bahasa Indonesia
+        $response = $this->actingAs($user)->get('/pemberitahuan/create');
+        $response->assertStatus(200);
+        $response->assertViewIs('admin-konten.pemberitahuan.create');
+        $response->assertSee('Buat Pemberitahuan Baru');
+
+        // Alias Route
+        $this->actingAs($user)->get('/announcements/create')
+            ->assertStatus(200)
+            ->assertViewIs('admin-konten.pemberitahuan.create');
+    }
+
+    public function test_admin_konten_can_access_edit_announcement_page(): void
+    {
+        $user = $this->getAdminKonten();
+
+        $announcement = Announcement::create([
+            'title' => 'Uji Coba Edit Pengumuman',
+            'category' => 'info',
+            'message' => 'Isi pesan uji coba',
+            'priority' => 'normal',
+            'status' => 'aktif',
+            'created_by' => $user->id,
+        ]);
+
+        // Route Bahasa Indonesia
+        $response = $this->actingAs($user)->get("/pemberitahuan/{$announcement->id}/edit");
+        $response->assertStatus(200);
+        $response->assertViewIs('admin-konten.pemberitahuan.edit');
+        $response->assertSee('Edit Pemberitahuan');
+        $response->assertSee('Uji Coba Edit Pengumuman');
+
+        // Alias Route
+        $this->actingAs($user)->get("/announcements/{$announcement->id}/edit")
+            ->assertStatus(200)
+            ->assertViewIs('admin-konten.pemberitahuan.edit');
+    }
+
+    public function test_admin_konten_can_update_announcement(): void
+    {
+        $user = $this->getAdminKonten();
+
+        $announcement = Announcement::create([
+            'title' => 'Judul Sebelum Update',
+            'category' => 'info',
+            'message' => 'Pesan sebelum update',
+            'priority' => 'rendah',
+            'status' => 'aktif',
+            'created_by' => $user->id,
+        ]);
+
+        $response = $this->actingAs($user)->put("/pemberitahuan/{$announcement->id}", [
+            'title' => 'Judul Sesudah Update',
+            'category' => 'maintenance',
+            'message' => 'Pesan sesudah update',
+            'priority' => 'urgent',
+            'status' => 'selesai',
+        ]);
+
+        $response->assertRedirect('/pemberitahuan');
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('announcements', [
+            'id' => $announcement->id,
+            'title' => 'Judul Sesudah Update',
+            'category' => 'maintenance',
+            'priority' => 'urgent',
+            'status' => 'selesai',
+        ]);
     }
 
     public function test_landing_page_renders_clients_from_database(): void

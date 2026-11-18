@@ -4,10 +4,13 @@ namespace Tests\Feature;
 
 use App\Models\Teknisi;
 use App\Models\User;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class TeknisiManagementTest extends TestCase
 {
+    use DatabaseTransactions;
+
     protected function getAdminUser(): User
     {
         return User::firstOrCreate(

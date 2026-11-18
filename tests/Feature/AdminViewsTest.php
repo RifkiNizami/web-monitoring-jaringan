@@ -3,10 +3,13 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class AdminViewsTest extends TestCase
 {
+    use DatabaseTransactions;
+
     /**
      * Memastikan akses tanpa autentikasi diarahkan ke halaman login.
      */

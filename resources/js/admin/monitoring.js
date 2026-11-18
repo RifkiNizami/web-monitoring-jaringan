@@ -167,11 +167,55 @@ export function initAdminMonitoring() {
     });
 
     // -----------------------------------------------------------------
-    // 3. Alert Resolution (Tandai Selesai)
+    // 3. Alert Resolution & Filter Tab Interaktif
     // -----------------------------------------------------------------
+    const unresolvedIndicatorWrap = document.getElementById('unresolvedIndicatorWrap');
     const unresolvedCountEl = document.getElementById('unresolvedCountText');
+    const alertActiveCount = document.getElementById('alertActiveCount');
+    const alertResolvedCount = document.getElementById('alertResolvedCount');
+    const btnResolveAllAlerts = document.getElementById('btnResolveAllAlerts');
+    const filterEmptyAlertState = document.getElementById('filterEmptyAlertState');
     let unresolvedCount = parseInt(unresolvedCountEl?.textContent || '0', 10) || 0;
 
+    function updateUnresolvedIndicator(count) {
+        unresolvedCount = Math.max(0, count);
+
+        if (unresolvedIndicatorWrap) {
+            if (unresolvedCount > 0) {
+                unresolvedIndicatorWrap.innerHTML = `
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+                    </span>
+                    <span class="text-xs font-semibold text-rose-600 whitespace-nowrap">
+                        <span id="unresolvedCountText" class="tabular-nums">${unresolvedCount}</span> belum selesai
+                    </span>
+                `;
+            } else {
+                unresolvedIndicatorWrap.innerHTML = `
+                    <span class="inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    <span id="unresolvedCountText" class="text-xs font-medium text-emerald-600 whitespace-nowrap">
+                        Semua teratasi
+                    </span>
+                `;
+            }
+        }
+
+        const cardIncidentCount = document.getElementById('cardIncidentCount');
+        if (cardIncidentCount) cardIncidentCount.textContent = unresolvedCount;
+
+        if (alertActiveCount) alertActiveCount.textContent = `(${unresolvedCount})`;
+
+        const totalAlerts = document.querySelectorAll('.alert-card').length;
+        const resolvedCount = Math.max(0, totalAlerts - unresolvedCount);
+        if (alertResolvedCount) alertResolvedCount.textContent = `(${resolvedCount})`;
+
+        if (btnResolveAllAlerts) {
+            btnResolveAllAlerts.classList.toggle('hidden', unresolvedCount === 0);
+        }
+    }
+
+    // Resolusi Satu Alert
     document.querySelectorAll('.btn-resolve-alert').forEach(btn => {
         btn.addEventListener('click', function (e) {
             e.preventDefault();
@@ -198,7 +242,7 @@ export function initAdminMonitoring() {
                 .finally(() => {
                     if (actionContainer) {
                         actionContainer.innerHTML = `
-                            <span class="inline-flex items-center gap-1 text-[11px] font-medium text-slate-400">
+                            <span class="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-400">
                                 <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                 </svg>
@@ -206,16 +250,116 @@ export function initAdminMonitoring() {
                             </span>
                         `;
                     }
-                    if (alertItem) alertItem.classList.add('opacity-60');
+                    if (alertItem) {
+                        alertItem.dataset.resolved = 'true';
+                        alertItem.classList.remove('border-rose-500', 'border-amber-500', 'border-blue-500');
+                        alertItem.classList.add('border-l-slate-300', 'opacity-65', 'bg-slate-50/40');
+                        const typeHeader = alertItem.querySelector('span.uppercase');
+                        if (typeHeader) {
+                            typeHeader.classList.remove('text-rose-600', 'text-amber-600', 'text-blue-600');
+                            typeHeader.classList.add('text-slate-400');
+                        }
+                    }
 
-                    unresolvedCount = Math.max(0, unresolvedCount - 1);
-                    if (unresolvedCountEl) unresolvedCountEl.textContent = unresolvedCount;
-
-                    const cardIncidentCount = document.getElementById('cardIncidentCount');
-                    if (cardIncidentCount) cardIncidentCount.textContent = unresolvedCount;
-
+                    updateUnresolvedIndicator(unresolvedCount - 1);
                     window.showToast(`Peringatan '${alertType}' berhasil diselesaikan!`, 'success');
                 });
+        });
+    });
+
+    // Resolusi Semua Alert Sekaligus
+    if (btnResolveAllAlerts) {
+        btnResolveAllAlerts.addEventListener('click', async () => {
+            const originalLabel = btnResolveAllAlerts.textContent;
+            btnResolveAllAlerts.disabled = true;
+            btnResolveAllAlerts.textContent = 'Menyelesaikan...';
+
+            try {
+                const res = await fetch('/monitoring/alerts/resolve-all', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': getCsrfToken(),
+                        Accept: 'application/json',
+                    },
+                });
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    document.querySelectorAll('.alert-card').forEach(card => {
+                        card.dataset.resolved = 'true';
+                        card.classList.remove('border-rose-500', 'border-amber-500', 'border-blue-500');
+                        card.classList.add('border-l-slate-300', 'opacity-65', 'bg-slate-50/40');
+                        const typeHeader = card.querySelector('span.uppercase');
+                        if (typeHeader) {
+                            typeHeader.classList.remove('text-rose-600', 'text-amber-600', 'text-blue-600');
+                            typeHeader.classList.add('text-slate-400');
+                        }
+                        const actionContainer = card.querySelector('[id^="alert-action-container-"]');
+                        if (actionContainer) {
+                            actionContainer.innerHTML = `
+                                <span class="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-400">
+                                    <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Selesai
+                                </span>
+                            `;
+                        }
+                    });
+
+                    updateUnresolvedIndicator(0);
+                    window.showToast(data.message || 'Semua peringatan berhasil diselesaikan.', 'success');
+                } else {
+                    window.showToast('Gagal menyelesaikan peringatan.', 'error');
+                }
+            } catch (err) {
+                window.showToast('Gagal memproses penyelesaian peringatan.', 'error');
+            } finally {
+                btnResolveAllAlerts.disabled = false;
+                btnResolveAllAlerts.textContent = originalLabel;
+            }
+        });
+    }
+
+    // Tab Filter Peringatan (Semua, Aktif, Selesai)
+    const alertFilterTabs = document.querySelectorAll('.alert-filter-tab');
+    let activeAlertFilter = 'all';
+
+    function applyAlertFilter() {
+        let visibleCount = 0;
+        document.querySelectorAll('.alert-card').forEach(card => {
+            const isResolved = card.dataset.resolved === 'true';
+            let isVisible = true;
+
+            if (activeAlertFilter === 'active') {
+                isVisible = !isResolved;
+            } else if (activeAlertFilter === 'resolved') {
+                isVisible = isResolved;
+            }
+
+            card.classList.toggle('hidden', !isVisible);
+            if (isVisible) visibleCount++;
+        });
+
+        if (filterEmptyAlertState) {
+            filterEmptyAlertState.classList.toggle('hidden', visibleCount > 0);
+        }
+    }
+
+    alertFilterTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            activeAlertFilter = tab.dataset.filter || 'all';
+
+            alertFilterTabs.forEach(t => {
+                const isActive = t === tab;
+                if (isActive) {
+                    t.className = 'alert-filter-tab px-2.5 py-1 text-[11px] font-semibold rounded-md transition cursor-pointer bg-white text-slate-900 shadow-2xs';
+                } else {
+                    t.className = 'alert-filter-tab px-2.5 py-1 text-[11px] font-medium rounded-md transition cursor-pointer text-slate-500 hover:text-slate-800';
+                }
+            });
+
+            applyAlertFilter();
         });
     });
 
@@ -463,20 +607,38 @@ export function initAdminMonitoring() {
     const pollerStatusText = document.getElementById('pollerStatusText');
 
     if (btnPollAllNodes) {
-        const idleLabel = pollerStatusText ? pollerStatusText.textContent : '';
+        const idleLabel = pollerStatusText ? pollerStatusText.textContent : 'Sinkronisasi Semua';
 
-        btnPollAllNodes.addEventListener('click', () => {
+        btnPollAllNodes.addEventListener('click', async () => {
             btnPollAllNodes.disabled = true;
             if (pollerStatusText) pollerStatusText.textContent = 'Menyinkronkan...';
             btnPollAllNodes.querySelector('svg')?.classList.add('animate-spin');
 
-            setTimeout(() => {
-                const total = document.querySelectorAll('.telemetry-row').length;
+            try {
+                const res = await fetch('/monitoring/poll-all', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': getCsrfToken(),
+                        Accept: 'application/json',
+                    },
+                });
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    window.showToast(data.message || 'Poller telemetri berhasil diperbarui.', 'success');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 500);
+                } else {
+                    window.showToast('Gagal menjalankan poller telemetri.', 'error');
+                }
+            } catch (err) {
+                window.showToast('Koneksi poller telemetri terganggu.', 'error');
+            } finally {
                 btnPollAllNodes.disabled = false;
                 if (pollerStatusText) pollerStatusText.textContent = idleLabel;
                 btnPollAllNodes.querySelector('svg')?.classList.remove('animate-spin');
-                window.showToast(`Telemetri ${total} perangkat berhasil disinkronisasi.`, 'success');
-            }, 800);
+            }
         });
     }
 

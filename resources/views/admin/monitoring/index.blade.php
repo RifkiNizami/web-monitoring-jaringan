@@ -47,16 +47,6 @@
 
                 <!-- Right Header Tools -->
                 <div class="flex items-center gap-4">
-                    <!-- Notification Bell -->
-                    <button class="relative p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer" aria-label="Notifikasi">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                        </svg>
-                        <span class="absolute top-1 right-1 w-3.5 h-3.5 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-white">
-                            3
-                        </span>
-                    </button>
-
                     <!-- Clock (Live WIB) -->
                     <div class="hidden sm:flex items-center gap-1.5 text-xs font-mono text-slate-600 bg-slate-100/80 px-2.5 py-1 rounded-md border border-slate-200/60">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -66,16 +56,19 @@
             </header>
 
             <!-- MAIN BODY CONTENT -->
-            <main class="flex-1 p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full">
+            <main class="p-6 lg:p-8 space-y-6">
                 @php
-                    $deviceCollection = collect($telemetryDevices);
+                    /** @var array $telemetryDevices */
+                    /** @var array $alerts */
+                    /** @var array $summary */
+                    $deviceCollection = collect($telemetryDevices ?? []);
                     $totalDevices = $deviceCollection->count();
                     $onlineCount = $deviceCollection->where('status', 'online')->count();
                     $warningCount = $deviceCollection->where('status', 'warning')->count();
                     $offlineCount = $deviceCollection->where('status', 'offline')->count();
                     $attentionCount = $warningCount + $offlineCount;
                     $unitTypes = $deviceCollection->pluck('unit_type')->unique()->values();
-                    $unresolvedAlerts = collect($alerts)->where('is_resolved', false)->count();
+                    $unresolvedAlerts = collect($alerts ?? [])->where('is_resolved', false)->count();
 
                     $statusStyles = [
                         'online' => ['label' => 'Online', 'dot' => 'bg-emerald-500', 'pill' => 'bg-emerald-50 text-emerald-700 ring-emerald-600/20'],
@@ -306,10 +299,12 @@
                                     $cpuColor = $isOffline ? 'bg-slate-300' : ($devCpu > 85 ? 'bg-rose-500' : ($devCpu > 70 ? 'bg-amber-500' : 'bg-emerald-500'));
                                     $ramColor = $isOffline ? 'bg-slate-300' : ($devRam > 85 ? 'bg-rose-500' : ($devRam > 75 ? 'bg-amber-500' : 'bg-blue-500'));
                                     $packetLossVal = $isOffline ? 100 : ($device['packet_loss'] ?? 0);
+                                    $rxDisplay = $isOffline ? '0.0 Mbps' : ($device['rx_mbps'] ?? '0.0 Mbps');
+                                    $txDisplay = $isOffline ? '0.0 Mbps' : ($device['tx_mbps'] ?? '0.0 Mbps');
                                 @endphp
                                 <article
                                     id="row-device-{{ $device['id'] }}"
-                                    class="telemetry-row group relative bg-white rounded-xl border border-slate-200 p-5 transition hover:border-blue-300 hover:shadow-md flex flex-col justify-between"
+                                    class="telemetry-row group relative bg-white rounded-xl border border-slate-200 border-l-4 {{ $isOffline ? 'border-l-rose-500' : ($device['status'] === 'warning' ? 'border-l-amber-500' : 'border-l-emerald-500') }} p-5 transition hover:border-blue-300 hover:shadow-md flex flex-col justify-between"
                                     data-id="{{ $device['id'] }}"
                                     data-status="{{ $device['status'] }}"
                                     data-unit-type="{{ $device['unit_type'] }}"
@@ -325,22 +320,25 @@
                                     ></a>
 
                                     <div>
-                                        <!-- Card Header -->
+                                        <!-- Card Header: Clean Typography & No AI-Slop Pills -->
                                         <div class="flex items-start justify-between gap-3">
-                                            <div class="flex items-start gap-3 min-w-0">
+                                            <div class="flex items-start gap-3 min-w-0 flex-1">
                                                 <div class="w-10 h-10 rounded-lg {{ $isOffline ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-blue-50 text-blue-600 border-blue-100' }} border flex items-center justify-center shrink-0 mt-0.5">
                                                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
                                                     </svg>
                                                 </div>
-                                                <div class="min-w-0">
-                                                    <div class="flex items-center gap-2">
-                                                        <span class="w-2 h-2 rounded-full shrink-0 {{ $st['dot'] }} {{ $isOffline ? 'animate-pulse' : '' }}"></span>
+                                                <div class="min-w-0 flex-1">
+                                                    <div class="flex items-center gap-2 flex-wrap">
+                                                        <span class="w-2.5 h-2.5 rounded-full shrink-0 {{ $st['dot'] }} {{ $isOffline ? 'animate-pulse' : '' }}"></span>
                                                         <h3 class="text-sm font-bold text-slate-900 truncate group-hover:text-blue-600 transition-colors">
                                                             {{ $device['hostname'] }}
                                                         </h3>
+                                                        <span class="text-xs font-semibold {{ $isOffline ? 'text-rose-600' : ($device['status'] === 'warning' ? 'text-amber-600' : 'text-emerald-600') }} whitespace-nowrap">
+                                                            {{ $isOffline ? 'Offline' : ($device['status'] === 'warning' ? 'Warning' : 'Online') }}
+                                                        </span>
                                                     </div>
-                                                    <p class="mt-0.5 text-xs text-slate-500 truncate">
+                                                    <p class="mt-1 text-xs text-slate-500 truncate" title="{{ $device['customer'] }}{{ !empty($device['project']) ? ' · '.$device['project'] : '' }}">
                                                         {{ $device['customer'] }}
                                                         @if (!empty($device['project']))
                                                             <span class="text-slate-300 mx-1">·</span>
@@ -350,81 +348,75 @@
                                                 </div>
                                             </div>
 
-                                            <div class="relative z-10 flex items-center gap-1.5 shrink-0">
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-semibold ring-1 ring-inset {{ $st['pill'] }}">
-                                                    {{ $st['label'] }}
-                                                </span>
-
-                                                <!-- Menu aksi (⋯) -->
-                                                <div class="relative">
+                                            <!-- Menu aksi (⋯) -->
+                                            <div class="relative z-10 shrink-0">
+                                                <button
+                                                    type="button"
+                                                    class="btn-card-menu p-1.5 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+                                                    aria-label="Aksi lain untuk {{ $device['hostname'] }}"
+                                                    aria-haspopup="true"
+                                                    aria-expanded="false"
+                                                >
+                                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z" />
+                                                    </svg>
+                                                </button>
+                                                <div class="card-menu hidden absolute right-0 top-full mt-1 w-48 bg-white rounded-lg border border-slate-200 shadow-lg py-1">
+                                                    <a href="{{ route('monitoring.show', $device['id']) }}" class="flex items-center gap-2 px-3 py-2 text-xs text-slate-700 hover:bg-slate-50">
+                                                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                        </svg>
+                                                        Pantau detail
+                                                    </a>
+                                                    <a
+                                                        href="{{ route('monitoring.devices.edit', $device['id']) }}"
+                                                        class="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 cursor-pointer text-left"
+                                                    >
+                                                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                        </svg>
+                                                        Edit perangkat
+                                                    </a>
                                                     <button
                                                         type="button"
-                                                        class="btn-card-menu p-1.5 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
-                                                        aria-label="Aksi lain untuk {{ $device['hostname'] }}"
-                                                        aria-haspopup="true"
-                                                        aria-expanded="false"
+                                                        data-device-id="{{ $device['id'] }}"
+                                                        data-device-hostname="{{ $device['hostname'] }}"
+                                                        data-device-ip="{{ $device['ip_address'] }}"
+                                                        class="btn-polling-ping w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 cursor-pointer text-left"
                                                     >
-                                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                            <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z" />
+                                                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                                                         </svg>
+                                                        Tes ping
                                                     </button>
-                                                    <div class="card-menu hidden absolute right-0 top-full mt-1 w-48 bg-white rounded-lg border border-slate-200 shadow-lg py-1">
-                                                        <a href="{{ route('monitoring.show', $device['id']) }}" class="flex items-center gap-2 px-3 py-2 text-xs text-slate-700 hover:bg-slate-50">
-                                                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                            </svg>
-                                                            Pantau detail
-                                                        </a>
-                                                        <a
-                                                            href="{{ route('monitoring.devices.edit', $device['id']) }}"
-                                                            class="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 cursor-pointer text-left"
-                                                        >
-                                                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                            </svg>
-                                                            Edit perangkat
-                                                        </a>
-                                                        <button
-                                                            type="button"
-                                                            data-device-id="{{ $device['id'] }}"
-                                                            data-device-hostname="{{ $device['hostname'] }}"
-                                                            data-device-ip="{{ $device['ip_address'] }}"
-                                                            class="btn-polling-ping w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 cursor-pointer text-left"
-                                                        >
-                                                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                                            </svg>
-                                                            Tes ping
-                                                        </button>
-                                                        <div class="my-1 border-t border-slate-100"></div>
-                                                        <button
-                                                            type="button"
-                                                            data-device-id="{{ $device['id'] }}"
-                                                            data-device-hostname="{{ $device['hostname'] }}"
-                                                            class="btn-delete-node w-full flex items-center gap-2 px-3 py-2 text-xs text-rose-600 hover:bg-rose-50 cursor-pointer text-left font-medium"
-                                                        >
-                                                            <svg class="w-3.5 h-3.5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                            </svg>
-                                                            Hapus dari monitoring
-                                                        </button>
-                                                    </div>
+                                                    <div class="my-1 border-t border-slate-100"></div>
+                                                    <button
+                                                        type="button"
+                                                        data-device-id="{{ $device['id'] }}"
+                                                        data-device-hostname="{{ $device['hostname'] }}"
+                                                        class="btn-delete-node w-full flex items-center gap-2 px-3 py-2 text-xs text-rose-600 hover:bg-rose-50 cursor-pointer text-left font-medium"
+                                                    >
+                                                        <svg class="w-3.5 h-3.5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                        Hapus dari monitoring
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <!-- Technical Metadata Strip -->
-                                        <div class="mt-3.5 px-3 py-2 rounded-lg {{ $isOffline ? 'bg-rose-50/70 border-rose-100' : 'bg-slate-50 border-slate-100' }} border flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                                        <div class="mt-3.5 px-3 py-2 rounded-lg {{ $isOffline ? 'bg-rose-50/70 border-rose-100' : 'bg-slate-50 border-slate-100' }} border flex flex-wrap items-center justify-between gap-2 text-xs">
                                             <div class="flex items-center gap-2 flex-wrap">
-                                                <span class="font-mono font-semibold text-slate-700">{{ $device['ip_address'] ?? '-' }}:{{ $devPort }}</span>
+                                                <span class="font-mono font-semibold text-slate-700 text-[11px]">{{ $device['ip_address'] ?? '-' }}:{{ $devPort }}</span>
                                                 <span class="text-slate-300">·</span>
-                                                <span class="font-medium text-slate-600">{{ $devUnitType }}</span>
+                                                <span class="font-medium text-slate-600 text-[11px]">{{ $devUnitType }}</span>
                                                 <span class="px-1.5 py-0.5 rounded text-[10px] font-medium {{ $isNonMikrotik ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60' : 'bg-blue-50 text-blue-700 border border-blue-200/60' }}">
                                                     {{ $isNonMikrotik ? 'HTTP/TCP' : 'RouterOS API' }}
                                                 </span>
                                             </div>
-                                            <div class="shrink-0">
+                                            <div class="shrink-0 text-[11px]">
                                                 @if ($isOffline)
                                                     <span class="text-rose-600 font-semibold">Port {{ $devPort }} tidak merespons</span>
                                                 @else
@@ -460,25 +452,38 @@
                                         </div>
                                     </div>
 
-                                    <!-- Footer Metrics Strip -->
-                                    <div class="mt-4 pt-3 border-t border-slate-100 grid grid-cols-3 gap-3 text-xs">
-                                        <div>
-                                            <p class="text-slate-400">Traffic</p>
-                                            <p class="mt-0.5 font-semibold text-slate-700 tabular-nums whitespace-nowrap">
-                                                ↓{{ $device['rx_mbps'] ?? '0.0 Mbps' }} ↑{{ $device['tx_mbps'] ?? '0.0 Mbps' }}
-                                            </p>
+                                    <!-- Footer Metrics: Anti-Cramp & Anti-Overlap Layout (GEMINI.md Rule 1 & 4) -->
+                                    <div class="mt-4 pt-3 border-t border-slate-100 space-y-2 text-xs">
+                                        <!-- Row 1: Traffic Bandwidth (Dedicated Width) -->
+                                        <div class="flex items-center justify-between gap-2">
+                                            <span class="text-slate-400 text-[11px] font-medium shrink-0">Traffic</span>
+                                            <div class="flex items-center gap-2 font-semibold tabular-nums text-xs min-w-0" title="Download: {{ $rxDisplay }} · Upload: {{ $txDisplay }}">
+                                                <span class="inline-flex items-center gap-1 text-slate-700 truncate">
+                                                    <span class="{{ $isOffline ? 'text-slate-400' : 'text-emerald-600' }} font-bold">↓</span>
+                                                    <span>{{ $rxDisplay }}</span>
+                                                </span>
+                                                <span class="text-slate-300 shrink-0">·</span>
+                                                <span class="inline-flex items-center gap-1 text-slate-700 truncate">
+                                                    <span class="{{ $isOffline ? 'text-slate-400' : 'text-blue-600' }} font-bold">↑</span>
+                                                    <span>{{ $txDisplay }}</span>
+                                                </span>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p class="text-slate-400">Latensi (ms)</p>
-                                            @if ($isOffline)
-                                                <p class="mt-0.5 font-semibold font-mono text-rose-600 tabular-nums">- ms</p>
-                                            @else
-                                                <p class="mt-0.5 font-semibold font-mono tabular-nums {{ $devLatency > 30 ? 'text-amber-600' : 'text-slate-700' }}">{{ $devLatency }} ms</p>
-                                            @endif
-                                        </div>
-                                        <div>
-                                            <p class="text-slate-400">Packet loss</p>
-                                            <p class="mt-0.5 font-semibold font-mono tabular-nums {{ $packetLossVal > 5 ? 'text-rose-600' : 'text-slate-700' }}">{{ $packetLossVal }}%</p>
+
+                                        <!-- Row 2: Latensi & Packet Loss (Spacious Two-Column) -->
+                                        <div class="flex items-center justify-between gap-4 pt-1.5 border-t border-slate-50">
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="text-slate-400 text-[11px] font-medium">Latensi (ms)</span>
+                                                @if ($isOffline)
+                                                    <span class="font-semibold font-mono text-rose-600 text-xs tabular-nums">- ms</span>
+                                                @else
+                                                    <span class="font-semibold font-mono text-xs tabular-nums {{ $devLatency > 30 ? 'text-amber-600' : 'text-slate-700' }}">{{ $devLatency }} ms</span>
+                                                @endif
+                                            </div>
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="text-slate-400 text-[11px] font-medium">Packet loss</span>
+                                                <span class="font-semibold font-mono text-xs tabular-nums {{ $packetLossVal > 5 ? 'text-rose-600' : 'text-slate-700' }}">{{ $packetLossVal }}%</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </article>
@@ -493,32 +498,97 @@
                     </section>
 
                     <!-- PANEL PERINGATAN -->
-                    <aside class="bg-white rounded-xl border border-slate-200 overflow-hidden xl:sticky xl:top-20">
-                        <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-2">
-                            <div>
-                                <h2 class="text-sm font-bold text-slate-900">Peringatan terbaru</h2>
-                                <p class="text-xs text-slate-500 mt-0.5">Deteksi otomatis dari poller</p>
+                    <aside class="bg-white rounded-xl border border-slate-200 overflow-hidden xl:sticky xl:top-20 flex flex-col">
+                        <!-- Header Panel: Bersih tanpa badge pill AI-slop di pojok -->
+                        <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
+                            <div class="min-w-0">
+                                <h2 class="text-sm font-bold text-slate-900 tracking-tight">Peringatan Terbaru</h2>
+                                <p class="text-xs text-slate-500 mt-0.5">Deteksi otomatis dari poller telemetri</p>
                             </div>
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-600/20 shrink-0">
-                                <span id="unresolvedCountText" class="tabular-nums mr-1">{{ $unresolvedAlerts }}</span> belum selesai
-                            </span>
+                            
+                            <!-- Indikator Titik LED status inline tanpa kotak AI-slop -->
+                            <div id="unresolvedIndicatorWrap" class="flex items-center gap-2 shrink-0">
+                                @if ($unresolvedAlerts > 0)
+                                    <span class="relative flex h-2 w-2">
+                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                        <span class="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+                                    </span>
+                                    <span class="text-xs font-semibold text-rose-600 whitespace-nowrap">
+                                        <span id="unresolvedCountText" class="tabular-nums">{{ $unresolvedAlerts }}</span> belum selesai
+                                    </span>
+                                @else
+                                    <span class="inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                    <span id="allResolvedText" class="text-xs font-medium text-emerald-600 whitespace-nowrap">
+                                        Semua teratasi
+                                    </span>
+                                @endif
+                            </div>
                         </div>
 
-                        <div id="alertContainer" class="divide-y divide-slate-100">
+                        <!-- Sub-header Filter & Quick Action -->
+                        <div class="px-5 py-2.5 bg-slate-50/70 border-b border-slate-100 flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-1">
+                                <button
+                                    type="button"
+                                    data-filter="all"
+                                    class="alert-filter-tab px-2.5 py-1 text-[11px] font-semibold rounded-md transition cursor-pointer bg-white text-slate-900 shadow-2xs"
+                                >
+                                    Semua <span id="alertTotalCount" class="text-slate-400 font-normal">({{ count($alerts) }})</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    data-filter="active"
+                                    class="alert-filter-tab px-2.5 py-1 text-[11px] font-medium rounded-md transition cursor-pointer text-slate-500 hover:text-slate-800"
+                                >
+                                    Aktif <span id="alertActiveCount" class="text-slate-400 font-normal">({{ $unresolvedAlerts }})</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    data-filter="resolved"
+                                    class="alert-filter-tab px-2.5 py-1 text-[11px] font-medium rounded-md transition cursor-pointer text-slate-500 hover:text-slate-800"
+                                >
+                                    Selesai <span id="alertResolvedCount" class="text-slate-400 font-normal">({{ count($alerts) - $unresolvedAlerts }})</span>
+                                </button>
+                            </div>
+
+                            <button
+                                type="button"
+                                id="btnResolveAllAlerts"
+                                class="text-[11px] font-semibold text-blue-600 hover:text-blue-800 hover:underline transition cursor-pointer {{ $unresolvedAlerts > 0 ? '' : 'hidden' }}"
+                            >
+                                Selesaikan Semua
+                            </button>
+                        </div>
+
+                        <!-- Alert List Container -->
+                        <div id="alertContainer" class="divide-y divide-slate-100 max-h-145 overflow-y-auto">
                             @forelse ($alerts as $alert)
-                                @php $sv = $severityStyles[$alert['severity']] ?? $severityStyles['info']; @endphp
-                                <div id="alert-item-{{ $alert['id'] }}" class="px-5 py-4 border-l-[3px] {{ $sv['border'] }} {{ $alert['is_resolved'] ? 'opacity-60 bg-slate-50/40' : '' }}">
+                                @php
+                                    $sv = $severityStyles[$alert['severity']] ?? $severityStyles['info'];
+                                    $isResolved = (bool) $alert['is_resolved'];
+                                @endphp
+                                <div
+                                    id="alert-item-{{ $alert['id'] }}"
+                                    data-resolved="{{ $isResolved ? 'true' : 'false' }}"
+                                    class="alert-card px-5 py-3.5 border-l-[3.5px] {{ $isResolved ? 'border-l-slate-300 opacity-65 bg-slate-50/40' : $sv['border'] }} transition-all"
+                                >
                                     <div class="flex items-center justify-between gap-2">
-                                        <span class="text-[11px] font-bold uppercase tracking-wide {{ $sv['text'] }}">{{ $alert['type'] }}</span>
-                                        <span class="text-[11px] text-slate-400 whitespace-nowrap" title="{{ $alert['time_wib'] }}">{{ $alert['time_ago'] }}</span>
+                                        <span class="text-[11px] font-bold uppercase tracking-wider {{ $isResolved ? 'text-slate-400' : $sv['text'] }}">
+                                            {{ $alert['type'] }}
+                                        </span>
+                                        <span class="text-[11px] text-slate-400 whitespace-nowrap" title="{{ $alert['time_wib'] }}">
+                                            {{ $alert['time_ago'] }}
+                                        </span>
                                     </div>
                                     <p class="mt-1 text-xs font-bold text-slate-900">{{ $alert['host'] }}</p>
                                     <p class="mt-0.5 text-xs text-slate-600 leading-relaxed">{{ $alert['message'] }}</p>
-                                    <div class="mt-3 flex items-center justify-between gap-2">
-                                        <span class="text-[11px] text-slate-400 truncate">{{ $alert['customer'] }}</span>
+                                    <div class="mt-3 flex items-center justify-between gap-3 pt-1">
+                                        <span class="text-[11px] text-slate-400 truncate flex-1 min-w-0" title="{{ $alert['customer'] }}">
+                                            {{ $alert['customer'] }}
+                                        </span>
                                         <div id="alert-action-container-{{ $alert['id'] }}" class="shrink-0">
-                                            @if ($alert['is_resolved'])
-                                                <span class="inline-flex items-center gap-1 text-[11px] font-medium text-slate-400">
+                                            @if ($isResolved)
+                                                <span class="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-400">
                                                     <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                                     </svg>
@@ -529,7 +599,7 @@
                                                     type="button"
                                                     data-alert-id="{{ $alert['id'] }}"
                                                     data-alert-type="{{ $alert['type'] }}"
-                                                    class="btn-resolve-alert px-2.5 py-1 rounded-md border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 text-[11px] font-semibold transition cursor-pointer active:scale-95"
+                                                    class="btn-resolve-alert px-2.5 py-1 rounded-md border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900 text-[11px] font-semibold shadow-2xs transition cursor-pointer active:scale-95"
                                                 >
                                                     Tandai selesai
                                                 </button>
@@ -538,16 +608,23 @@
                                     </div>
                                 </div>
                             @empty
-                                <div class="px-5 py-10 text-center text-slate-400">
-                                    <div class="w-9 h-9 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-2.5">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                <div id="emptyAlertState" class="px-5 py-10 text-center text-slate-400">
+                                    <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-2.5 border border-emerald-100">
+                                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                                         </svg>
                                     </div>
-                                    <p class="text-xs font-semibold text-slate-700">Semua Jaringan Normal</p>
-                                    <p class="text-[11px] text-slate-400 mt-0.5">Tidak ada insiden atau alert aktif.</p>
+                                    <p class="text-xs font-bold text-slate-700">Semua Jaringan Normal</p>
+                                    <p class="text-[11px] text-slate-500 mt-1 max-w-55 mx-auto leading-relaxed">
+                                        Poller telemetri tidak menemukan adanya gangguan atau saturasi node saat ini.
+                                    </p>
                                 </div>
                             @endforelse
+
+                            <div id="filterEmptyAlertState" class="hidden px-5 py-10 text-center text-slate-400">
+                                <p class="text-xs font-semibold text-slate-600">Tidak ada peringatan di tab ini</p>
+                                <p class="text-[11px] text-slate-400 mt-0.5">Silakan pilih tab filter lainnya.</p>
+                            </div>
                         </div>
                     </aside>
                 </div>

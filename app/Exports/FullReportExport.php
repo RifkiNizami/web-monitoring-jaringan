@@ -5,7 +5,7 @@ namespace App\Exports;
 use Maatwebsite\Excel\Concerns\Export;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
-class FullReportExport implements WithMultipleSheets, Export
+class FullReportExport implements Export, WithMultipleSheets
 {
     protected array $reportData;
 

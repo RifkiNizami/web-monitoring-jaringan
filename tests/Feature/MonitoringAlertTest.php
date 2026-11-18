@@ -375,4 +375,77 @@ class MonitoringAlertTest extends TestCase
         $this->assertSame(0.0, $offlineCheck['cpu_load']);
         $this->assertSame(0.0, $offlineCheck['ram_load']);
     }
+
+    /**
+     * Memastikan endpoint sinkronisasi poller semua node berjalan dengan sukses.
+     */
+    public function test_poll_all_nodes_endpoint_works(): void
+    {
+        $response = $this->actingAs($this->adminUser)->postJson('/monitoring/poll-all');
+
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'success',
+            'message',
+            'total',
+            'online',
+            'offline',
+            'warning',
+            'unresolved_alerts',
+            'timestamp',
+        ]);
+        $response->assertJson([
+            'success' => true,
+        ]);
+    }
+
+    /**
+     * Memastikan endpoint selesaikan semua alert berfungsi menandai seluruh insiden menjadi resolved.
+     */
+    public function test_resolve_all_alerts_endpoint_works(): void
+    {
+        MonitoringAlert::create([
+            'host' => 'TEST-NODE-01',
+            'severity' => 'critical',
+            'type' => 'Perangkat Padam',
+            'message' => 'Node tidak merespons.',
+            'is_resolved' => false,
+        ]);
+
+        $response = $this->actingAs($this->adminUser)->postJson('/monitoring/alerts/resolve-all');
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+        ]);
+
+        $this->assertDatabaseMissing('monitoring_alerts', [
+            'host' => 'TEST-NODE-01',
+            'is_resolved' => false,
+        ]);
+    }
+
+    /**
+     * Memastikan poller otomatis menghasilkan alert saat terdeteksi node offline.
+     */
+    public function test_poller_automatically_creates_alert_for_offline_device(): void
+    {
+        MonitoringDevice::create([
+            'hostname' => 'TEST-OFFLINE-ROUTER-99',
+            'unit_type' => 'Router',
+            'ip_address' => '10.200.99.99',
+            'customer' => 'Customer Test NOC',
+            'status' => 'offline',
+            'packet_loss' => 100.0,
+        ]);
+
+        MonitoringController::syncPollerAlerts();
+
+        $this->assertDatabaseHas('monitoring_alerts', [
+            'host' => 'TEST-OFFLINE-ROUTER-99',
+            'type' => 'Perangkat Padam',
+            'severity' => 'critical',
+            'is_resolved' => false,
+        ]);
+    }
 }

@@ -12,8 +12,11 @@
         </a>
         <!-- Mini Logo Emblem (Collapsed) -->
         <a href="{{ route('dashboard') }}" class="sidebar-mini-logo flex items-center justify-center group" title="NetFly Dashboard">
-            <div class="w-9 h-9 rounded-xl bg-linear-to-tr from-blue-700 via-blue-600 to-sky-500 text-white font-extrabold text-sm flex items-center justify-center shadow-xs tracking-tight ring-1 ring-blue-600/30 group-hover:scale-105 transition-transform">
-                <span>NF</span>
+            <div class="w-9 h-9 rounded-xl bg-white border border-slate-200/90 flex items-center justify-center p-1.5 shadow-2xs group-hover:border-blue-400 group-hover:scale-105 transition-all">
+                <picture class="w-full h-full flex items-center justify-center">
+                    <source srcset="{{ asset('assets/images/netfly-emblem.webp') }}" type="image/webp">
+                    <img src="{{ asset('assets/images/netfly-emblem.png') }}" alt="NetFly" class="w-full h-full object-contain">
+                </picture>
             </div>
         </a>
         <!-- Mobile close button -->
@@ -166,7 +169,7 @@
                     <!-- Monitoring & Alert -->
                     @php $isMonitoringActive = request()->routeIs('monitoring.*'); @endphp
                     <a href="{{ route('monitoring.index') }}"
-                        data-sidebar-tooltip="Monitoring (LIVE)"
+                        data-sidebar-tooltip="Monitoring"
                         class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-colors {{ $isMonitoringActive ? 'bg-blue-50 text-blue-700 font-semibold shadow-2xs ring-1 ring-blue-600/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium' }}">
                         <div class="sidebar-icon-box">
                             <svg class="w-5 h-5 shrink-0 {{ $isMonitoringActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }}"
@@ -174,16 +177,8 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
                                     d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
-                            <span class="sidebar-mini-badge flex h-2.5 w-2.5">
-                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500 ring-2 ring-white"></span>
-                            </span>
                         </div>
                         <span class="sidebar-nav-label text-xs truncate">Monitoring</span>
-                        <span class="sidebar-full-badge inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-rose-50 text-rose-600 border border-rose-200">
-                            <span class="w-1.5 h-1.5 mr-1 rounded-full bg-rose-500 animate-pulse"></span>
-                            <span>LIVE</span>
-                        </span>
                     </a>
 
                     <!-- Network Devices -->
@@ -304,7 +299,7 @@
                                     d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                         </div>
-                        <span class="sidebar-nav-label text-xs truncate">Report Generator</span>
+                        <span class="sidebar-nav-label text-xs truncate">Laporan</span>
                     </a>
 
                     <!-- Log Aktivitas -->
@@ -367,8 +362,10 @@
     <div class="sidebar-profile p-3 border-t border-slate-100 bg-white shrink-0 mt-auto overflow-hidden">
         <div class="sidebar-profile-box relative flex items-center p-1.5 rounded-xl hover:bg-slate-50 transition-colors"
              data-sidebar-tooltip="{{ Auth::user()->name ?? 'Administrator' }} ({{ $isAdminKonten ? 'Admin Konten' : 'NOC Specialist' }})">
-            <div class="sidebar-avatar-box w-9 h-9 rounded-full {{ $isAdminKonten ? 'bg-blue-600' : 'bg-slate-900' }} text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-2xs">
-                {{ strtoupper(substr(Auth::user()->name ?? 'AD', 0, 2)) }}
+            <div class="sidebar-avatar-box w-9 h-9 rounded-full bg-slate-100 border border-slate-200/90 text-slate-500 flex items-center justify-center shrink-0 shadow-2xs">
+                <svg class="w-4.5 h-4.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
             </div>
             <div class="sidebar-user-details min-w-0">
                 <p class="text-xs font-bold text-slate-800 truncate leading-tight">

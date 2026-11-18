@@ -4,7 +4,36 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property string $hostname
+ * @property string|null $unit_type
+ * @property string $ip_address
+ * @property string|null $customer
+ * @property string|null $project
+ * @property string|null $model
+ * @property string|null $rack_location
+ * @property string $status
+ * @property string|null $status_label
+ * @property string|null $uptime
+ * @property string|null $rx_mbps
+ * @property string|null $tx_mbps
+ * @property float $cpu_load
+ * @property float $ram_load
+ * @property string|null $temperature
+ * @property string|null $voltage
+ * @property float $packet_loss
+ * @property int|null $last_ping_ms
+ * @property string|null $connection_type
+ * @property int $api_port
+ * @property string|null $api_username
+ * @property string|null $api_password
+ * @property array|null $interfaces
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 class MonitoringDevice extends Model
 {
     use HasFactory;

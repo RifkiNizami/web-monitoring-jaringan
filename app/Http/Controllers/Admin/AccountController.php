@@ -8,20 +8,19 @@ use App\Models\User;
 use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class AccountController extends Controller
 {
     /**
-     * Master Data Customer Perusahaan (Korporat / B2B) NetFly
+     * Master Data Customer Perusahaan (Korporat / B2B) NetFly dari Database.
      */
     protected function getCorporateCustomerList(): array
     {
-        $dbCustomers = Customer::where('customer_type', 'perusahaan')->orderBy('id', 'asc')->get();
-
-        if ($dbCustomers->isNotEmpty()) {
-            return $dbCustomers->map(function ($c) {
+        return Customer::where('customer_type', 'perusahaan')
+            ->orderBy('name', 'asc')
+            ->get()
+            ->map(function ($c) {
                 $shortCode = strtoupper(preg_replace('/[^a-zA-Z0-9]/', '', explode(' ', str_replace(['PT.', 'PT', 'CV.'], '', $c->name))[0] ?? 'CORP'));
                 $shortCode = substr($shortCode ?: 'CORP', 0, 8);
 
@@ -33,119 +32,25 @@ class AccountController extends Controller
                     'category' => $c->category ?: 'Mitra Korporat',
                     'package' => $c->package ?: ($c->note ?: 'Dedicated Corporate Fiber'),
                     'address' => $c->address ?: '-',
-                    'latitude' => $c->latitude ?? -6.208763,
-                    'longitude' => $c->longitude ?? 106.845599,
-                    'default_pic' => $c->pic_name ?: 'PIC Perusahaan',
+                    'latitude' => $c->latitude !== null ? (float) $c->latitude : null,
+                    'longitude' => $c->longitude !== null ? (float) $c->longitude : null,
+                    'default_pic' => ($c->pic_name && $c->pic_name !== '-') ? $c->pic_name : $c->name,
                     'default_email' => $c->email ?: '',
                     'default_phone' => $c->phone ?: '',
                     'username_prefix' => strtolower($shortCode).'_',
                 ];
             })->toArray();
-        }
-
-        return [
-            [
-                'id' => 1,
-                'customer_type' => 'perusahaan',
-                'name' => 'PT. Bank Mandiri (Persero) Tbk',
-                'code' => 'MANDIRI',
-                'category' => 'Enterprise Banking',
-                'package' => 'MPLS Core Interconnect 10Gbps',
-                'address' => 'Plaza Mandiri, Jl. Jend. Gatot Subroto Kav. 36-38, Jakarta Selatan',
-                'latitude' => -6.224468,
-                'longitude' => 106.815095,
-                'default_pic' => 'Bambang Kurniawan, S.Kom',
-                'default_email' => 'pic.noc@bankmandiri.co.id',
-                'default_phone' => '0812-8877-6655',
-                'username_prefix' => 'mandiri_',
-            ],
-            [
-                'id' => 2,
-                'customer_type' => 'perusahaan',
-                'name' => 'PT. Shopee International Indonesia',
-                'code' => 'SHOPEE',
-                'category' => 'E-Commerce Tech Hub',
-                'package' => 'Dedicated Fiber 2Gbps + SCBD Direct Peering',
-                'address' => 'Pacific Century Place Tower Lt. 26, SCBD, Jakarta Selatan',
-                'latitude' => -6.225582,
-                'longitude' => 106.808764,
-                'default_pic' => 'Jessica Tanuwijaya',
-                'default_email' => 'noc-corp@shopee.co.id',
-                'default_phone' => '0813-1122-3344',
-                'username_prefix' => 'shopee_',
-            ],
-            [
-                'id' => 3,
-                'customer_type' => 'perusahaan',
-                'name' => 'Dinas Pendidikan Provinsi DKI Jakarta',
-                'code' => 'DISDIK',
-                'category' => 'Pemerintahan & Pendidikan',
-                'package' => 'Smart City Backbone Fiber 1Gbps',
-                'address' => 'Jl. Jend. Gatot Subroto No. 40-41, Kuningan Barat, Jakarta Selatan',
-                'latitude' => -6.238270,
-                'longitude' => 106.826108,
-                'default_pic' => 'Ir. Hendra Wijaya, M.T.',
-                'default_email' => 'admin.jaringan@disdik.jakarta.go.id',
-                'default_phone' => '0815-9988-1234',
-                'username_prefix' => 'disdik_',
-            ],
-            [
-                'id' => 4,
-                'customer_type' => 'perusahaan',
-                'name' => 'PT. XYZ Teknologi',
-                'code' => 'XYZ',
-                'category' => 'Software & Datacenter',
-                'package' => 'Dedicated Fiber 1Gbps',
-                'address' => 'Cyber 2 Tower Lt. 18, Jl. HR Rasuna Said, Jakarta Selatan',
-                'latitude' => -6.226195,
-                'longitude' => 106.832761,
-                'default_pic' => 'Rian Saputra',
-                'default_email' => 'infra@xyzteknologi.id',
-                'default_phone' => '0821-4455-6677',
-                'username_prefix' => 'xyz_',
-            ],
-            [
-                'id' => 5,
-                'customer_type' => 'perusahaan',
-                'name' => 'RS Medika Center',
-                'code' => 'MEDIKA',
-                'category' => 'Healthcare & Rumah Sakit',
-                'package' => 'Dedicated Internet Broadband 500Mbps',
-                'address' => 'Jl. Kesehatan Raya No. 12, Jakarta Barat',
-                'latitude' => -6.174465,
-                'longitude' => 106.809124,
-                'default_pic' => 'dr. Anton Pratama, Sp.A',
-                'default_email' => 'simrs@medikacenter.org',
-                'default_phone' => '0818-7766-5544',
-                'username_prefix' => 'medika_',
-            ],
-            [
-                'id' => 6,
-                'customer_type' => 'perusahaan',
-                'name' => 'PT. Astra Agro Lestari Tbk',
-                'code' => 'ASTRA',
-                'category' => 'Manufaktur & Agribisnis',
-                'package' => 'Microwave Wireless Remote Backbone 200Mbps',
-                'address' => 'Kawasan Industri Pulo Gadung, Jakarta Timur',
-                'latitude' => -6.193125,
-                'longitude' => 106.915842,
-                'default_pic' => 'Ferry Gunawan',
-                'default_email' => 'it-noc@astra-agro.co.id',
-                'default_phone' => '0811-2233-4455',
-                'username_prefix' => 'astra_',
-            ],
-        ];
     }
 
     /**
-     * Master Data Customer Rumahan (Residensial / Home Fiber) NetFly
+     * Master Data Customer Rumahan (Residensial / Home Fiber) NetFly dari Database.
      */
     protected function getResidentialCustomerList(): array
     {
-        $dbCustomers = Customer::where('customer_type', 'rumahan')->orderBy('id', 'asc')->get();
-
-        if ($dbCustomers->isNotEmpty()) {
-            return $dbCustomers->map(function ($c) {
+        return Customer::where('customer_type', 'rumahan')
+            ->orderBy('name', 'asc')
+            ->get()
+            ->map(function ($c) {
                 return [
                     'id' => $c->id,
                     'customer_type' => 'rumahan',
@@ -154,67 +59,18 @@ class AccountController extends Controller
                     'category' => $c->category ?: 'Customer Rumahan',
                     'package' => $c->package ?: ($c->note ?: 'Paket Home Fiber Unlimited'),
                     'address' => $c->address ?: '-',
-                    'latitude' => $c->latitude ?? -6.250000,
-                    'longitude' => $c->longitude ?? 106.820000,
-                    'default_pic' => $c->name,
+                    'latitude' => $c->latitude !== null ? (float) $c->latitude : null,
+                    'longitude' => $c->longitude !== null ? (float) $c->longitude : null,
+                    'default_pic' => ($c->pic_name && $c->pic_name !== '-') ? $c->pic_name : $c->name,
                     'default_email' => $c->email ?: '',
                     'default_phone' => $c->phone ?: '',
                     'username_prefix' => 'home_',
                 ];
             })->toArray();
-        }
-
-        return [
-            [
-                'id' => 101,
-                'customer_type' => 'rumahan',
-                'name' => 'Budi Santoso',
-                'code' => 'HOME-0001',
-                'category' => 'Customer Rumahan',
-                'package' => 'Paket Home Fiber 50 Mbps Unlimited',
-                'address' => 'Perumahan Griya Asri Blok C2 No. 14, Kel. Sukamaju, Kec. Cilodong, Depok',
-                'latitude' => -6.418254,
-                'longitude' => 106.854912,
-                'default_pic' => 'Budi Santoso',
-                'default_email' => 'budi.santoso@gmail.com',
-                'default_phone' => '0812-8450-1122',
-                'username_prefix' => 'home_',
-            ],
-            [
-                'id' => 102,
-                'customer_type' => 'rumahan',
-                'name' => 'Siti Aminah',
-                'code' => 'HOME-0002',
-                'category' => 'Customer Rumahan',
-                'package' => 'Paket Home Fiber Gamer 100 Mbps + Static IP',
-                'address' => 'Jl. Melati Indah IV No. 8, RT.04/RW.09, Bintaro, Tangerang Selatan',
-                'latitude' => -6.273812,
-                'longitude' => 106.741298,
-                'default_pic' => 'Siti Aminah',
-                'default_email' => 'sitiaminah.home@yahoo.com',
-                'default_phone' => '0813-9088-3344',
-                'username_prefix' => 'home_',
-            ],
-            [
-                'id' => 103,
-                'customer_type' => 'rumahan',
-                'name' => 'Hendra Kusuma',
-                'code' => 'HOME-0003',
-                'category' => 'Customer Rumahan',
-                'package' => 'FTTH Home Broadband 30 Mbps',
-                'address' => 'Cluster Harmoni Residence No. B12, Bekasi Barat',
-                'latitude' => -6.234891,
-                'longitude' => 106.975421,
-                'default_pic' => 'Hendra Kusuma',
-                'default_email' => 'hendra.kusuma88@gmail.com',
-                'default_phone' => '0857-2211-9090',
-                'username_prefix' => 'home_',
-            ],
-        ];
     }
 
     /**
-     * Gabungan seluruh customer (Perusahaan & Rumahan)
+     * Gabungan seluruh customer (Perusahaan & Rumahan) dari Database.
      */
     public function getCustomerList(): array
     {
@@ -222,225 +78,44 @@ class AccountController extends Controller
     }
 
     /**
-     * Default daftar akun customer (Perusahaan & Rumahan)
-     */
-    protected function getDefaultAccounts(): array
-    {
-        return [
-            [
-                'id' => 101,
-                'customer_id' => 1,
-                'customer_type' => 'perusahaan',
-                'customer_name' => 'PT. Bank Mandiri (Persero) Tbk',
-                'customer_code' => 'MANDIRI',
-                'package' => 'MPLS Core Interconnect 10Gbps',
-                'address' => 'Plaza Mandiri, Jl. Jend. Gatot Subroto Kav. 36-38, Jakarta Selatan',
-                'latitude' => -6.224468,
-                'longitude' => 106.815095,
-                'name' => 'Bambang Kurniawan, S.Kom',
-                'username' => 'pic_mandiri',
-                'email' => 'pic.noc@bankmandiri.co.id',
-                'phone' => '0812-8877-6655',
-                'role' => 'customer_representative',
-                'role_label' => 'PIC Perwakilan Customer',
-                'is_active' => true,
-                'last_login' => 'Hari ini, 14:22 WIB',
-                'last_login_ip' => '103.28.12.45',
-                'created_at' => '12 Jan 2026',
-                'must_change_password' => false,
-            ],
-            [
-                'id' => 102,
-                'customer_id' => 2,
-                'customer_type' => 'perusahaan',
-                'customer_name' => 'PT. Shopee International Indonesia',
-                'customer_code' => 'SHOPEE',
-                'package' => 'Dedicated Fiber 2Gbps + SCBD Peering',
-                'address' => 'Pacific Century Place Tower Lt. 26, SCBD, Jakarta Selatan',
-                'latitude' => -6.225582,
-                'longitude' => 106.808764,
-                'name' => 'Jessica Tanuwijaya',
-                'username' => 'noc_shopee',
-                'email' => 'noc-corp@shopee.co.id',
-                'phone' => '0813-1122-3344',
-                'role' => 'customer_representative',
-                'role_label' => 'PIC Perwakilan Customer',
-                'is_active' => true,
-                'last_login' => 'Kemarin, 19:40 WIB',
-                'last_login_ip' => '182.253.98.11',
-                'created_at' => '15 Jan 2026',
-                'must_change_password' => false,
-            ],
-            [
-                'id' => 106,
-                'customer_id' => 101,
-                'customer_type' => 'rumahan',
-                'customer_name' => 'Budi Santoso',
-                'customer_code' => 'RUMAHAN',
-                'package' => 'Paket Home Fiber 50 Mbps Unlimited',
-                'address' => 'Perumahan Griya Asri Blok C2 No. 14, Kel. Sukamaju, Kec. Cilodong, Depok',
-                'latitude' => -6.418254,
-                'longitude' => 106.854912,
-                'name' => 'Budi Santoso',
-                'username' => 'home_budi',
-                'email' => 'budi.santoso@gmail.com',
-                'phone' => '0812-8450-1122',
-                'role' => 'customer_residential',
-                'role_label' => 'Customer Rumahan',
-                'is_active' => true,
-                'last_login' => 'Hari ini, 11:10 WIB',
-                'last_login_ip' => '36.80.112.9',
-                'created_at' => '18 Jan 2026',
-                'must_change_password' => false,
-            ],
-            [
-                'id' => 103,
-                'customer_id' => 3,
-                'customer_type' => 'perusahaan',
-                'customer_name' => 'Dinas Pendidikan Provinsi DKI Jakarta',
-                'customer_code' => 'DISDIK',
-                'package' => 'Smart City Backbone Fiber 1Gbps',
-                'address' => 'Jl. Jend. Gatot Subroto No. 40-41, Kuningan Barat, Jakarta Selatan',
-                'latitude' => -6.238270,
-                'longitude' => 106.826108,
-                'name' => 'Ir. Hendra Wijaya, M.T.',
-                'username' => 'disdik_jkt',
-                'email' => 'admin.jaringan@disdik.jakarta.go.id',
-                'phone' => '0815-9988-1234',
-                'role' => 'customer_representative',
-                'role_label' => 'PIC Perwakilan Customer',
-                'is_active' => false,
-                'last_login' => '10 Feb 2026, 09:15 WIB',
-                'last_login_ip' => '36.72.15.89',
-                'created_at' => '20 Jan 2026',
-                'must_change_password' => true,
-            ],
-            [
-                'id' => 104,
-                'customer_id' => 4,
-                'customer_type' => 'perusahaan',
-                'customer_name' => 'PT. XYZ Teknologi',
-                'customer_code' => 'XYZ',
-                'package' => 'Dedicated Fiber 1Gbps',
-                'address' => 'Cyber 2 Tower Lt. 18, Jl. HR Rasuna Said, Jakarta Selatan',
-                'latitude' => -6.226195,
-                'longitude' => 106.832761,
-                'name' => 'Rian Saputra',
-                'username' => 'it_xyz_tech',
-                'email' => 'infra@xyzteknologi.id',
-                'phone' => '0821-4455-6677',
-                'role' => 'customer_representative',
-                'role_label' => 'PIC Perwakilan Customer',
-                'is_active' => true,
-                'last_login' => 'Hari ini, 08:30 WIB',
-                'last_login_ip' => '114.122.45.10',
-                'created_at' => '01 Feb 2026',
-                'must_change_password' => false,
-            ],
-            [
-                'id' => 105,
-                'customer_id' => 5,
-                'customer_type' => 'perusahaan',
-                'customer_name' => 'RS Medika Center',
-                'customer_code' => 'MEDIKA',
-                'package' => 'Dedicated Internet Broadband 500Mbps',
-                'address' => 'Jl. Kesehatan Raya No. 12, Jakarta Barat',
-                'latitude' => -6.174465,
-                'longitude' => 106.809124,
-                'name' => 'dr. Anton Pratama, Sp.A',
-                'username' => 'medika_simrs',
-                'email' => 'simrs@medikacenter.org',
-                'phone' => '0818-7766-5544',
-                'role' => 'customer_representative',
-                'role_label' => 'PIC Perwakilan Customer',
-                'is_active' => true,
-                'last_login' => '3 hari lalu',
-                'last_login_ip' => '180.252.61.3',
-                'created_at' => '05 Feb 2026',
-                'must_change_password' => false,
-            ],
-        ];
-    }
-
-    /**
-     * Helper to load dynamic accounts from session or database
+     * Mengambil daftar akun pengguna perwakilan customer langsung dari tabel users database.
      */
     public function getActiveAccounts(): array
     {
-        $sessionAccounts = session('customer_accounts', null);
+        $users = User::with('customer')
+            ->whereIn('role', ['customer_representative', 'customer_residential'])
+            ->orderBy('id', 'desc')
+            ->get();
 
-        if ($sessionAccounts !== null) {
-            $customersMap = collect($this->getCustomerList())->keyBy('id');
-            foreach ($sessionAccounts as $idx => $acc) {
-                if (! isset($acc['latitude']) || ! isset($acc['longitude']) || ! isset($acc['address'])) {
-                    $matched = $customersMap->get($acc['customer_id'] ?? 1);
-                    $sessionAccounts[$idx]['address'] = $acc['address'] ?? ($matched['address'] ?? '-');
-                    $sessionAccounts[$idx]['latitude'] = $acc['latitude'] ?? ($matched['latitude'] ?? -6.208763);
-                    $sessionAccounts[$idx]['longitude'] = $acc['longitude'] ?? ($matched['longitude'] ?? 106.845599);
-                }
-            }
-            session(['customer_accounts' => $sessionAccounts]);
+        return $users->map(function ($user) {
+            $customer = $user->customer;
+            $custType = $user->role === 'customer_residential'
+                ? 'rumahan'
+                : ($customer?->customer_type ?? 'perusahaan');
 
-            return $sessionAccounts;
-        }
-
-        $accounts = $this->getDefaultAccounts();
-
-        // Check if database has users with customer_id or customer_representative role
-        try {
-            $dbUsers = User::whereNotNull('customer_id')
-                ->orWhere('role', 'customer_representative')
-                ->get();
-
-            if ($dbUsers->isNotEmpty()) {
-                $customersMap = collect($this->getCustomerList())->keyBy('id');
-
-                foreach ($dbUsers as $dbUser) {
-                    $matchedCustomer = $customersMap->get($dbUser->customer_id);
-                    $alreadyExists = false;
-
-                    foreach ($accounts as $k => $acc) {
-                        if ($acc['id'] === $dbUser->id || $acc['username'] === $dbUser->username) {
-                            $alreadyExists = true;
-                            $accounts[$k]['is_active'] = (bool) $dbUser->is_active;
-                            break;
-                        }
-                    }
-
-                    if (! $alreadyExists) {
-                        $custType = $matchedCustomer['customer_type'] ?? 'perusahaan';
-                        $accounts[] = [
-                            'id' => $dbUser->id,
-                            'customer_id' => $dbUser->customer_id ?? 1,
-                            'customer_type' => $custType,
-                            'customer_name' => $matchedCustomer['name'] ?? 'Mitra Customer Terdaftar',
-                            'customer_code' => $custType === 'rumahan' ? 'RUMAHAN' : ($matchedCustomer['code'] ?? 'CUST'),
-                            'package' => $matchedCustomer['package'] ?? 'Dedicated Connection',
-                            'address' => $matchedCustomer['address'] ?? '-',
-                            'latitude' => $matchedCustomer['latitude'] ?? -6.208763,
-                            'longitude' => $matchedCustomer['longitude'] ?? 106.845599,
-                            'name' => $dbUser->name,
-                            'username' => $dbUser->username ?? ('user_'.$dbUser->id),
-                            'email' => $dbUser->email,
-                            'phone' => $dbUser->phone ?? '-',
-                            'role' => $dbUser->role ?? 'customer_representative',
-                            'role_label' => $custType === 'rumahan' ? 'Customer Rumahan' : 'PIC Perwakilan Customer',
-                            'is_active' => (bool) $dbUser->is_active,
-                            'last_login' => 'Belum pernah login',
-                            'last_login_ip' => '-',
-                            'created_at' => $dbUser->created_at ? $dbUser->created_at->format('d M Y') : date('d M Y'),
-                            'must_change_password' => true,
-                        ];
-                    }
-                }
-            }
-        } catch (\Throwable $e) {
-            Log::info('Database query fallback in AccountController: '.$e->getMessage());
-        }
-
-        session(['customer_accounts' => $accounts]);
-
-        return $accounts;
+            return [
+                'id' => $user->id,
+                'customer_id' => $user->customer_id,
+                'customer_type' => $custType,
+                'customer_name' => $customer?->name ?? 'Customer Terdaftar',
+                'customer_code' => $custType === 'rumahan' ? 'RUMAHAN' : ($customer?->code ?? 'CUST'),
+                'package' => $customer?->package ?: ($customer?->note ?: 'Dedicated Connection'),
+                'address' => $customer?->address ?: '-',
+                'latitude' => $customer?->latitude !== null ? (float) $customer->latitude : null,
+                'longitude' => $customer?->longitude !== null ? (float) $customer->longitude : null,
+                'name' => $user->name,
+                'username' => $user->username ?: ('user_'.$user->id),
+                'email' => $user->email,
+                'phone' => $user->phone ?: ($customer?->phone ?: '-'),
+                'role' => $user->role,
+                'role_label' => $custType === 'rumahan' ? 'Customer Rumahan' : 'PIC Perwakilan Customer',
+                'is_active' => (bool) $user->is_active,
+                'last_login' => 'Belum pernah login',
+                'last_login_ip' => '-',
+                'created_at' => $user->created_at ? $user->created_at->format('d M Y') : date('d M Y'),
+                'must_change_password' => false,
+            ];
+        })->toArray();
     }
 
     /**
@@ -490,7 +165,7 @@ class AccountController extends Controller
     }
 
     /**
-     * 1. Form Buat Akun User Baru untuk Perwakilan Customer (Perusahaan & Rumahan)
+     * 1. Form Buat Akun User Baru untuk Perwakilan Customer (Perusahaan & Rumahan) ke Database.
      */
     public function store(Request $request)
     {
@@ -498,10 +173,10 @@ class AccountController extends Controller
 
         $validated = $request->validate([
             'customer_type' => 'nullable|string|in:perusahaan,rumahan',
-            'customer_id' => 'required|integer',
+            'customer_id' => 'required|exists:customers,id',
             'name' => $customerType === 'rumahan' ? 'nullable|string|max:150' : 'required|string|max:150',
-            'username' => 'required|string|min:3|max:50|regex:/^[a-zA-Z0-9_.]+$/',
-            'email' => 'required|email|max:150',
+            'username' => 'required|string|min:3|max:50|regex:/^[a-zA-Z0-9_.]+$/|unique:users,username',
+            'email' => 'required|email|max:150|unique:users,email',
             'password' => 'required|string|min:6',
             'phone' => 'nullable|string|max:30',
             'address' => 'nullable|string',
@@ -511,102 +186,102 @@ class AccountController extends Controller
             'must_change_password' => 'nullable|boolean',
         ], [
             'customer_id.required' => 'Wajib memilih Customer.',
+            'customer_id.exists' => 'Customer yang dipilih tidak ditemukan.',
             'name.required' => 'Nama lengkap perwakilan (PIC) wajib diisi.',
             'username.required' => 'Username akun wajib ditentukan.',
+            'username.unique' => 'Username ini sudah digunakan, silakan pilih username lain.',
             'username.regex' => 'Username hanya boleh memuat huruf, angka, titik, atau garis bawah (_).',
             'email.required' => 'Alamat email resmi wajib diisi.',
+            'email.unique' => 'Alamat email ini sudah terdaftar.',
             'email.email' => 'Format alamat email tidak valid.',
             'password.required' => 'Password awal akun wajib ditetapkan.',
             'password.min' => 'Password awal minimal 6 karakter.',
         ]);
 
-        $customers = collect($this->getCustomerList())->keyBy('id');
-        $selectedCustomer = $customers->get((int) $validated['customer_id']);
+        $customer = Customer::findOrFail($validated['customer_id']);
+        $resolvedType = $customer->customer_type ?: $customerType;
+        $role = $resolvedType === 'rumahan' ? 'customer_residential' : 'customer_representative';
 
-        $resolvedType = $selectedCustomer['customer_type'] ?? $customerType;
-        $customerName = $selectedCustomer['name'] ?? ($resolvedType === 'rumahan' ? 'Customer Rumahan' : 'Mitra Korporat');
-        $customerCode = $resolvedType === 'rumahan' ? 'RUMAHAN' : ($selectedCustomer['code'] ?? 'CUST');
-        $customerPackage = $selectedCustomer['package'] ?? ($resolvedType === 'rumahan' ? 'Home Fiber Broadband' : 'Dedicated Link');
-
-        // Untuk customer rumahan tanpa PIC terpisah, gunakan nama customer langsung
-        $accountHolderName = ! empty($validated['name']) ? $validated['name'] : $customerName;
-
-        $isActive = $request->has('is_active') ? $request->boolean('is_active') : true;
-        $mustChange = $request->has('must_change_password') ? $request->boolean('must_change_password') : true;
-
-        $newId = (int) (round(microtime(true) * 10) % 900000 + 100000);
-
-        // Try persisting in Database if User model and table ready
-        try {
-            $user = User::create([
-                'name' => $accountHolderName,
-                'customer_id' => $validated['customer_id'],
-                'username' => $validated['username'],
-                'email' => $validated['email'],
-                'password' => Hash::make($validated['password']),
-                'role' => 'customer_representative',
-                'is_active' => $isActive,
-                'phone' => $validated['phone'] ?? null,
-            ]);
-            $newId = $user->id;
-        } catch (\Throwable $e) {
-            Log::info('Store User DB Fallback: '.$e->getMessage());
+        // Update koordinat atau alamat customer jika diisi pada formulir akun
+        $customerUpdates = [];
+        if (! empty($validated['address']) && empty($customer->address)) {
+            $customerUpdates['address'] = $validated['address'];
+        }
+        if (isset($validated['latitude']) && $validated['latitude'] !== '') {
+            $customerUpdates['latitude'] = (float) $validated['latitude'];
+        }
+        if (isset($validated['longitude']) && $validated['longitude'] !== '') {
+            $customerUpdates['longitude'] = (float) $validated['longitude'];
+        }
+        if (! empty($customerUpdates)) {
+            $customer->update($customerUpdates);
         }
 
-        $newAccount = [
-            'id' => $newId,
-            'customer_id' => (int) $validated['customer_id'],
-            'customer_type' => $resolvedType,
-            'customer_name' => $customerName,
-            'customer_code' => $customerCode,
-            'package' => $customerPackage,
-            'address' => ! empty($validated['address']) ? $validated['address'] : ($selectedCustomer['address'] ?? '-'),
-            'latitude' => isset($validated['latitude']) && $validated['latitude'] !== '' ? (float) $validated['latitude'] : ($selectedCustomer['latitude'] ?? -6.208763),
-            'longitude' => isset($validated['longitude']) && $validated['longitude'] !== '' ? (float) $validated['longitude'] : ($selectedCustomer['longitude'] ?? 106.845599),
+        $accountHolderName = ! empty($validated['name']) ? $validated['name'] : $customer->name;
+        // Akun customer baru langsung aktif otomatis setelah dibuat
+        $isActive = true;
+
+        $user = User::create([
             'name' => $accountHolderName,
+            'customer_id' => $customer->id,
             'username' => $validated['username'],
             'email' => $validated['email'],
-            'phone' => $validated['phone'] ?? '-',
-            'role' => $resolvedType === 'rumahan' ? 'customer_residential' : 'customer_representative',
-            'role_label' => $resolvedType === 'rumahan' ? 'Customer Rumahan' : 'PIC Perwakilan Customer',
+            'password' => Hash::make($validated['password']),
+            'role' => $role,
             'is_active' => $isActive,
-            'last_login' => 'Belum pernah login',
-            'last_login_ip' => '-',
-            'created_at' => date('d M Y'),
-            'must_change_password' => $mustChange,
-        ];
-
-        $currentAccounts = $this->getActiveAccounts();
-        array_unshift($currentAccounts, $newAccount);
-        session(['customer_accounts' => $currentAccounts]);
+            'phone' => $validated['phone'] ?? null,
+        ]);
 
         ActivityLogger::log(
             'akun',
             'create',
             "Menambahkan akun customer '{$accountHolderName}' ({$validated['username']})",
             $validated['username'],
-            (string) $newId,
+            (string) $user->id,
             [
                 'name' => $accountHolderName,
                 'username' => $validated['username'],
                 'email' => $validated['email'],
-                'customer_id' => $validated['customer_id'],
-                'customer_name' => $customerName,
-                'role' => $newAccount['role'],
+                'customer_id' => $customer->id,
+                'customer_name' => $customer->name,
+                'role' => $role,
                 'is_active' => $isActive,
             ]
         );
 
+        $newAccount = [
+            'id' => $user->id,
+            'customer_id' => $customer->id,
+            'customer_type' => $resolvedType,
+            'customer_name' => $customer->name,
+            'customer_code' => $resolvedType === 'rumahan' ? 'RUMAHAN' : ($customer->code ?? 'CUST'),
+            'package' => $customer->package ?: ($customer->note ?: 'Paket Layanan'),
+            'address' => $customer->address ?: '-',
+            'latitude' => $customer->latitude !== null ? (float) $customer->latitude : null,
+            'longitude' => $customer->longitude !== null ? (float) $customer->longitude : null,
+            'name' => $user->name,
+            'username' => $user->username,
+            'email' => $user->email,
+            'phone' => $user->phone ?? '-',
+            'role' => $user->role,
+            'role_label' => $resolvedType === 'rumahan' ? 'Customer Rumahan' : 'PIC Perwakilan Customer',
+            'is_active' => (bool) $user->is_active,
+            'last_login' => 'Belum pernah login',
+            'last_login_ip' => '-',
+            'created_at' => $user->created_at->format('d M Y'),
+            'must_change_password' => $request->has('must_change_password') ? $request->boolean('must_change_password') : true,
+        ];
+
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => "Akun customer '{$customerName}' dengan username '{$validated['username']}' berhasil dibuat!",
+                'message' => "Akun customer '{$customer->name}' dengan username '{$validated['username']}' berhasil dibuat!",
                 'account' => $newAccount,
                 'initial_password' => $validated['password'],
             ]);
         }
 
-        return redirect()->route('accounts.index')->with('success', "Akun customer '{$customerName}' dengan username '{$validated['username']}' berhasil dibuat!");
+        return redirect()->route('accounts.index')->with('success', "Akun customer '{$customer->name}' dengan username '{$validated['username']}' berhasil dibuat!");
     }
 
     /**
@@ -614,18 +289,34 @@ class AccountController extends Controller
      */
     public function edit($id): View
     {
-        $accounts = $this->getActiveAccounts();
-        $account = null;
-        foreach ($accounts as $item) {
-            if ((string) $item['id'] === (string) $id) {
-                $account = $item;
-                break;
-            }
-        }
+        $user = User::with('customer')
+            ->whereIn('role', ['customer_representative', 'customer_residential'])
+            ->findOrFail($id);
 
-        if (! $account) {
-            abort(404, 'Akun customer tidak ditemukan.');
-        }
+        $customer = $user->customer;
+        $custType = $user->role === 'customer_residential'
+            ? 'rumahan'
+            : ($customer?->customer_type ?? 'perusahaan');
+
+        $account = [
+            'id' => $user->id,
+            'customer_id' => $user->customer_id,
+            'customer_type' => $custType,
+            'customer_name' => $customer?->name ?? 'Customer Terdaftar',
+            'customer_code' => $custType === 'rumahan' ? 'RUMAHAN' : ($customer?->code ?? 'CUST'),
+            'package' => $customer?->package ?: ($customer?->note ?: 'Paket Layanan'),
+            'address' => $customer?->address ?: '-',
+            'latitude' => $customer?->latitude !== null ? (float) $customer->latitude : null,
+            'longitude' => $customer?->longitude !== null ? (float) $customer->longitude : null,
+            'name' => $user->name,
+            'username' => $user->username ?: ('user_'.$user->id),
+            'email' => $user->email,
+            'phone' => $user->phone ?: ($customer?->phone ?: '-'),
+            'role' => $user->role,
+            'role_label' => $custType === 'rumahan' ? 'Customer Rumahan' : 'PIC Perwakilan Customer',
+            'is_active' => (bool) $user->is_active,
+            'must_change_password' => false,
+        ];
 
         $corporateCustomers = $this->getCorporateCustomerList();
         $residentialCustomers = $this->getResidentialCustomerList();
@@ -635,18 +326,21 @@ class AccountController extends Controller
     }
 
     /**
-     * Perbarui data akun customer di session dan database.
+     * Perbarui data akun customer di database.
      */
     public function update(Request $request, $id)
     {
+        $user = User::whereIn('role', ['customer_representative', 'customer_residential'])
+            ->findOrFail($id);
+
         $customerType = $request->input('customer_type', 'perusahaan');
 
         $validated = $request->validate([
             'customer_type' => 'nullable|string|in:perusahaan,rumahan',
-            'customer_id' => 'required|integer',
+            'customer_id' => 'required|exists:customers,id',
             'name' => $customerType === 'rumahan' ? 'nullable|string|max:150' : 'required|string|max:150',
-            'username' => 'required|string|min:3|max:50|regex:/^[a-zA-Z0-9_.]+$/',
-            'email' => 'required|email|max:150',
+            'username' => 'required|string|min:3|max:50|regex:/^[a-zA-Z0-9_.]+$/|unique:users,username,'.$user->id,
+            'email' => 'required|email|max:150|unique:users,email,'.$user->id,
             'password' => 'nullable|string|min:6',
             'phone' => 'nullable|string|max:30',
             'address' => 'nullable|string',
@@ -656,90 +350,67 @@ class AccountController extends Controller
             'must_change_password' => 'nullable|boolean',
         ], [
             'customer_id.required' => 'Wajib memilih Customer.',
+            'customer_id.exists' => 'Customer yang dipilih tidak ditemukan.',
             'name.required' => 'Nama lengkap perwakilan (PIC) wajib diisi.',
             'username.required' => 'Username akun wajib ditentukan.',
+            'username.unique' => 'Username ini sudah digunakan.',
             'username.regex' => 'Username hanya boleh memuat huruf, angka, titik, atau garis bawah (_).',
             'email.required' => 'Alamat email resmi wajib diisi.',
+            'email.unique' => 'Alamat email ini sudah digunakan.',
             'email.email' => 'Format alamat email tidak valid.',
             'password.min' => 'Password minimal 6 karakter jika ingin diubah.',
         ]);
 
-        $customers = collect($this->getCustomerList())->keyBy('id');
-        $selectedCustomer = $customers->get((int) $validated['customer_id']);
+        $customer = Customer::findOrFail($validated['customer_id']);
+        $resolvedType = $customer->customer_type ?: $customerType;
+        $role = $resolvedType === 'rumahan' ? 'customer_residential' : 'customer_representative';
 
-        $resolvedType = $selectedCustomer['customer_type'] ?? $customerType;
-        $customerName = $selectedCustomer['name'] ?? ($resolvedType === 'rumahan' ? 'Customer Rumahan' : 'Mitra Korporat');
-        $customerCode = $resolvedType === 'rumahan' ? 'RUMAHAN' : ($selectedCustomer['code'] ?? 'CUST');
-        $customerPackage = $selectedCustomer['package'] ?? ($resolvedType === 'rumahan' ? 'Home Fiber Broadband' : 'Dedicated Link');
-
-        $accountHolderName = ! empty($validated['name']) ? $validated['name'] : $customerName;
-        $isActive = $request->has('is_active') ? $request->boolean('is_active') : true;
-
-        $accounts = $this->getActiveAccounts();
-        $targetFound = false;
-
-        foreach ($accounts as $k => $acc) {
-            if ((string) $acc['id'] === (string) $id) {
-                $accounts[$k]['customer_id'] = (int) $validated['customer_id'];
-                $accounts[$k]['customer_type'] = $resolvedType;
-                $accounts[$k]['customer_name'] = $customerName;
-                $accounts[$k]['customer_code'] = $customerCode;
-                $accounts[$k]['package'] = $customerPackage;
-                $accounts[$k]['address'] = ! empty($validated['address']) ? $validated['address'] : ($selectedCustomer['address'] ?? $acc['address'] ?? '-');
-                $accounts[$k]['latitude'] = isset($validated['latitude']) && $validated['latitude'] !== '' ? (float) $validated['latitude'] : ($selectedCustomer['latitude'] ?? $acc['latitude'] ?? -6.208763);
-                $accounts[$k]['longitude'] = isset($validated['longitude']) && $validated['longitude'] !== '' ? (float) $validated['longitude'] : ($selectedCustomer['longitude'] ?? $acc['longitude'] ?? 106.845599);
-                $accounts[$k]['name'] = $accountHolderName;
-                $accounts[$k]['username'] = $validated['username'];
-                $accounts[$k]['email'] = $validated['email'];
-                $accounts[$k]['phone'] = $validated['phone'] ?? '-';
-                $accounts[$k]['role'] = $resolvedType === 'rumahan' ? 'customer_residential' : 'customer_representative';
-                $accounts[$k]['role_label'] = $resolvedType === 'rumahan' ? 'Customer Rumahan' : 'PIC Perwakilan Customer';
-                $accounts[$k]['is_active'] = $isActive;
-                if ($request->has('must_change_password')) {
-                    $accounts[$k]['must_change_password'] = $request->boolean('must_change_password');
-                }
-                $targetFound = true;
-                break;
-            }
+        // Update data customer terkait jika ada perubahan koordinat/alamat
+        $custUpdates = [];
+        if (! empty($validated['address'])) {
+            $custUpdates['address'] = $validated['address'];
+        }
+        if (isset($validated['latitude']) && $validated['latitude'] !== '') {
+            $custUpdates['latitude'] = (float) $validated['latitude'];
+        }
+        if (isset($validated['longitude']) && $validated['longitude'] !== '') {
+            $custUpdates['longitude'] = (float) $validated['longitude'];
+        }
+        if (! empty($custUpdates)) {
+            $customer->update($custUpdates);
         }
 
-        if ($targetFound) {
-            session(['customer_accounts' => $accounts]);
+        $accountHolderName = ! empty($validated['name']) ? $validated['name'] : $customer->name;
+        $isActive = $request->boolean('is_active');
+
+        $userUpdates = [
+            'name' => $accountHolderName,
+            'customer_id' => $customer->id,
+            'username' => $validated['username'],
+            'email' => $validated['email'],
+            'role' => $role,
+            'phone' => $validated['phone'] ?? null,
+            'is_active' => $isActive,
+        ];
+
+        if (! empty($validated['password'])) {
+            $userUpdates['password'] = Hash::make($validated['password']);
         }
 
-        // Try DB update
-        try {
-            $user = User::find($id);
-            if ($user) {
-                $userUpdate = [
-                    'name' => $accountHolderName,
-                    'customer_id' => $validated['customer_id'],
-                    'username' => $validated['username'],
-                    'email' => $validated['email'],
-                    'phone' => $validated['phone'] ?? null,
-                    'is_active' => $isActive,
-                ];
-                if (! empty($validated['password'])) {
-                    $userUpdate['password'] = Hash::make($validated['password']);
-                }
-                $user->update($userUpdate);
-            }
-        } catch (\Throwable $e) {
-            Log::info('Update User DB Fallback: '.$e->getMessage());
-        }
+        $user->update($userUpdates);
 
         ActivityLogger::log(
             'akun',
             'update',
             "Memperbarui akun customer '{$accountHolderName}' ({$validated['username']})",
             $validated['username'],
-            (string) $id,
+            (string) $user->id,
             [
                 'name' => $accountHolderName,
                 'username' => $validated['username'],
                 'email' => $validated['email'],
-                'customer_id' => $validated['customer_id'],
-                'customer_name' => $customerName,
+                'customer_id' => $customer->id,
+                'customer_name' => $customer->name,
                 'is_active' => $isActive,
             ]
         );
@@ -755,67 +426,49 @@ class AccountController extends Controller
     }
 
     /**
-     * 2. Kontrol status akun: Toggle tombol Aktif / Nonaktifkan akun.
+     * 2. Kontrol status akun: Toggle tombol Aktif / Nonaktifkan akun di Database.
      */
     public function toggleStatus(Request $request, $id)
     {
-        $accounts = $this->getActiveAccounts();
-        $targetAccount = null;
-        $newStatus = false;
+        $user = User::whereIn('role', ['customer_representative', 'customer_residential'])
+            ->findOrFail($id);
 
-        foreach ($accounts as $k => $account) {
-            if ((string) $account['id'] === (string) $id) {
-                $newStatus = ! $account['is_active'];
-                $accounts[$k]['is_active'] = $newStatus;
-                $targetAccount = $accounts[$k];
-                break;
-            }
-        }
+        $user->is_active = ! $user->is_active;
+        $user->save();
 
-        session(['customer_accounts' => $accounts]);
-
-        // Attempt DB update
-        try {
-            $user = User::find($id);
-            if ($user) {
-                $user->is_active = $newStatus;
-                $user->save();
-            }
-        } catch (\Throwable $e) {
-            Log::info('Toggle Status DB Fallback: '.$e->getMessage());
-        }
-
-        $statusText = $newStatus ? 'diaktifkan' : 'dinonaktifkan';
-        $username = $targetAccount['username'] ?? 'User';
+        $statusText = $user->is_active ? 'diaktifkan' : 'dinonaktifkan';
 
         ActivityLogger::log(
             'akun',
             'update',
-            "Mengubah status akun '{$username}' menjadi ".($newStatus ? 'Aktif' : 'Nonaktif'),
-            $username,
-            (string) $id,
+            "Mengubah status akun '{$user->username}' menjadi ".($user->is_active ? 'Aktif' : 'Nonaktif'),
+            $user->username,
+            (string) $user->id,
             [
-                'username' => $username,
-                'is_active' => $newStatus,
+                'username' => $user->username,
+                'is_active' => (bool) $user->is_active,
             ]
         );
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
-                'is_active' => $newStatus,
-                'message' => "Status akun '{$username}' berhasil {$statusText}!",
+                'is_active' => (bool) $user->is_active,
+                'message' => "Status akun '{$user->username}' berhasil {$statusText}!",
             ]);
         }
 
-        return redirect()->route('accounts.index')->with('success', "Status akun '{$username}' berhasil {$statusText}!");
+        return redirect()->route('accounts.index')->with('success', "Status akun '{$user->username}' berhasil {$statusText}!");
     }
 
     /**
-     * 3. Fitur Reset Password akun customer.
+     * 3. Fitur Reset Password akun customer di Database.
      */
     public function resetPassword(Request $request, $id)
     {
+        $user = User::whereIn('role', ['customer_representative', 'customer_residential'])
+            ->findOrFail($id);
+
         $validated = $request->validate([
             'password' => 'required|string|min:6',
         ], [
@@ -823,40 +476,17 @@ class AccountController extends Controller
             'password.min' => 'Password baru minimal 6 karakter.',
         ]);
 
-        $accounts = $this->getActiveAccounts();
-        $targetAccount = null;
-
-        foreach ($accounts as $k => $account) {
-            if ((string) $account['id'] === (string) $id) {
-                $accounts[$k]['must_change_password'] = true;
-                $targetAccount = $accounts[$k];
-                break;
-            }
-        }
-
-        session(['customer_accounts' => $accounts]);
-
-        // Attempt DB update
-        try {
-            $user = User::find($id);
-            if ($user) {
-                $user->password = Hash::make($validated['password']);
-                $user->save();
-            }
-        } catch (\Throwable $e) {
-            Log::info('Reset Password DB Fallback: '.$e->getMessage());
-        }
-
-        $username = $targetAccount['username'] ?? 'User';
+        $user->password = Hash::make($validated['password']);
+        $user->save();
 
         ActivityLogger::log(
             'akun',
             'update',
-            "Mereset kata sandi akun '{$username}'",
-            $username,
-            (string) $id,
+            "Mereset kata sandi akun '{$user->username}'",
+            $user->username,
+            (string) $user->id,
             [
-                'username' => $username,
+                'username' => $user->username,
                 'action_type' => 'reset_password',
             ]
         );
@@ -864,41 +494,24 @@ class AccountController extends Controller
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
-                'message' => "Password akun customer '{$username}' berhasil di-reset!",
+                'message' => "Password akun customer '{$user->username}' berhasil di-reset!",
                 'new_password' => $validated['password'],
             ]);
         }
 
-        return redirect()->route('accounts.index')->with('success', "Password akun '{$username}' berhasil di-reset!");
+        return redirect()->route('accounts.index')->with('success', "Password akun '{$user->username}' berhasil di-reset!");
     }
 
     /**
-     * Hapus akun perwakilan customer.
+     * Hapus akun perwakilan customer dari Database.
      */
     public function destroy(Request $request, $id)
     {
-        $accounts = $this->getActiveAccounts();
-        $username = 'User';
+        $user = User::whereIn('role', ['customer_representative', 'customer_residential'])
+            ->findOrFail($id);
 
-        $filtered = [];
-        foreach ($accounts as $account) {
-            if ((string) $account['id'] === (string) $id) {
-                $username = $account['username'];
-            } else {
-                $filtered[] = $account;
-            }
-        }
-
-        session(['customer_accounts' => $filtered]);
-
-        try {
-            $user = User::find($id);
-            if ($user) {
-                $user->delete();
-            }
-        } catch (\Throwable $e) {
-            Log::info('Destroy User DB Fallback: '.$e->getMessage());
-        }
+        $username = $user->username;
+        $user->delete();
 
         ActivityLogger::log(
             'akun',
