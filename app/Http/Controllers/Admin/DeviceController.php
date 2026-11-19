@@ -217,7 +217,11 @@ class DeviceController extends Controller
                 'size_kb' => round($file->getSize() / 1024, 2),
                 'mime_type' => $file->getClientMimeType(),
             ];
-            $filename = 'device_'.time().'_'.Str::slug($validated['hostname']).'.'.$file->getClientOriginalExtension();
+            $ext = strtolower($file->guessExtension() ?: $file->getClientOriginalExtension());
+            if (! in_array($ext, ['jpg', 'jpeg', 'png', 'webp'], true)) {
+                $ext = 'jpg';
+            }
+            $filename = 'device_'.time().'_'.Str::slug($validated['hostname']).'.'.$ext;
             $destination = public_path('uploads/devices');
 
             if (! File::exists($destination)) {
@@ -336,7 +340,11 @@ class DeviceController extends Controller
                 'size_kb' => round($file->getSize() / 1024, 2),
                 'mime_type' => $file->getClientMimeType(),
             ];
-            $filename = 'device_'.time().'_'.Str::slug($validated['hostname']).'.'.$file->getClientOriginalExtension();
+            $ext = strtolower($file->guessExtension() ?: $file->getClientOriginalExtension());
+            if (! in_array($ext, ['jpg', 'jpeg', 'png', 'webp'], true)) {
+                $ext = 'jpg';
+            }
+            $filename = 'device_'.time().'_'.Str::slug($validated['hostname']).'.'.$ext;
             $destination = public_path('uploads/devices');
 
             if (! File::exists($destination)) {

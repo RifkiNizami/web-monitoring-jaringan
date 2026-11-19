@@ -64,11 +64,6 @@
 
                 <!-- PAGE HEADER -->
                 <div>
-                    <div class="text-[11px] font-semibold text-slate-400 mb-1 flex items-center gap-1.5">
-                        <span class="text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded border border-blue-200">ADMIN KONTEN</span>
-                        <span>›</span>
-                        <span>Formulir Pemberitahuan</span>
-                    </div>
                     <h1 class="text-xl lg:text-2xl font-black text-slate-900 tracking-tight">
                         Buat Pemberitahuan Baru
                     </h1>

@@ -385,22 +385,24 @@
     <!-- 3. Profile Admin & Logout (Floating Island Card - shrink-0 mt-auto) -->
     <div class="sidebar-profile p-2.5 border-t border-slate-200/70 bg-slate-50/50 shrink-0 mt-auto overflow-hidden">
         <div class="sidebar-profile-box relative flex items-center p-2 rounded-xl bg-white border border-slate-200/90 shadow-2xs hover:shadow-xs transition-all group"
-             data-sidebar-tooltip="{{ Auth::user()->name ?? 'Administrator' }} ({{ $isAdminKonten ? 'Admin Konten' : 'NOC Specialist' }})">
-            <div class="sidebar-avatar-box relative w-8.5 h-8.5 rounded-lg bg-linear-to-br from-blue-50 to-indigo-50 border border-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs shadow-2xs shrink-0 group-hover:border-blue-300 transition-colors">
-                <span>{{ strtoupper(substr(Auth::user()->name ?? 'AD', 0, 2)) }}</span>
+             data-sidebar-tooltip="{{ Auth::user()->name ?? 'Administrator' }} ({{ $isAdminKonten ? 'Content Specialist' : 'NOC Specialist' }})">
+            <div class="sidebar-avatar-box relative w-8.5 h-8.5 rounded-full bg-slate-100 border border-slate-200/90 text-slate-500 flex items-center justify-center shrink-0 shadow-2xs group-hover:bg-blue-50 group-hover:border-blue-200 group-hover:text-blue-600 transition-colors">
+                <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
                 <span class="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white absolute -bottom-0.5 -right-0.5" title="Online"></span>
             </div>
             <div class="sidebar-user-details min-w-0 flex-1 ml-2.5">
                 <p class="text-xs font-bold text-slate-800 truncate leading-tight group-hover:text-blue-600 transition-colors">
                     {{ Auth::user()->name ?? 'Administrator' }}
                 </p>
-                <p class="text-[10px] font-medium text-slate-400 truncate leading-tight mt-0.5">
+                <p class="text-xs font-medium text-slate-400 truncate leading-tight mt-0.5">
                     @if($isAdminKonten)
-                        <span class="text-blue-600 font-semibold">Admin Konten</span>
+                        <span>Content Specialist</span>
                     @elseif($isAdminBiasa)
                         <span>NOC Specialist</span>
                     @else
-                        {{ ucfirst(Auth::user()->role ?? 'User') }}
+                        <span>{{ ucfirst(Auth::user()->role ?? 'User') }}</span>
                     @endif
                 </p>
             </div>

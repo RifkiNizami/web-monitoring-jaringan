@@ -154,6 +154,7 @@
                   data-base-ping="{{ $pingMs }}"
                   data-base-rx="{{ $rxValue }}"
                   data-base-tx="{{ $txValue }}"
+                  data-status="{{ $device['status'] ?? 'offline' }}"
                   class="p-6 lg:p-8 space-y-6">
 
                 <!-- 1. DEVICE HEADER -->
@@ -245,10 +246,17 @@
                         <div>
                             <div class="flex items-center gap-2">
                                 <h2 class="text-sm font-semibold text-slate-900">Grafik Telemetri & Latensi (ms) Real-time</h2>
-                                <span class="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                    Live
-                                </span>
+                                @if (($device['status'] ?? 'offline') === 'offline')
+                                    <span id="chartLiveIndicator" class="inline-flex items-center gap-1 text-[11px] font-medium text-rose-600">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                                        Offline (0 Tx/Rx)
+                                    </span>
+                                @else
+                                    <span id="chartLiveIndicator" class="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                        Live Telemetri
+                                    </span>
+                                @endif
                             </div>
                             <p class="text-xs text-slate-500 mt-0.5">Pemantauan waktu respons Latensi (ms) serta transmisi download (Rx) dan upload (Tx)</p>
                         </div>

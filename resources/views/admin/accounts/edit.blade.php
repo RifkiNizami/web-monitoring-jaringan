@@ -103,7 +103,7 @@
                     <input type="hidden" name="customer_type" id="customer_type_input" value="{{ old('customer_type', $account['customer_type'] ?? 'perusahaan') }}">
                     <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude', $account['latitude'] ?? '-6.208763') }}">
                     <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude', $account['longitude'] ?? '106.845599') }}">
-                    <script type="application/json" id="customersDataJson">{!! json_encode($customers) !!}</script>
+                    <script type="application/json" id="customersDataJson">@json($customers)</script>
 
                     <div class="p-6 lg:p-8 space-y-5">
 

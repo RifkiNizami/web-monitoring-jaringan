@@ -31,9 +31,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     // Dashboard Bersama (Tampilan disesuaikan otomatis dengan role user di controller)
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/admin', [DashboardController::class, 'index'])->name('admin');
-    Route::redirect('/user', '/admin');
+    Route::middleware('role:admin,admin_konten')->group(function () {
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/admin', [DashboardController::class, 'index'])->name('admin');
+        Route::redirect('/user', '/admin');
+    });
 
     // ==========================================
     // MENU KHUSUS & UTAMA ADMIN KONTEN

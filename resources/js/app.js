@@ -17,6 +17,7 @@ import { initAdminCustomers } from './admin/customers';
 import { initAdminAccounts } from './admin/accounts';
 import { initAdminMonitoring } from './admin/monitoring';
 import { initAdminMonitoringDetail } from './admin/monitoring-detail';
+import { initAdminAppSetting } from './admin/app-setting';
 import Chart from 'chart.js/auto';
 
 if (typeof window !== 'undefined') {
@@ -222,6 +223,7 @@ function initAppModules() {
     initAdminAccounts();
     initAdminMonitoring();
     initAdminMonitoringDetail();
+    initAdminAppSetting();
 }
 
 // Pre-apply sidebar collapsed class on Turbo visit to prevent layout flicker

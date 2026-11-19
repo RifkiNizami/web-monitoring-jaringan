@@ -96,11 +96,6 @@
                 <!-- HEADER & ACTION -->
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <div class="text-[11px] font-semibold text-slate-400 mb-1 flex items-center gap-1.5">
-                            <span class="text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded border border-blue-200">CRUD KLIEN LANDING</span>
-                            <span>›</span>
-                            <span>Kemitraan Publik</span>
-                        </div>
                         <h1 class="text-xl lg:text-2xl font-black text-slate-900 tracking-tight">
                             Kelola Klien Landing Page
                         </h1>

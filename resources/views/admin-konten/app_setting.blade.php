@@ -90,11 +90,6 @@
                 <!-- HEADER SECTION -->
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <div class="text-[11px] font-semibold text-slate-400 mb-1 flex items-center gap-1.5">
-                            <span class="text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded border border-blue-200">INTEGRASI BARCODE</span>
-                            <span>›</span>
-                            <span>Aplikasi Pelanggan NetFly</span>
-                        </div>
                         <h1 class="text-xl lg:text-2xl font-black text-slate-900 tracking-tight">
                             Tautan & Barcode Unduh Aplikasi Mobile
                         </h1>
@@ -117,7 +112,7 @@
                             </div>
                             <div>
                                 <h2 class="text-sm font-bold text-slate-900">Formulir Tautan Unduh</h2>
-                                <p class="text-[11px] text-slate-400">Masukkan tautan APK langsung, link Google Drive, atau URL Google Play Store</p>
+                                <p class="text-xs text-slate-400">Masukkan tautan APK langsung, link Google Drive, atau URL Google Play Store</p>
                             </div>
                         </div>
 
@@ -144,7 +139,7 @@
                                                placeholder="https://netfly.id/download/netfly-mobile.apk"
                                                class="w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50/70 border border-slate-200 rounded-xl text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all font-mono">
                                     </div>
-                                    <p class="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
+                                    <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">
                                         Tautan ini digunakan sebagai target barcode dan tombol download langsung di landing page publik.
                                     </p>
                                 </div>
@@ -156,15 +151,15 @@
                                         </svg>
                                         <span>Petunjuk Tautan Dinamis</span>
                                     </div>
-                                    <p class="text-[11px] text-blue-800/80 leading-relaxed">
+                                    <p class="text-xs text-blue-800/80 leading-relaxed">
                                         Anda dapat memperbarui link ini kapan saja saat ada rilis versi aplikasi APK baru. Pengunjung yang men-scan barcode di landing page akan langsung diarahkan ke versi URL terbaru yang tersimpan di sini.
                                     </p>
                                 </div>
 
                                 @if($lastUpdated)
-                                    <div class="text-[11px] text-slate-400 flex items-center gap-1.5 pt-1">
+                                    <div class="text-xs text-slate-400 flex items-center gap-1.5 pt-1">
                                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                        <span>Terakhir diperbarui: <strong>{{ $lastUpdated->format('d M Y, H:i') }} WIB</strong> ({{ $lastUpdated->diffForHumans() }})</span>
+                                        <span>Terakhir diperbarui: <strong class="text-slate-600">{{ $lastUpdated->translatedFormat('d M Y, H:i') }} WIB</strong> ({{ $lastUpdated->locale('id')->diffForHumans() }})</span>
                                     </div>
                                 @endif
                             </div>
@@ -194,22 +189,22 @@
                                 </div>
                                 <div>
                                     <h2 class="text-sm font-bold text-slate-900">Pratinjau Barcode (Live)</h2>
-                                    <p class="text-[11px] text-slate-400">Barcode real-time sesuai URL di atas</p>
+                                    <p class="text-xs text-slate-400">Barcode real-time sesuai URL di atas</p>
                                 </div>
                             </div>
-                            <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                Realtime
+                            <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                <span>Real-time</span>
                             </span>
                         </div>
 
                         <div class="p-6 flex-1 flex flex-col items-center justify-center text-center">
                             <!-- QR Code Preview Box -->
                             <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 shadow-inner inline-block">
-                                <div class="bg-white p-3 rounded-xl shadow-xs border border-slate-200/60">
+                                <div class="bg-white p-3 rounded-xl shadow-xs border border-slate-200/60 flex items-center justify-center">
                                     <canvas id="adminPreviewQrCanvas" class="w-48 h-48 mx-auto rounded-lg block"></canvas>
                                 </div>
-                                <div class="mt-3 text-[11px] text-slate-500 font-medium">
+                                <div class="mt-3 text-xs text-slate-500 font-medium">
                                     Scan untuk menguji tautan saat ini
                                 </div>
                             </div>
@@ -236,49 +231,5 @@
         </div>
 
     </div>
-
-    <!-- Script Live QR Generator di Halaman Admin -->
-    <script type="module">
-        import QRCode from 'qrcode';
-
-        function updateAdminQr() {
-            const input = document.getElementById('download_url');
-            const canvas = document.getElementById('adminPreviewQrCanvas');
-            const testBtn = document.getElementById('testOpenLinkBtn');
-            if (!canvas || !input) return;
-
-            const url = input.value.trim() || 'https://netfly.id';
-            if (testBtn) {
-                testBtn.href = url;
-            }
-
-            QRCode.toCanvas(canvas, url, {
-                width: 200,
-                margin: 1,
-                color: {
-                    dark: '#0f172a',
-                    light: '#ffffff'
-                },
-                errorCorrectionLevel: 'M'
-            }, function(err) {
-                if (err) console.error('Admin QR Error:', err);
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            updateAdminQr();
-            const input = document.getElementById('download_url');
-            if (input) {
-                input.addEventListener('input', updateAdminQr);
-            }
-        });
-        document.addEventListener('turbo:load', () => {
-            updateAdminQr();
-            const input = document.getElementById('download_url');
-            if (input) {
-                input.addEventListener('input', updateAdminQr);
-            }
-        });
-    </script>
 </body>
 </html>

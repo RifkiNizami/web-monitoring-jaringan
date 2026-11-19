@@ -54,6 +54,7 @@ export function initAdminMonitoringDetail() {
     }
 
     const deviceId = rootEl.dataset.deviceId || 'unknown';
+    const deviceStatus = (rootEl.dataset.status || 'offline').toLowerCase();
     const endpoint = rootEl.dataset.endpoint;
     let thresholds = {};
     try {
@@ -103,24 +104,34 @@ export function initAdminMonitoringDetail() {
     const STORAGE_KEY = `netfly_telemetry_buf_${deviceId}`;
 
     function loadBuffer() {
+        const isOffline = (deviceStatus === 'offline');
         try {
             const raw = sessionStorage.getItem(STORAGE_KEY);
             if (raw) {
                 const parsed = JSON.parse(raw);
                 if (parsed && Array.isArray(parsed.labels) && parsed.labels.length > 0) {
-                    return parsed;
+                    // Jika device offline, bersihkan cache buffer lama yang pernah menyimpan angka dummy/acak
+                    if (isOffline && (parsed.ping.some(p => p > 0) || parsed.rx.some(r => r > 0))) {
+                        sessionStorage.removeItem(STORAGE_KEY);
+                    } else {
+                        return parsed;
+                    }
                 }
             }
         } catch (e) {}
 
-        // Fallback: Inisialisasi data awal (20 data point baseline)
+        // Inisialisasi data awal murni dari database (tanpa Math.random dummy)
         const buf = { labels: [], ping: [], rx: [], tx: [] };
         const now = Date.now();
+        const initialPing = isOffline ? 0 : Math.max(0, basePing);
+        const initialRx = isOffline ? 0 : Math.max(0, baseRx);
+        const initialTx = isOffline ? 0 : Math.max(0, baseTx);
+
         for (let i = visiblePoints - 1; i >= 0; i--) {
             buf.labels.push(new Date(now - i * POLL_INTERVAL).toTimeString().slice(0, 8));
-            buf.ping.push(Math.max(1, Math.round(basePing + (Math.random() * 2 - 1))));
-            buf.rx.push(Math.max(0, +(baseRx + (Math.random() * 2 - 1)).toFixed(1)));
-            buf.tx.push(Math.max(0, +(baseTx + (Math.random() * 1.5 - 0.75)).toFixed(1)));
+            buf.ping.push(initialPing);
+            buf.rx.push(initialRx);
+            buf.tx.push(initialTx);
         }
         return buf;
     }
@@ -277,6 +288,17 @@ export function initAdminMonitoringDetail() {
 
             const lastUpdatedClock = document.getElementById('lastUpdatedClock');
             if (lastUpdatedClock) lastUpdatedClock.textContent = `${json.timestamp} WIB`;
+
+            const chartLiveIndicator = document.getElementById('chartLiveIndicator');
+            if (chartLiveIndicator) {
+                if (json.status === 'offline') {
+                    chartLiveIndicator.className = 'inline-flex items-center gap-1 text-[11px] font-medium text-rose-600';
+                    chartLiveIndicator.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Offline (0 Tx/Rx)';
+                } else {
+                    chartLiveIndicator.className = 'inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600';
+                    chartLiveIndicator.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Live Telemetri';
+                }
+            }
 
             buffer.labels.push(json.timestamp);
             buffer.ping.push(pingVal);

@@ -114,7 +114,11 @@ class KontenKlienController extends Controller
         $logoPath = null;
         if ($request->hasFile('logo')) {
             $file = $request->file('logo');
-            $filename = 'client_'.time().'_'.Str::slug($request->name).'.'.$file->getClientOriginalExtension();
+            $ext = strtolower($file->guessExtension() ?: $file->getClientOriginalExtension());
+            if (! in_array($ext, ['png', 'jpg', 'jpeg', 'svg', 'webp'], true)) {
+                $ext = 'png';
+            }
+            $filename = 'client_'.time().'_'.Str::slug($request->name).'.'.$ext;
             $destination = public_path('uploads/clients');
 
             if (! File::exists($destination)) {
@@ -188,7 +192,11 @@ class KontenKlienController extends Controller
 
         if ($request->hasFile('logo')) {
             $file = $request->file('logo');
-            $filename = 'client_'.time().'_'.Str::slug($request->name).'.'.$file->getClientOriginalExtension();
+            $ext = strtolower($file->guessExtension() ?: $file->getClientOriginalExtension());
+            if (! in_array($ext, ['png', 'jpg', 'jpeg', 'svg', 'webp'], true)) {
+                $ext = 'png';
+            }
+            $filename = 'client_'.time().'_'.Str::slug($request->name).'.'.$ext;
             $destination = public_path('uploads/clients');
 
             if (! File::exists($destination)) {
