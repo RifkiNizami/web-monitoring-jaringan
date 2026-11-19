@@ -20,32 +20,29 @@ use Symfony\Component\HttpFoundation\Response;
 class ReportController extends Controller
 {
     /**
-     * Daftar default mitra pelanggan NetFly.
+     * Daftar default opsi filter mitra pelanggan NetFly.
      */
     protected array $customers = [
         'all' => 'Semua Mitra Customer (Konsolidasi Jaringan)',
-        'mandiri' => 'PT. Bank Mandiri (Persero) Tbk',
-        'shopee' => 'PT. Shopee International Indonesia',
-        'disdik' => 'Dinas Pendidikan Provinsi DKI Jakarta',
-        'xyz' => 'PT. XYZ Teknologi',
-        'rs_medika' => 'RS Medika Center',
     ];
 
     /**
-     * Sinkronisasi daftar customer dinamis dari tabel database customers.
+     * Sinkronisasi daftar customer dinamis murni dari tabel database customers.
      */
     protected function getCustomerOptions(): array
     {
-        $options = $this->customers;
-        $existingLabels = array_map('strtolower', array_values($options));
+        $options = [
+            'all' => 'Semua Mitra Customer (Konsolidasi Jaringan)',
+        ];
 
-        foreach (Customer::orderBy('id', 'asc')->get() as $cust) {
+        foreach (Customer::orderBy('name', 'asc')->get() as $cust) {
             $custName = $cust->name ?? $cust->company_name ?? '';
-            $custCode = $cust->code ?? $cust->customer_code ?? (string) $cust->id;
-            if (! empty($custName) && ! in_array(strtolower($custName), $existingLabels, true)) {
-                $key = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', $custCode));
-                $options[$key] = $custName;
+            if (empty($custName)) {
+                continue;
             }
+            $code = $cust->code ?? $cust->customer_code;
+            $label = $custName . ($code ? " ({$code})" : '');
+            $options[(string) $cust->id] = $label;
         }
 
         return $options;
@@ -144,10 +141,37 @@ class ReportController extends Controller
     protected function resolveReportData(Request $request): array
     {
         $customerOptions = $this->getCustomerOptions();
+        $rawCustomer = (string) $request->query('customer', 'all');
 
-        $selectedCustomer = $request->query('customer', 'all');
-        if (! array_key_exists($selectedCustomer, $customerOptions)) {
+        $allDbCustomers = Customer::all();
+
+        // Resolusi pilihan customer dari parameter URL (bisa berupa ID angka, slug code, atau slug nama)
+        $matchedCustomer = null;
+        if ($rawCustomer !== 'all') {
+            $matchedCustomer = $allDbCustomers->first(function ($c) use ($rawCustomer) {
+                if ((string) $c->id === $rawCustomer) {
+                    return true;
+                }
+                $codeSlug = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', $c->code ?? $c->customer_code ?? ''));
+                if (! empty($codeSlug) && $codeSlug === strtolower($rawCustomer)) {
+                    return true;
+                }
+                $nameSlug = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', $c->name ?? ''));
+                if (! empty($nameSlug) && (str_contains($nameSlug, strtolower($rawCustomer)) || str_contains(strtolower($rawCustomer), $nameSlug))) {
+                    return true;
+                }
+                return false;
+            });
+        }
+
+        if ($matchedCustomer) {
+            $selectedCustomer = (string) $matchedCustomer->id;
+            $targetCustomerId = (int) $matchedCustomer->id;
+            $evaluatedPartner = $matchedCustomer->name;
+        } else {
             $selectedCustomer = 'all';
+            $targetCustomerId = null;
+            $evaluatedPartner = 'Semua Mitra Enterprise NetFly';
         }
 
         $currentMonth = (int) now()->month;
@@ -163,75 +187,29 @@ class ReportController extends Controller
             $selectedYear = $currentYear;
         }
 
-        // Mapping slug customer ke ID database
-        $customerSlugToId = [
-            'mandiri' => 1,
-            'shopee' => 2,
-            'disdik' => 3,
-            'xyz' => 4,
-            'rs_medika' => 5,
-        ];
-
-        foreach (Customer::all() as $c) {
-            $code = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', $c->customer_code ?? $c->code ?? "cust_{$c->id}"));
-            $customerSlugToId[$code] = $c->id;
-            if ($c->id === 1) {
-                $customerSlugToId['mandiri'] = 1;
-            }
-            if ($c->id === 2) {
-                $customerSlugToId['shopee'] = 2;
-            }
-            if ($c->id === 3) {
-                $customerSlugToId['disdik'] = 3;
-            }
-            if ($c->id === 4) {
-                $customerSlugToId['xyz'] = 4;
-            }
-            if ($c->id === 5) {
-                $customerSlugToId['rs_medika'] = 5;
-            }
-        }
-
-        $targetCustomerId = $customerSlugToId[$selectedCustomer] ?? null;
-
         // 1. TARIK DATA PERANGKAT DINAMIS DARI DATABASE (Model Device)
         $dbDevices = Device::with('customer')->orderBy('id', 'asc')->get();
         $allDevices = [];
 
         foreach ($dbDevices as $d) {
-            $cId = $d->customer_id;
-            $hostnameLower = strtolower($d->hostname ?? '');
-            $snmpLower = strtolower($d->snmp_community ?? '');
-            $rackLower = strtolower($d->rack_location ?? '');
+            $resolvedCust = $d->customer;
+            if (! $resolvedCust && ! empty($d->customer_id)) {
+                $resolvedCust = $allDbCustomers->firstWhere('id', $d->customer_id);
+            }
+            if (! $resolvedCust && $allDbCustomers->isNotEmpty()) {
+                $hostLower = strtolower($d->hostname ?? '');
+                $snmpLower = strtolower($d->snmp_community ?? '');
+                $rackLower = strtolower($d->rack_location ?? '');
+                $resolvedCust = $allDbCustomers->first(function ($c) use ($hostLower, $snmpLower, $rackLower) {
+                    $cName = strtolower($c->name ?? '');
+                    $cCode = strtolower($c->code ?? $c->customer_code ?? '');
+                    return (! empty($cName) && (str_contains($hostLower, $cName) || str_contains($snmpLower, $cName) || str_contains($rackLower, $cName)))
+                        || (! empty($cCode) && (str_contains($hostLower, $cCode) || str_contains($snmpLower, $cCode)));
+                });
+            }
 
-            // Resolusi cerdas mitra pelanggan jika customer_id belum terasosiasi di database
-            $cKey = match ($cId) {
-                1 => 'mandiri',
-                2 => 'shopee',
-                3 => 'disdik',
-                4 => 'xyz',
-                5 => 'rs_medika',
-                default => match (true) {
-                    str_contains($hostnameLower, 'mandiri') || str_contains($snmpLower, 'mandiri') => 'mandiri',
-                    str_contains($hostnameLower, 'shopee') || str_contains($hostnameLower, 'bks') => 'shopee',
-                    str_contains($hostnameLower, 'disdik') || str_contains($snmpLower, 'disdik') => 'disdik',
-                    str_contains($hostnameLower, 'xyz') || str_contains($rackLower, 'cyber') => 'xyz',
-                    str_contains($hostnameLower, 'medika') || str_contains($rackLower, 'medika') || str_contains($rackLower, 'fatmawati') => 'rs_medika',
-                    ! empty($d->customer?->code) => strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', $d->customer->code)),
-                    ! empty($d->customer?->customer_code) => strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', $d->customer->customer_code)),
-                    ! empty($cId) => "cust_{$cId}",
-                    default => 'netfly_core',
-                },
-            };
-
-            $custName = $d->customer?->name ?? match ($cKey) {
-                'mandiri' => 'PT. Bank Mandiri (Persero) Tbk',
-                'shopee' => 'PT. Shopee International Indonesia',
-                'disdik' => 'Dinas Pendidikan Provinsi DKI Jakarta',
-                'xyz' => 'PT. XYZ Teknologi',
-                'rs_medika' => 'RS Medika Center',
-                default => ($d->customer_id ? 'Mitra NetFly' : 'NetFly Core Infrastructure'),
-            };
+            $cId = $resolvedCust?->id ?? $d->customer_id;
+            $custName = $resolvedCust?->name ?? 'Infrastruktur Backbone NetFly';
 
             $rawStatus = strtolower($d->status ?? '');
             $statusState = match ($rawStatus) {
@@ -245,9 +223,8 @@ class ReportController extends Controller
                 default => 'Offline',
             };
 
-            // Uptime SLA
             $uptimeVal = match ($statusState) {
-                'online' => ($cKey === 'shopee' ? 97.45 : 99.92),
+                'online' => 99.92,
                 'warning' => 98.15,
                 default => 97.45,
             };
@@ -260,13 +237,13 @@ class ReportController extends Controller
                 'status' => $statusLabel,
                 'status_state' => $statusState,
                 'customer_id' => $cId,
-                'customer_key' => $cKey,
+                'customer_key' => $cId ? (string) $cId : 'core',
                 'customer_name' => $custName,
                 'location' => $d->rack_location ?? 'Data Center Pop NetFly',
                 'rack_position' => $d->rack_location ?? 'Slot Standard U',
                 'uptime_percent' => $uptimeVal,
                 'uptime_text' => $d->uptime ?? '30 hari 12 jam',
-                'rtt_ms' => (float) ($d->last_ping_ms ?? ($cKey === 'mandiri' ? 1.8 : ($cKey === 'shopee' ? 4.2 : 24.5))),
+                'rtt_ms' => (float) ($d->last_ping_ms ?? 8.0),
             ];
         }
 
@@ -275,17 +252,19 @@ class ReportController extends Controller
             if (! collect($allDevices)->contains('hostname', $m->hostname)) {
                 $st = strtolower($m->status ?? 'online');
                 $state = ($st === 'online' || $st === 'tersedia') ? 'online' : ($st === 'warning' ? 'warning' : 'offline');
-                $mCustLower = strtolower($m->customer ?? '');
-                $mHostLower = strtolower($m->hostname ?? '');
-                $mRackLower = strtolower($m->rack_location ?? '');
-                $mKey = match (true) {
-                    str_contains($mCustLower, 'mandiri') || str_contains($mHostLower, 'mandiri') => 'mandiri',
-                    str_contains($mCustLower, 'shopee') || str_contains($mHostLower, 'bks') => 'shopee',
-                    str_contains($mCustLower, 'disdik') || str_contains($mHostLower, 'disdik') => 'disdik',
-                    str_contains($mCustLower, 'xyz') || str_contains($mHostLower, 'cyber') || str_contains($mRackLower, 'cyber') => 'xyz',
-                    str_contains($mCustLower, 'medika') || str_contains($mHostLower, 'medika') || str_contains($mRackLower, 'medika') => 'rs_medika',
-                    default => 'rs_medika',
-                };
+
+                $mCustResolved = null;
+                if ($allDbCustomers->isNotEmpty()) {
+                    $mCustLower = strtolower($m->customer ?? '');
+                    $mHostLower = strtolower($m->hostname ?? '');
+                    $mCustResolved = $allDbCustomers->first(function ($c) use ($mCustLower, $mHostLower) {
+                        $cName = strtolower($c->name ?? '');
+                        $cCode = strtolower($c->code ?? $c->customer_code ?? '');
+                        return (! empty($cName) && (str_contains($mCustLower, $cName) || str_contains($mHostLower, $cName)))
+                            || (! empty($cCode) && str_contains($mHostLower, $cCode));
+                    });
+                }
+
                 $allDevices[] = [
                     'id' => $m->id,
                     'hostname' => $m->hostname,
@@ -293,9 +272,9 @@ class ReportController extends Controller
                     'ip_address' => $m->ip_address,
                     'status' => ucfirst($state),
                     'status_state' => $state,
-                    'customer_id' => null,
-                    'customer_key' => $mKey,
-                    'customer_name' => $m->customer ?? 'Mitra Monitoring',
+                    'customer_id' => $mCustResolved?->id,
+                    'customer_key' => $mCustResolved ? (string) $mCustResolved->id : 'monitoring',
+                    'customer_name' => $mCustResolved?->name ?? ($m->customer ?: 'Node Monitoring NetFly'),
                     'location' => $m->rack_location ?? 'Lokasi Site',
                     'rack_position' => $m->rack_location ?? 'Rack Node',
                     'uptime_percent' => 99.80,
@@ -310,37 +289,23 @@ class ReportController extends Controller
         $allTickets = [];
 
         foreach ($dbTickets as $t) {
-            $cId = $t->customer_id;
-            $clientLower = strtolower($t->client_name ?? '');
-            $subjLower = strtolower($t->subject ?? '');
+            $resolvedCust = $t->customer;
+            if (! $resolvedCust && ! empty($t->customer_id)) {
+                $resolvedCust = $allDbCustomers->firstWhere('id', $t->customer_id);
+            }
+            if (! $resolvedCust && $allDbCustomers->isNotEmpty()) {
+                $clientLower = strtolower($t->client_name ?? '');
+                $subjLower = strtolower($t->subject ?? '');
+                $resolvedCust = $allDbCustomers->first(function ($c) use ($clientLower, $subjLower) {
+                    $cName = strtolower($c->name ?? '');
+                    $cCode = strtolower($c->code ?? $c->customer_code ?? '');
+                    return (! empty($cName) && (str_contains($clientLower, $cName) || str_contains($cName, $clientLower) || str_contains($subjLower, $cName)))
+                        || (! empty($cCode) && (str_contains($clientLower, $cCode) || str_contains($subjLower, $cCode)));
+                });
+            }
 
-            $cKey = match ($cId) {
-                1 => 'mandiri',
-                2 => 'shopee',
-                3 => 'disdik',
-                4 => 'xyz',
-                5 => 'rs_medika',
-                default => match (true) {
-                    str_contains($clientLower, 'mandiri') || str_contains($subjLower, 'mandiri') => 'mandiri',
-                    str_contains($clientLower, 'shopee') || str_contains($subjLower, 'shopee') || str_contains($subjLower, 'bks') => 'shopee',
-                    str_contains($clientLower, 'disdik') || str_contains($clientLower, 'pendidikan') || str_contains($subjLower, 'disdik') => 'disdik',
-                    str_contains($clientLower, 'xyz') => 'xyz',
-                    str_contains($clientLower, 'medika') => 'rs_medika',
-                    ! empty($t->customer?->code) => strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', $t->customer->code)),
-                    ! empty($t->customer?->customer_code) => strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', $t->customer->customer_code)),
-                    ! empty($cId) => "cust_{$cId}",
-                    default => 'general',
-                },
-            };
-
-            $custName = $t->customer?->name ?? ($t->client_name ?? match ($cKey) {
-                'mandiri' => 'PT. Bank Mandiri (Persero) Tbk',
-                'shopee' => 'PT. Shopee International Indonesia',
-                'disdik' => 'Dinas Pendidikan Provinsi DKI Jakarta',
-                'xyz' => 'PT. XYZ Teknologi',
-                'rs_medika' => 'RS Medika Center',
-                default => 'Mitra NetFly',
-            });
+            $cId = $resolvedCust?->id ?? $t->customer_id;
+            $custName = $resolvedCust?->name ?? ($t->client_name ?: 'Pelanggan NetFly');
 
             $stLower = strtolower($t->status ?? '');
             $statusType = match (true) {
@@ -378,7 +343,7 @@ class ReportController extends Controller
                 'priority' => $t->priority ?? 'P2 - High',
                 'priority_level' => $t->priority_level ?? 'high',
                 'customer_id' => $cId,
-                'customer_key' => $cKey,
+                'customer_key' => $cId ? (string) $cId : 'general',
                 'customer_name' => $custName,
                 'date_raw' => $tDate,
                 'report_date' => $tDate ? $tDate->format('d M Y, H:i').' WIB' : '10 Okt 2026, 08:00 WIB',
@@ -401,15 +366,13 @@ class ReportController extends Controller
             $filteredTickets = $sourceTickets;
             $evaluatedPartner = 'Semua Mitra Enterprise NetFly';
         } else {
-            $filteredDevices = array_values(array_filter($allDevices, function ($d) use ($selectedCustomer, $targetCustomerId) {
-                return $d['customer_key'] === $selectedCustomer || ($targetCustomerId && $d['customer_id'] === $targetCustomerId);
+            $filteredDevices = array_values(array_filter($allDevices, function ($d) use ($targetCustomerId) {
+                return ! empty($d['customer_id']) && (int) $d['customer_id'] === (int) $targetCustomerId;
             }));
 
-            $filteredTickets = array_values(array_filter($sourceTickets, function ($t) use ($selectedCustomer, $targetCustomerId) {
-                return $t['customer_key'] === $selectedCustomer || ($targetCustomerId && $t['customer_id'] === $targetCustomerId);
+            $filteredTickets = array_values(array_filter($sourceTickets, function ($t) use ($targetCustomerId) {
+                return ! empty($t['customer_id']) && (int) $t['customer_id'] === (int) $targetCustomerId;
             }));
-
-            $evaluatedPartner = $customerOptions[$selectedCustomer] ?? 'Mitra Evaluasi NetFly';
         }
 
         // 4. METRIK & KALKULASI DINAMIS
@@ -522,31 +485,20 @@ class ReportController extends Controller
             ];
         }
 
-        $targetSlaMin = match ($selectedCustomer) {
-            'mandiri' => '99.8%',
-            'shopee' => '99.5%',
-            default => '99.0%',
-        };
+        $targetSlaMin = '99.0%';
 
         if ($totalDevices > 0) {
             $slaSum = array_sum(array_column($filteredDevices, 'uptime_percent'));
             $actualSla = round($slaSum / $totalDevices, 2);
         } else {
-            $actualSla = 99.10;
-        }
-
-        // Penyesuaian baseline SLA khusus untuk Shopee jika ada switch padam
-        if ($selectedCustomer === 'shopee') {
-            $actualSla = 97.45;
+            $actualSla = 99.80;
         }
 
         $minThreshold = (float) str_replace('%', '', $targetSlaMin);
         if ($actualSla >= $minThreshold) {
             $slaStatusLabel = 'Tercapai';
             $slaStatusColor = 'emerald';
-            $slaCommitmentText = ($selectedCustomer === 'mandiri')
-                ? 'Memenuhi Komitmen Kontrak SLA (Tier 1)'
-                : 'Memenuhi Komitmen Kontrak SLA';
+            $slaCommitmentText = 'Memenuhi Komitmen Kontrak SLA';
         } else {
             $slaStatusLabel = 'Deviasi Terdeteksi';
             $slaStatusColor = 'amber';
@@ -554,17 +506,17 @@ class ReportController extends Controller
         }
 
         // Waktu resolusi rata-rata
-        $avgResolutionTime = match ($selectedCustomer) {
-            'mandiri' => '38 Menit',
-            'shopee' => '2 Jam 40 Menit',
-            'disdik' => '1 Jam 15 Menit',
-            default => '45 Menit',
-        };
+        $avgResolutionTime = '45 Menit';
 
         // Nomor Registrasi Dokumen Resmi
+        $docPrefix = 'CONS';
+        if ($selectedCustomer !== 'all' && $targetCustomerId) {
+            $docPrefix = sprintf('C%03d', $targetCustomerId);
+        }
+
         $reportDocumentNumber = sprintf(
             'NETFLY/SLA-%s/%02d/%04d',
-            strtoupper($selectedCustomer === 'all' ? 'CONS' : substr($selectedCustomer, 0, 4)),
+            $docPrefix,
             $selectedMonth,
             $selectedYear
         );
