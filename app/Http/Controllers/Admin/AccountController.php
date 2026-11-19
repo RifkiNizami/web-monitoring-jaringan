@@ -175,7 +175,7 @@ class AccountController extends Controller
             'customer_type' => 'nullable|string|in:perusahaan,rumahan',
             'customer_id' => 'required|exists:customers,id',
             'name' => $customerType === 'rumahan' ? 'nullable|string|max:150' : 'required|string|max:150',
-            'username' => 'required|string|min:3|max:50|regex:/^[a-zA-Z0-9_.]+$/|unique:users,username',
+            'username' => 'nullable|string|min:3|max:50|regex:/^[a-zA-Z0-9_.]+$/|unique:users,username',
             'email' => 'required|email|max:150|unique:users,email',
             'password' => 'required|string|min:6',
             'phone' => 'nullable|string|max:30',
@@ -188,9 +188,6 @@ class AccountController extends Controller
             'customer_id.required' => 'Wajib memilih Customer.',
             'customer_id.exists' => 'Customer yang dipilih tidak ditemukan.',
             'name.required' => 'Nama lengkap perwakilan (PIC) wajib diisi.',
-            'username.required' => 'Username akun wajib ditentukan.',
-            'username.unique' => 'Username ini sudah digunakan, silakan pilih username lain.',
-            'username.regex' => 'Username hanya boleh memuat huruf, angka, titik, atau garis bawah (_).',
             'email.required' => 'Alamat email resmi wajib diisi.',
             'email.unique' => 'Alamat email ini sudah terdaftar.',
             'email.email' => 'Format alamat email tidak valid.',
@@ -201,6 +198,18 @@ class AccountController extends Controller
         $customer = Customer::findOrFail($validated['customer_id']);
         $resolvedType = $customer->customer_type ?: $customerType;
         $role = $resolvedType === 'rumahan' ? 'customer_residential' : 'customer_representative';
+
+        // Auto-generate username dari email jika tidak diisi
+        $rawUsername = ! empty($validated['username'])
+            ? $validated['username']
+            : strtolower(preg_replace('/[^a-zA-Z0-9_.]/', '', explode('@', $validated['email'])[0]));
+        $baseUser = substr($rawUsername ?: 'customer', 0, 30);
+        $candidateUser = $baseUser;
+        $counter = 1;
+        while (User::where('username', $candidateUser)->exists()) {
+            $candidateUser = substr($baseUser, 0, 25).'_'.($counter++);
+        }
+        $resolvedUsername = $candidateUser;
 
         // Update koordinat atau alamat customer jika diisi pada formulir akun
         $customerUpdates = [];
@@ -224,7 +233,7 @@ class AccountController extends Controller
         $user = User::create([
             'name' => $accountHolderName,
             'customer_id' => $customer->id,
-            'username' => $validated['username'],
+            'username' => $resolvedUsername,
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'role' => $role,
@@ -235,12 +244,12 @@ class AccountController extends Controller
         ActivityLogger::log(
             'akun',
             'create',
-            "Menambahkan akun customer '{$accountHolderName}' ({$validated['username']})",
-            $validated['username'],
+            "Menambahkan akun customer '{$accountHolderName}' ({$validated['email']})",
+            $validated['email'],
             (string) $user->id,
             [
                 'name' => $accountHolderName,
-                'username' => $validated['username'],
+                'username' => $resolvedUsername,
                 'email' => $validated['email'],
                 'customer_id' => $customer->id,
                 'customer_name' => $customer->name,
@@ -275,13 +284,13 @@ class AccountController extends Controller
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => "Akun customer '{$customer->name}' dengan username '{$validated['username']}' berhasil dibuat!",
+                'message' => "Akun customer '{$customer->name}' ({$user->email}) berhasil dibuat!",
                 'account' => $newAccount,
                 'initial_password' => $validated['password'],
             ]);
         }
 
-        return redirect()->route('accounts.index')->with('success', "Akun customer '{$customer->name}' dengan username '{$validated['username']}' berhasil dibuat!");
+        return redirect()->route('accounts.index')->with('success', "Akun customer '{$customer->name}' ({$user->email}) berhasil dibuat!");
     }
 
     /**
@@ -339,7 +348,7 @@ class AccountController extends Controller
             'customer_type' => 'nullable|string|in:perusahaan,rumahan',
             'customer_id' => 'required|exists:customers,id',
             'name' => $customerType === 'rumahan' ? 'nullable|string|max:150' : 'required|string|max:150',
-            'username' => 'required|string|min:3|max:50|regex:/^[a-zA-Z0-9_.]+$/|unique:users,username,'.$user->id,
+            'username' => 'nullable|string|min:3|max:50|regex:/^[a-zA-Z0-9_.]+$/|unique:users,username,'.$user->id,
             'email' => 'required|email|max:150|unique:users,email,'.$user->id,
             'password' => 'nullable|string|min:6',
             'phone' => 'nullable|string|max:30',
@@ -352,7 +361,6 @@ class AccountController extends Controller
             'customer_id.required' => 'Wajib memilih Customer.',
             'customer_id.exists' => 'Customer yang dipilih tidak ditemukan.',
             'name.required' => 'Nama lengkap perwakilan (PIC) wajib diisi.',
-            'username.required' => 'Username akun wajib ditentukan.',
             'username.unique' => 'Username ini sudah digunakan.',
             'username.regex' => 'Username hanya boleh memuat huruf, angka, titik, atau garis bawah (_).',
             'email.required' => 'Alamat email resmi wajib diisi.',
@@ -386,12 +394,15 @@ class AccountController extends Controller
         $userUpdates = [
             'name' => $accountHolderName,
             'customer_id' => $customer->id,
-            'username' => $validated['username'],
             'email' => $validated['email'],
             'role' => $role,
             'phone' => $validated['phone'] ?? null,
             'is_active' => $isActive,
         ];
+
+        if (! empty($validated['username'])) {
+            $userUpdates['username'] = $validated['username'];
+        }
 
         if (! empty($validated['password'])) {
             $userUpdates['password'] = Hash::make($validated['password']);
@@ -402,12 +413,11 @@ class AccountController extends Controller
         ActivityLogger::log(
             'akun',
             'update',
-            "Memperbarui akun customer '{$accountHolderName}' ({$validated['username']})",
-            $validated['username'],
+            "Memperbarui akun customer '{$accountHolderName}' ({$validated['email']})",
+            $validated['email'],
             (string) $user->id,
             [
                 'name' => $accountHolderName,
-                'username' => $validated['username'],
                 'email' => $validated['email'],
                 'customer_id' => $customer->id,
                 'customer_name' => $customer->name,
@@ -418,11 +428,11 @@ class AccountController extends Controller
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => "Data akun customer '{$validated['username']}' berhasil diperbarui!",
+                'message' => "Data akun customer '{$validated['email']}' berhasil diperbarui!",
             ]);
         }
 
-        return redirect()->route('accounts.index')->with('success', "Data akun customer '{$validated['username']}' berhasil diperbarui!");
+        return redirect()->route('accounts.index')->with('success', "Data akun customer '{$validated['email']}' berhasil diperbarui!");
     }
 
     /**

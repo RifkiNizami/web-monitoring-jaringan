@@ -32,7 +32,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email' => ['required', 'email'],
+            'email' => ['required', 'string'],
             'password' => ['required', 'string'],
         ]);
 
@@ -49,7 +49,14 @@ class AuthController extends Controller
 
         $remember = $request->boolean('remember');
 
-        if (Auth::attempt($credentials, $remember)) {
+        // Dukung Hybrid Login: Cocokkan ke kolom email atau username secara fleksibel
+        $fieldType = filter_var($credentials['email'], FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+        $authCredentials = [
+            $fieldType => $credentials['email'],
+            'password' => $credentials['password'],
+        ];
+
+        if (Auth::attempt($authCredentials, $remember)) {
             $user = Auth::user();
 
             // Proteksi Role Web Portal: Akun Pelanggan (customer_representative) hanya untuk Mobile App
@@ -135,6 +142,20 @@ class AuthController extends Controller
                 ]
             );
 
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Login berhasil',
+                    'user' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'username' => $user->username,
+                        'role' => $user->role,
+                    ],
+                ]);
+            }
+
             return redirect()->intended(route('dashboard'));
         }
 
@@ -144,11 +165,17 @@ class AuthController extends Controller
         ActivityLogger::log(
             'auth',
             'login_failed',
-            "Percobaan login gagal dengan email '{$credentials['email']}'",
+            "Percobaan login gagal dengan identitas '{$credentials['email']}'",
             $credentials['email'],
             null,
             ['attempted_email' => $credentials['email']]
         );
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => 'Email atau kata sandi yang Anda masukkan salah.',
+            ], 422);
+        }
 
         return back()->withErrors([
             'email' => 'Email atau kata sandi yang Anda masukkan salah.',

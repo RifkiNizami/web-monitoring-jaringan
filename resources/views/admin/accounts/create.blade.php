@@ -249,45 +249,6 @@
 
                         <!-- Garis Pemisah Kredensial -->
                         <div class="pt-3 border-t border-slate-100 space-y-4">
-                            
-                            <!-- Username -->
-                            <div>
-                                <div class="flex items-center justify-between mb-1.5">
-                                    <label for="username" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                                        Username Unik <span class="text-rose-500">*</span>
-                                    </label>
-                                    <button
-                                        type="button"
-                                        id="btnSuggestUsername"
-                                        class="text-[11px] font-semibold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
-                                    >
-                                        Generate Saran
-                                    </button>
-                                </div>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 font-mono text-xs font-bold">
-                                        @
-                                    </div>
-                                    <input
-                                        type="text"
-                                        id="username"
-                                        name="username"
-                                        value="{{ old('username') }}"
-                                        required
-                                        pattern="[a-zA-Z0-9_.]+"
-                                        placeholder="username_akun"
-                                        class="w-full pl-8 pr-20 py-2.5 text-xs font-mono font-semibold bg-white border rounded-lg text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition shadow-2xs @error('username') border-rose-500 @else border-slate-200 @enderror"
-                                    >
-                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                        <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 hidden" id="usernameValidBadge">
-                                            ✓ Valid
-                                        </span>
-                                    </div>
-                                </div>
-                                @error('username')
-                                    <p class="text-rose-500 text-[11px] mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
 
                             <!-- Password Awal -->
                             <div>
@@ -316,14 +277,15 @@
                                     <button
                                         type="button"
                                         id="togglePasswordVisibility"
-                                        class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
-                                        title="Lihat / Sembunyikan Password"
+                                        class="absolute inset-y-0 right-0 px-3.5 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer z-10 transition-colors focus:outline-none"
+                                        title="Lihat Password"
+                                        aria-label="Lihat / Sembunyikan Password"
                                     >
-                                        <svg class="w-4 h-4 eye-open" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <svg class="w-4 h-4 eye-open pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                         </svg>
-                                        <svg class="w-4 h-4 eye-closed hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <svg class="w-4 h-4 eye-closed hidden pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
                                         </svg>
                                     </button>
@@ -431,6 +393,8 @@
             function initCreateAccount() {
                 const form = document.getElementById('formAccountCreate');
                 if (!form) return;
+                if (form.dataset.initialized === 'true') return;
+                form.dataset.initialized = 'true';
 
                 const customerTypeInput = document.getElementById('customer_type_input');
                 const btnPerusahaan = document.getElementById('btnSelectTypePerusahaan');
@@ -443,15 +407,12 @@
                 const emailInput = document.getElementById('email');
                 const phoneInput = document.getElementById('phone');
                 const addressInput = document.getElementById('address');
-                const usernameInput = document.getElementById('username');
                 const passwordInput = document.getElementById('password');
                 const latInput = document.getElementById('latitude');
                 const lngInput = document.getElementById('longitude');
                 const coordDisplay = document.getElementById('coordDisplay');
-                const btnSuggestUsername = document.getElementById('btnSuggestUsername');
                 const btnGeneratePassword = document.getElementById('btnGeneratePassword');
                 const togglePasswordBtn = document.getElementById('togglePasswordVisibility');
-                const usernameValidBadge = document.getElementById('usernameValidBadge');
 
                 // Parse customer data passed from server
                 let customersList = [];
@@ -591,53 +552,26 @@
                     if (phoneInput && phone) phoneInput.value = phone;
                     if (addressInput && addr) addressInput.value = addr;
 
-                    // Auto-suggest username if blank
-                    if (usernameInput && !usernameInput.value.trim()) {
-                        let clean = (custName || prefix)
-                            .toLowerCase()
-                            .replace(/[^a-z0-9]/g, '_')
-                            .replace(/_+/g, '_')
-                            .replace(/^_|_$/g, '')
-                            .slice(0, 15);
-                        const suffix = (customerTypeInput && customerTypeInput.value === 'rumahan') ? 'home' : 'pic';
-                        usernameInput.value = clean ? `${clean}_${suffix}` : `${suffix}_user`;
-                        validateUsername();
-                    }
-
                     updateMapPosition(lat, lng);
                 });
 
-                // Username Validation
-                function validateUsername() {
-                    if (!usernameInput) return;
-                    const val = usernameInput.value.trim();
-                    const isValid = /^[a-zA-Z0-9_.]{3,50}$/.test(val);
-                    if (isValid && usernameValidBadge) {
-                        usernameValidBadge.classList.remove('hidden');
-                    } else if (usernameValidBadge) {
-                        usernameValidBadge.classList.add('hidden');
+                // Password Visibility Helper Function
+                function setPasswordVisibility(visible) {
+                    if (!passwordInput) return;
+                    passwordInput.type = visible ? 'text' : 'password';
+                    const eyeOpen = togglePasswordBtn?.querySelector('.eye-open');
+                    const eyeClosed = togglePasswordBtn?.querySelector('.eye-closed');
+                    if (eyeOpen) eyeOpen.classList.toggle('hidden', visible);
+                    if (eyeClosed) eyeClosed.classList.toggle('hidden', !visible);
+                    if (togglePasswordBtn) {
+                        togglePasswordBtn.setAttribute('title', visible ? 'Sembunyikan Password' : 'Lihat Password');
+                        togglePasswordBtn.setAttribute('aria-label', visible ? 'Sembunyikan Password' : 'Lihat Password');
                     }
                 }
-                usernameInput?.addEventListener('input', validateUsername);
-
-                btnSuggestUsername?.addEventListener('click', function () {
-                    const opt = customerSelect ? customerSelect.options[customerSelect.selectedIndex] : null;
-                    const custName = opt && opt.value ? opt.getAttribute('data-name') : (nameInput ? nameInput.value : 'customer');
-                    const base = (custName || 'user')
-                        .toLowerCase()
-                        .replace(/[^a-z0-9]/g, '_')
-                        .replace(/_+/g, '_')
-                        .replace(/^_|_$/g, '')
-                        .slice(0, 12) || 'user';
-                    const rand = Math.floor(100 + Math.random() * 900);
-                    if (usernameInput) {
-                        usernameInput.value = `${base}_${rand}`;
-                        validateUsername();
-                    }
-                });
 
                 // Password Generator
-                btnGeneratePassword?.addEventListener('click', function () {
+                btnGeneratePassword?.addEventListener('click', function (e) {
+                    e.preventDefault();
                     const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%';
                     let gen = '';
                     for (let i = 0; i < 10; i++) {
@@ -645,25 +579,15 @@
                     }
                     if (passwordInput) {
                         passwordInput.value = gen;
-                        passwordInput.type = 'text';
                     }
-                    document.querySelector('.eye-open')?.classList.add('hidden');
-                    document.querySelector('.eye-closed')?.classList.remove('hidden');
+                    setPasswordVisibility(true);
                 });
 
-                togglePasswordBtn?.addEventListener('click', function () {
+                togglePasswordBtn?.addEventListener('click', function (e) {
+                    e.preventDefault();
                     if (!passwordInput) return;
-                    const eyeOpen = this.querySelector('.eye-open');
-                    const eyeClosed = this.querySelector('.eye-closed');
-                    if (passwordInput.type === 'password') {
-                        passwordInput.type = 'text';
-                        eyeOpen?.classList.add('hidden');
-                        eyeClosed?.classList.remove('hidden');
-                    } else {
-                        passwordInput.type = 'password';
-                        eyeOpen?.classList.remove('hidden');
-                        eyeClosed?.classList.add('hidden');
-                    }
+                    const isCurrentlyVisible = passwordInput.type === 'text';
+                    setPasswordVisibility(!isCurrentlyVisible);
                 });
 
                 // Leaflet Map Setup with Retry & Size Invalidation

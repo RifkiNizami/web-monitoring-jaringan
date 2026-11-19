@@ -683,10 +683,10 @@
                             </button>
                         </div>
                         <p class="text-[10px] text-slate-500 leading-relaxed font-mono bg-white p-2 rounded border border-blue-100" id="previewCredentialText">
-                            Halo [PIC], berikut kredensial baru akun Customer NetFly Anda:<br>
-                            Username: [USERNAME]<br>
+                            Halo [PIC], berikut kredensial akun Customer NetFly Anda:<br>
+                            Email: [EMAIL]<br>
                             Password: [PASSWORD]<br>
-                            Portal: https://portal.netfly.id
+                            Aplikasi: NetFly Mobile (Login via Email)
                         </p>
                     </div>
 

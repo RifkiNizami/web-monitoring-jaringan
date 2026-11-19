@@ -150,14 +150,17 @@ class ReportController extends Controller
             $selectedCustomer = 'all';
         }
 
-        $selectedMonth = (int) $request->query('month', 10);
+        $currentMonth = (int) now()->month;
+        $currentYear = (int) now()->year;
+
+        $selectedMonth = (int) $request->query('month', $currentMonth);
         if (! array_key_exists($selectedMonth, $this->months)) {
-            $selectedMonth = 10;
+            $selectedMonth = $currentMonth;
         }
 
-        $selectedYear = (int) $request->query('year', 2026);
+        $selectedYear = (int) $request->query('year', $currentYear);
         if (! in_array($selectedYear, $this->years)) {
-            $selectedYear = 2026;
+            $selectedYear = $currentYear;
         }
 
         // Mapping slug customer ke ID database
@@ -197,15 +200,35 @@ class ReportController extends Controller
 
         foreach ($dbDevices as $d) {
             $cId = $d->customer_id;
-            $custName = $d->customer?->name ?? 'Mitra NetFly';
+            $hostnameLower = strtolower($d->hostname ?? '');
+            $snmpLower = strtolower($d->snmp_community ?? '');
 
+            // Resolusi cerdas mitra pelanggan jika customer_id belum terasosiasi di database
             $cKey = match ($cId) {
                 1 => 'mandiri',
                 2 => 'shopee',
                 3 => 'disdik',
                 4 => 'xyz',
                 5 => 'rs_medika',
-                default => strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', $d->customer?->customer_code ?? "cust_{$cId}")),
+                default => match (true) {
+                    str_contains($hostnameLower, 'mandiri') || str_contains($snmpLower, 'mandiri') => 'mandiri',
+                    str_contains($hostnameLower, 'shopee') || str_contains($hostnameLower, 'bks') => 'shopee',
+                    str_contains($hostnameLower, 'disdik') || str_contains($snmpLower, 'disdik') => 'disdik',
+                    str_contains($hostnameLower, 'xyz') => 'xyz',
+                    str_contains($hostnameLower, 'medika') => 'rs_medika',
+                    ! empty($d->customer?->customer_code) => strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', $d->customer->customer_code)),
+                    ! empty($cId) => "cust_{$cId}",
+                    default => 'netfly_core',
+                },
+            };
+
+            $custName = $d->customer?->name ?? match ($cKey) {
+                'mandiri' => 'PT. Bank Mandiri (Persero) Tbk',
+                'shopee' => 'PT. Shopee International Indonesia',
+                'disdik' => 'Dinas Pendidikan Provinsi DKI Jakarta',
+                'xyz' => 'PT. XYZ Teknologi',
+                'rs_medika' => 'RS Medika Center',
+                default => ($d->customer_id ? 'Mitra NetFly' : 'NetFly Core Infrastructure'),
             };
 
             $rawStatus = strtolower($d->status ?? '');
@@ -222,7 +245,7 @@ class ReportController extends Controller
 
             // Uptime SLA
             $uptimeVal = match ($statusState) {
-                'online' => ($cId === 2 ? 97.45 : 99.92),
+                'online' => ($cKey === 'shopee' ? 97.45 : 99.92),
                 'warning' => 98.15,
                 default => 97.45,
             };
@@ -241,7 +264,7 @@ class ReportController extends Controller
                 'rack_position' => $d->rack_location ?? 'Slot Standard U',
                 'uptime_percent' => $uptimeVal,
                 'uptime_text' => $d->uptime ?? '30 hari 12 jam',
-                'rtt_ms' => (float) ($d->last_ping_ms ?? ($cId === 1 ? 1.8 : ($cId === 2 ? 4.2 : 24.5))),
+                'rtt_ms' => (float) ($d->last_ping_ms ?? ($cKey === 'mandiri' ? 1.8 : ($cKey === 'shopee' ? 4.2 : 24.5))),
             ];
         }
 
@@ -250,6 +273,16 @@ class ReportController extends Controller
             if (! collect($allDevices)->contains('hostname', $m->hostname)) {
                 $st = strtolower($m->status ?? 'online');
                 $state = ($st === 'online' || $st === 'tersedia') ? 'online' : ($st === 'warning' ? 'warning' : 'offline');
+                $mCustLower = strtolower($m->customer ?? '');
+                $mHostLower = strtolower($m->hostname ?? '');
+                $mKey = match (true) {
+                    str_contains($mCustLower, 'mandiri') || str_contains($mHostLower, 'mandiri') => 'mandiri',
+                    str_contains($mCustLower, 'shopee') || str_contains($mHostLower, 'bks') => 'shopee',
+                    str_contains($mCustLower, 'disdik') || str_contains($mHostLower, 'disdik') => 'disdik',
+                    str_contains($mCustLower, 'xyz') => 'xyz',
+                    str_contains($mCustLower, 'medika') => 'rs_medika',
+                    default => 'monitoring',
+                };
                 $allDevices[] = [
                     'id' => $m->id,
                     'hostname' => $m->hostname,
@@ -258,7 +291,7 @@ class ReportController extends Controller
                     'status' => ucfirst($state),
                     'status_state' => $state,
                     'customer_id' => null,
-                    'customer_key' => 'monitoring',
+                    'customer_key' => $mKey,
                     'customer_name' => $m->customer ?? 'Mitra Monitoring',
                     'location' => $m->rack_location ?? 'Lokasi Site',
                     'rack_position' => $m->rack_location ?? 'Rack Node',
@@ -270,20 +303,40 @@ class ReportController extends Controller
         }
 
         // 2. TARIK DATA TIKET INSIDEN DINAMIS DARI DATABASE (Model Ticket)
-        $dbTickets = Ticket::with('customer')->orderBy('id', 'asc')->get();
+        $dbTickets = Ticket::with('customer')->orderBy('id', 'desc')->get();
         $allTickets = [];
 
         foreach ($dbTickets as $t) {
             $cId = $t->customer_id;
-            $custName = $t->customer?->name ?? ($t->client_name ?? 'Mitra NetFly');
+            $clientLower = strtolower($t->client_name ?? '');
+            $subjLower = strtolower($t->subject ?? '');
+
             $cKey = match ($cId) {
                 1 => 'mandiri',
                 2 => 'shopee',
                 3 => 'disdik',
                 4 => 'xyz',
                 5 => 'rs_medika',
-                default => strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', $t->customer?->customer_code ?? "cust_{$cId}")),
+                default => match (true) {
+                    str_contains($clientLower, 'mandiri') || str_contains($subjLower, 'mandiri') => 'mandiri',
+                    str_contains($clientLower, 'shopee') || str_contains($subjLower, 'shopee') || str_contains($subjLower, 'bks') => 'shopee',
+                    str_contains($clientLower, 'disdik') || str_contains($clientLower, 'pendidikan') || str_contains($subjLower, 'disdik') => 'disdik',
+                    str_contains($clientLower, 'xyz') => 'xyz',
+                    str_contains($clientLower, 'medika') => 'rs_medika',
+                    ! empty($t->customer?->customer_code) => strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', $t->customer->customer_code)),
+                    ! empty($cId) => "cust_{$cId}",
+                    default => 'general',
+                },
             };
+
+            $custName = $t->customer?->name ?? ($t->client_name ?? match ($cKey) {
+                'mandiri' => 'PT. Bank Mandiri (Persero) Tbk',
+                'shopee' => 'PT. Shopee International Indonesia',
+                'disdik' => 'Dinas Pendidikan Provinsi DKI Jakarta',
+                'xyz' => 'PT. XYZ Teknologi',
+                'rs_medika' => 'RS Medika Center',
+                default => 'Mitra NetFly',
+            });
 
             $stLower = strtolower($t->status ?? '');
             $statusType = match (true) {
@@ -299,6 +352,8 @@ class ReportController extends Controller
                 'resolved' => 'Resolved',
                 default => 'Open',
             };
+
+            $tDate = $t->reported_at ?? $t->created_at;
 
             $durationText = '45 Menit';
             if ($t->reported_at) {
@@ -321,22 +376,32 @@ class ReportController extends Controller
                 'customer_id' => $cId,
                 'customer_key' => $cKey,
                 'customer_name' => $custName,
-                'report_date' => $t->reported_at ? $t->reported_at->format('d M Y, H:i').' WIB' : '10 Okt 2026, 08:00 WIB',
+                'date_raw' => $tDate,
+                'report_date' => $tDate ? $tDate->format('d M Y, H:i').' WIB' : '10 Okt 2026, 08:00 WIB',
                 'duration' => $durationText,
             ];
         }
 
-        // 3. FILTERING PER MITRA
+        // 3. FILTERING PER MITRA & PERIODE
+        $periodTickets = array_values(array_filter($allTickets, function ($t) use ($selectedYear, $selectedMonth) {
+            if (empty($t['date_raw'])) {
+                return true;
+            }
+            return (int) $t['date_raw']->year === (int) $selectedYear && (int) $t['date_raw']->month === (int) $selectedMonth;
+        }));
+
+        $sourceTickets = ! empty($periodTickets) ? $periodTickets : $allTickets;
+
         if ($selectedCustomer === 'all') {
             $filteredDevices = $allDevices;
-            $filteredTickets = $allTickets;
+            $filteredTickets = $sourceTickets;
             $evaluatedPartner = 'Semua Mitra Enterprise NetFly';
         } else {
             $filteredDevices = array_values(array_filter($allDevices, function ($d) use ($selectedCustomer, $targetCustomerId) {
                 return $d['customer_key'] === $selectedCustomer || ($targetCustomerId && $d['customer_id'] === $targetCustomerId);
             }));
 
-            $filteredTickets = array_values(array_filter($allTickets, function ($t) use ($selectedCustomer, $targetCustomerId) {
+            $filteredTickets = array_values(array_filter($sourceTickets, function ($t) use ($selectedCustomer, $targetCustomerId) {
                 return $t['customer_key'] === $selectedCustomer || ($targetCustomerId && $t['customer_id'] === $targetCustomerId);
             }));
 

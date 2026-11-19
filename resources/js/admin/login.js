@@ -4,6 +4,8 @@
 export function initAdminLogin() {
     const loginPage = document.getElementById('login-page');
     if (!loginPage) return;
+    if (loginPage.dataset.initialized === 'true') return;
+    loginPage.dataset.initialized = 'true';
 
     const toggleBtn = document.getElementById('togglePassword');
     const passwordInput = document.getElementById('password');

@@ -161,6 +161,32 @@ class AccountCrudTest extends TestCase
         ]);
     }
 
+    public function test_admin_can_store_account_with_only_email_without_username(): void
+    {
+        $email = 'client.only.email.'.rand(1000, 9999).'@domain.com';
+
+        $response = $this->actingAs($this->admin)->post(route('accounts.store'), [
+            'customer_type' => 'perusahaan',
+            'customer_id' => $this->testCorporateCustomer->id,
+            'name' => 'Client Tanpa Username Manual',
+            'email' => $email,
+            'password' => 'secret123',
+            'phone' => '081234567890',
+        ]);
+
+        $response->assertRedirect(route('accounts.index'));
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('users', [
+            'email' => $email,
+            'customer_id' => $this->testCorporateCustomer->id,
+        ]);
+
+        $createdUser = \App\Models\User::where('email', $email)->first();
+        $this->assertNotNull($createdUser);
+        $this->assertNotEmpty($createdUser->username);
+    }
+
     public function test_admin_can_view_edit_account_page(): void
     {
         $response = $this->actingAs($this->admin)->get(route('accounts.edit', $this->testAccountUser->id));
@@ -194,6 +220,28 @@ class AccountCrudTest extends TestCase
         $this->assertDatabaseHas('users', [
             'id' => $this->testAccountUser->id,
             'username' => $newUsername,
+            'email' => $newEmail,
+        ]);
+    }
+
+    public function test_admin_can_update_account_without_username(): void
+    {
+        $newEmail = 'upd.no.user.'.rand(1000, 9999).'@perusahaan.co.id';
+        $originalUsername = $this->testAccountUser->username;
+
+        $response = $this->actingAs($this->admin)->put(route('accounts.update', $this->testAccountUser->id), [
+            'customer_type' => 'perusahaan',
+            'customer_id' => $this->testCorporateCustomer->id,
+            'name' => 'PIC Update Email Only',
+            'email' => $newEmail,
+            'phone' => '081299998888',
+        ]);
+
+        $response->assertRedirect(route('accounts.index'));
+        $response->assertSessionHas('success');
+        $this->assertDatabaseHas('users', [
+            'id' => $this->testAccountUser->id,
+            'username' => $originalUsername,
             'email' => $newEmail,
         ]);
     }

@@ -884,11 +884,11 @@ export function initAdminAccounts() {
 
     function updateCredentialPreview() {
         const pwd = resetPasswordInput ? resetPasswordInput.value || '[PASSWORD_BARU]' : '[PASSWORD_BARU]';
-        const username = currentResetAccount.username || '[USERNAME]';
         const pic = currentResetAccount.name || '[PIC]';
         const cust = currentResetAccount.customer || '[CUSTOMER]';
 
-        const formatted = `Halo Bapak/Ibu ${pic} (${cust}),\nBerikut pembaruan kata sandi akun Customer Portal NetFly Anda:\n\n• Username: ${username}\n• Password Baru: ${pwd}\n• Portal Login: https://portal.netfly.id\n\nHarap segera ubah kata sandi ini setelah berhasil login. Terima kasih.`;
+        const email = currentResetAccount.email ? `\n• Email Login: ${currentResetAccount.email}` : '';
+        const formatted = `Halo Bapak/Ibu ${pic} (${cust}),\nBerikut pembaruan kata sandi akun Customer NetFly Anda:${email}\n• Password Baru: ${pwd}\n• Aplikasi: NetFly Mobile\n\n(Silakan login menggunakan Email resmi Anda di aplikasi mobile NetFly).\nTerima kasih.`;
 
         if (previewTextEl) {
             previewTextEl.innerHTML = formatted.replace(/\n/g, '<br>');

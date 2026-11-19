@@ -49,4 +49,23 @@ class LoginRateLimitingTest extends TestCase
         // Middleware throttle menghasilkan status 429
         $response->assertStatus(429);
     }
+
+    public function test_user_can_login_using_username(): void
+    {
+        $admin = \App\Models\User::factory()->create([
+            'username' => 'superadmin_test',
+            'email' => 'superadmin_test@netfly.id',
+            'password' => bcrypt('password123'),
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+
+        $response = $this->post('/login', [
+            'email' => 'superadmin_test',
+            'password' => 'password123',
+        ]);
+
+        $response->assertRedirect(route('dashboard'));
+        $this->assertAuthenticatedAs($admin);
+    }
 }

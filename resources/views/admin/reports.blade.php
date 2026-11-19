@@ -90,6 +90,7 @@
 
                         <!-- Tombol Preview Langsung di Tab Baru -->
                         <a 
+                            id="btnPreviewPdf"
                             href="{{ route('reports.exportPdf', ['customer' => $selectedCustomer, 'month' => $selectedMonth, 'year' => $selectedYear, 'preview' => '1']) }}" 
                             target="_blank"
                             class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg border border-slate-200 shadow-2xs active:scale-95 transition-all cursor-pointer"
@@ -205,7 +206,7 @@
                                 Terapkan
                             </button>
 
-                            @if($selectedCustomer !== 'all' || $selectedMonth !== 10 || $selectedYear !== 2026)
+                            @if($selectedCustomer !== 'all' || $selectedMonth !== (int) now()->month || $selectedYear !== (int) now()->year)
                                 <a 
                                     href="{{ route('reports.index') }}" 
                                     class="px-3 py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
@@ -263,6 +264,9 @@
                             <span class="font-semibold text-emerald-600">{{ $normalDevices }} unit</span> beroperasi normal
                             @if($warningDevices > 0)
                                 • <span class="font-semibold text-amber-600">{{ $warningDevices }} warning</span>
+                            @endif
+                            @if($offlineDevices > 0)
+                                • <span class="font-semibold text-rose-600">{{ $offlineDevices }} offline</span>
                             @endif
                         </div>
                     </div>
@@ -324,7 +328,9 @@
                                     @forelse($devices as $device)
                                         <tr class="hover:bg-slate-50/80 transition-colors">
                                             <td class="py-3 px-4 font-bold text-slate-900 font-mono text-[11px] tracking-tight">
-                                                {{ $device['hostname'] }}
+                                                <a href="{{ route('devices.index', ['search' => $device['hostname']]) }}" class="hover:text-blue-600 hover:underline transition-colors" title="Lihat inventaris perangkat">
+                                                    {{ $device['hostname'] }}
+                                                </a>
                                             </td>
                                             <td class="py-3 px-3 text-slate-600 font-medium">
                                                 {{ $device['type'] }}
@@ -400,8 +406,10 @@
                                 <tbody class="divide-y divide-slate-100 text-xs">
                                     @forelse($tickets as $ticket)
                                         <tr class="hover:bg-slate-50/80 transition-colors">
-                                            <td class="py-3 px-4 font-bold font-mono text-[11px] text-blue-600 hover:text-blue-800 cursor-pointer whitespace-nowrap">
-                                                {{ $ticket['ticket_number'] }}
+                                            <td class="py-3 px-4 font-mono text-[11px] whitespace-nowrap">
+                                                <a href="{{ route('tickets.index', ['search' => $ticket['ticket_number']]) }}" class="font-bold text-blue-600 hover:text-blue-800 hover:underline transition-colors" title="Buka tiket di antrean tiket">
+                                                    {{ $ticket['ticket_number'] }}
+                                                </a>
                                             </td>
                                             <td class="py-3 px-3 font-medium text-slate-800 text-[11px] leading-relaxed" title="{{ $ticket['full_subject'] }}">
                                                 {{ $ticket['full_subject'] }}
