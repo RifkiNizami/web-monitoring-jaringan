@@ -202,6 +202,7 @@ class ReportController extends Controller
             $cId = $d->customer_id;
             $hostnameLower = strtolower($d->hostname ?? '');
             $snmpLower = strtolower($d->snmp_community ?? '');
+            $rackLower = strtolower($d->rack_location ?? '');
 
             // Resolusi cerdas mitra pelanggan jika customer_id belum terasosiasi di database
             $cKey = match ($cId) {
@@ -214,8 +215,9 @@ class ReportController extends Controller
                     str_contains($hostnameLower, 'mandiri') || str_contains($snmpLower, 'mandiri') => 'mandiri',
                     str_contains($hostnameLower, 'shopee') || str_contains($hostnameLower, 'bks') => 'shopee',
                     str_contains($hostnameLower, 'disdik') || str_contains($snmpLower, 'disdik') => 'disdik',
-                    str_contains($hostnameLower, 'xyz') => 'xyz',
-                    str_contains($hostnameLower, 'medika') => 'rs_medika',
+                    str_contains($hostnameLower, 'xyz') || str_contains($rackLower, 'cyber') => 'xyz',
+                    str_contains($hostnameLower, 'medika') || str_contains($rackLower, 'medika') || str_contains($rackLower, 'fatmawati') => 'rs_medika',
+                    ! empty($d->customer?->code) => strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', $d->customer->code)),
                     ! empty($d->customer?->customer_code) => strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', $d->customer->customer_code)),
                     ! empty($cId) => "cust_{$cId}",
                     default => 'netfly_core',
@@ -275,13 +277,14 @@ class ReportController extends Controller
                 $state = ($st === 'online' || $st === 'tersedia') ? 'online' : ($st === 'warning' ? 'warning' : 'offline');
                 $mCustLower = strtolower($m->customer ?? '');
                 $mHostLower = strtolower($m->hostname ?? '');
+                $mRackLower = strtolower($m->rack_location ?? '');
                 $mKey = match (true) {
                     str_contains($mCustLower, 'mandiri') || str_contains($mHostLower, 'mandiri') => 'mandiri',
                     str_contains($mCustLower, 'shopee') || str_contains($mHostLower, 'bks') => 'shopee',
                     str_contains($mCustLower, 'disdik') || str_contains($mHostLower, 'disdik') => 'disdik',
-                    str_contains($mCustLower, 'xyz') => 'xyz',
-                    str_contains($mCustLower, 'medika') => 'rs_medika',
-                    default => 'monitoring',
+                    str_contains($mCustLower, 'xyz') || str_contains($mHostLower, 'cyber') || str_contains($mRackLower, 'cyber') => 'xyz',
+                    str_contains($mCustLower, 'medika') || str_contains($mHostLower, 'medika') || str_contains($mRackLower, 'medika') => 'rs_medika',
+                    default => 'rs_medika',
                 };
                 $allDevices[] = [
                     'id' => $m->id,
@@ -323,6 +326,7 @@ class ReportController extends Controller
                     str_contains($clientLower, 'disdik') || str_contains($clientLower, 'pendidikan') || str_contains($subjLower, 'disdik') => 'disdik',
                     str_contains($clientLower, 'xyz') => 'xyz',
                     str_contains($clientLower, 'medika') => 'rs_medika',
+                    ! empty($t->customer?->code) => strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', $t->customer->code)),
                     ! empty($t->customer?->customer_code) => strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', $t->customer->customer_code)),
                     ! empty($cId) => "cust_{$cId}",
                     default => 'general',
