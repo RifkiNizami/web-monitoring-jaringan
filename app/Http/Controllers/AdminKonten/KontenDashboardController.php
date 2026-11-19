@@ -24,6 +24,7 @@ class KontenDashboardController extends Controller
 
         $lastUpdatedClient = LandingClient::latest('updated_at')->first();
         $lastUpdatedAnnouncement = Announcement::latest('updated_at')->first();
+        $mobileAppDownloadUrl = app_setting('mobile_app_download_url', 'https://netfly.id/download/netfly-mobile.apk');
 
         return view('admin-konten.konten_dashboard', compact(
             'totalClients',
@@ -33,7 +34,8 @@ class KontenDashboardController extends Controller
             'activeAnnouncements',
             'latestAnnouncements',
             'lastUpdatedClient',
-            'lastUpdatedAnnouncement'
+            'lastUpdatedAnnouncement',
+            'mobileAppDownloadUrl'
         ));
     }
 }

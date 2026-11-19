@@ -15,8 +15,8 @@ class DeviceSeeder extends Seeder
         $devices = [
             [
                 'id' => 1,
-                'customer_id' => 1,
-                'project_id' => 5,
+                'customer_id' => null,
+                'project_id' => null,
                 'hostname' => 'RTR-CORE-01',
                 'type' => 'Router',
                 'brand_model' => 'MikroTik CCR2004-16G-2S+',
@@ -40,8 +40,8 @@ class DeviceSeeder extends Seeder
             ],
             [
                 'id' => 2,
-                'customer_id' => 2,
-                'project_id' => 3,
+                'customer_id' => null,
+                'project_id' => null,
                 'hostname' => 'SW-AGG-BKS-04',
                 'type' => 'Switch',
                 'brand_model' => 'MikroTik CRS328-24P-4S+RM',
@@ -65,8 +65,8 @@ class DeviceSeeder extends Seeder
             ],
             [
                 'id' => 3,
-                'customer_id' => 3,
-                'project_id' => 1,
+                'customer_id' => null,
+                'project_id' => null,
                 'hostname' => 'AP-OUTDOOR-DISDIK-01',
                 'type' => 'Access Point',
                 'brand_model' => 'Ubiquiti UniFi U6-Mesh Pro',
@@ -90,8 +90,8 @@ class DeviceSeeder extends Seeder
             ],
             [
                 'id' => 4,
-                'customer_id' => 4,
-                'project_id' => 4,
+                'customer_id' => null,
+                'project_id' => null,
                 'hostname' => 'FW-EDGE-01',
                 'type' => 'Firewall',
                 'brand_model' => 'FortiGate 60F Next-Gen',
@@ -115,8 +115,8 @@ class DeviceSeeder extends Seeder
             ],
             [
                 'id' => 5,
-                'customer_id' => 1,
-                'project_id' => 5,
+                'customer_id' => null,
+                'project_id' => null,
                 'hostname' => 'RTR-CORE-MANDIRI-01',
                 'type' => 'Router',
                 'brand_model' => 'MikroTik CCR2116-12G-4S+',

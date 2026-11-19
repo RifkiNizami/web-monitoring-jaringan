@@ -108,20 +108,22 @@ body:has(#sidebar) {
         width: 4.5rem !important; /* Exactly 72px */
     }
 
-    /* 1. Header Container & Logo Cross-Fade (Zero Shift - Left 18px) */
+    /* 1. Header Container & Logo Cross-Fade (Zero Shift) */
     #sidebar .sidebar-header {
         position: relative;
-        height: 64px;
-        padding: 0 1.125rem; /* 18px */
+        height: 68px;
+        padding: 0.625rem 0.75rem; /* 10px 12px */
         display: flex;
         align-items: center;
         overflow: hidden;
-        border-bottom: 1px solid #f1f5f9;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.7);
+        box-sizing: border-box;
     }
 
     .sidebar-full-logo {
         position: absolute;
-        left: 1.125rem; /* 18px */
+        left: 0.75rem; /* 12px */
+        right: 0.75rem; /* 12px */
         top: 50%;
         transform: translateY(-50%) translateX(0);
         opacity: 1;
@@ -132,9 +134,9 @@ body:has(#sidebar) {
 
     .sidebar-mini-logo {
         position: absolute;
-        left: 1.125rem; /* 18px */
+        left: 50%;
         top: 50%;
-        transform: translateY(-50%) scale(0.85);
+        transform: translate(-50%, -50%) scale(0.85);
         opacity: 0;
         visibility: hidden;
         transition: opacity 80ms ease, visibility 80ms, transform 100ms ease;
@@ -152,7 +154,7 @@ body:has(#sidebar) {
     #sidebar.is-collapsed .sidebar-mini-logo {
         opacity: 1 !important;
         visibility: visible !important;
-        transform: translateY(-50%) scale(1) !important;
+        transform: translate(-50%, -50%) scale(1) !important;
         pointer-events: auto !important;
         transition: opacity 160ms ease 90ms, transform 180ms cubic-bezier(0.2, 0, 0, 1) 90ms, visibility 160ms 90ms !important;
     }
@@ -223,7 +225,7 @@ body:has(#sidebar) {
         position: relative !important;
         overflow: hidden !important; /* Eliminates any child overflow/horizontal scrollbar */
         box-sizing: border-box !important;
-        transition: background-color 150ms ease, color 150ms ease !important;
+        transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, box-shadow 150ms ease !important;
     }
 
     #sidebar.is-collapsed .sidebar-nav-link {
@@ -317,7 +319,7 @@ body:has(#sidebar) {
 
     /* 6. Profile Section at Bottom */
     .sidebar-profile {
-        padding: 0.75rem 0.75rem;
+        padding: 0.625rem 0.75rem;
         overflow: hidden;
     }
 
@@ -325,15 +327,16 @@ body:has(#sidebar) {
         display: flex;
         align-items: center;
         justify-content: flex-start;
-        padding: 0.375rem;
+        padding: 0.5rem;
         border-radius: 0.75rem;
         position: relative;
         overflow: hidden;
+        transition: padding 150ms ease, background-color 150ms ease;
     }
 
     .sidebar-avatar-box {
-        width: 2.25rem; /* 36px */
-        height: 2.25rem; /* 36px */
+        width: 2.125rem; /* 34px */
+        height: 2.125rem; /* 34px */
         display: flex;
         align-items: center;
         justify-content: center;
@@ -358,6 +361,15 @@ body:has(#sidebar) {
         opacity: 1;
         visibility: visible;
         transition: opacity 160ms cubic-bezier(0.2, 0, 0, 1) 90ms, visibility 160ms 90ms;
+    }
+
+    #sidebar.is-collapsed .sidebar-profile {
+        padding: 0.625rem 0.625rem !important;
+    }
+
+    #sidebar.is-collapsed .sidebar-profile-box {
+        padding: 0.25rem !important;
+        justify-content: center !important;
     }
 
     #sidebar.is-collapsed .sidebar-user-details {
@@ -402,6 +414,8 @@ body:has(#sidebar) {
         opacity: 1 !important;
         visibility: visible !important;
         transform: none !important;
+        flex: 1 !important;
+        margin-right: 0.5rem !important;
     }
     .sidebar-nav-link {
         justify-content: flex-start !important;

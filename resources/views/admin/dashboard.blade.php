@@ -64,12 +64,10 @@
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1.5">
-                            <span>OPERASIONAL NOC</span>
-                            <span>•</span>
-                            <span class="text-emerald-600 font-semibold">SHIFT AKTIF</span>
+                            <span>ADMINISTRATOR</span>
                         </div>
                         <h1 class="text-xl lg:text-2xl font-extrabold text-slate-900 tracking-tight">
-                            Halo Operator, ini pusat kendali jaringan
+                            Selamat Datang, Di dashboard Admin
                         </h1>
                         <p class="text-xs text-slate-500 mt-1">
                             Ringkasan ketersediaan transmisi, status gateway, dan performa 30 hari terakhir.
@@ -264,11 +262,11 @@
                     <div class="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
                         <!-- Left: Map Canvas (Y-Axis enhanced to 580px - 620px) -->
                         <div class="lg:col-span-8 xl:col-span-9 relative">
-                            <div id="dashboardCustomerMap" class="w-full h-[460px] sm:h-[520px] lg:h-[580px] xl:h-[620px] z-10 bg-slate-100"></div>
+                            <div id="dashboardCustomerMap" class="w-full h-115 sm:h-130 lg:h-145 xl:h-155 z-10 bg-slate-100"></div>
                         </div>
 
                         <!-- Right: Customer Location Navigator -->
-                        <div class="lg:col-span-4 xl:col-span-3 flex flex-col h-[380px] sm:h-[420px] lg:h-[580px] xl:h-[620px] bg-white">
+                        <div class="lg:col-span-4 xl:col-span-3 flex flex-col h-95 sm:h-105 lg:h-145 xl:h-155 bg-white">
                             <!-- Navigator Search Bar -->
                             <div class="p-3 border-b border-slate-100 bg-slate-50/50">
                                 <div class="relative">

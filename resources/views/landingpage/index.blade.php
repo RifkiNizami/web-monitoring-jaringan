@@ -20,4 +20,6 @@
 
     @include('landingpage.partials.footer')
 
+    @include('landingpage.components.download-modal')
+
 @endsection

@@ -1,24 +1,33 @@
 <!-- Sidebar Partial -->
-<aside id="sidebar" class="w-64 bg-white border-r border-slate-200/80 flex flex-col shrink-0 lg:translate-x-0 -translate-x-full fixed lg:static inset-y-0 left-0 h-full z-40 select-none overflow-hidden">
+<aside id="sidebar" class="w-64 bg-slate-50/50 border-r border-slate-200/80 flex flex-col shrink-0 lg:translate-x-0 -translate-x-full fixed lg:static inset-y-0 left-0 h-full z-40 select-none overflow-hidden">
     
-    <!-- 1. Logo Header (Pinned Top - shrink-0) -->
-    <div class="sidebar-header px-4.5 h-16 flex items-center border-b border-slate-100 shrink-0 relative overflow-hidden">
-        <!-- Full Logo (Expanded) -->
-        <a href="{{ route('dashboard') }}" class="sidebar-full-logo flex items-center group" title="NetFly Dashboard">
-            <picture>
-                <source srcset="{{ asset('assets/images/netfly-logo.webp') }}" type="image/webp">
-                <img src="{{ asset('assets/images/netfly-logo.png') }}" alt="NetFly" class="h-8 w-auto object-contain transition-transform duration-200 group-hover:scale-102">
-            </picture>
-        </a>
-        <!-- Mini Logo Emblem (Collapsed) -->
-        <a href="{{ route('dashboard') }}" class="sidebar-mini-logo flex items-center justify-center group" title="NetFly Dashboard">
-            <div class="w-9 h-9 rounded-xl bg-white border border-slate-200/90 flex items-center justify-center p-1.5 shadow-2xs group-hover:border-blue-400 group-hover:scale-105 transition-all">
+    <!-- 1. Logo Header (Floating Island Card - shrink-0) -->
+    <div class="sidebar-header p-2.5 h-17 flex items-center border-b border-slate-200/70 shrink-0 relative overflow-hidden bg-slate-50/50">
+        <!-- Full Logo Island Card (Expanded) -->
+        <a href="{{ route('dashboard') }}" class="sidebar-full-logo flex items-center gap-2.5 px-2.5 py-2 rounded-xl bg-white border border-slate-200/90 shadow-2xs hover:shadow-xs hover:border-blue-300 transition-all group" title="NetFly Dashboard">
+            <div class="w-8 h-8 rounded-lg bg-blue-50/70 border border-blue-100/80 flex items-center justify-center p-1 shrink-0 group-hover:scale-105 transition-transform">
                 <picture class="w-full h-full flex items-center justify-center">
                     <source srcset="{{ asset('assets/images/netfly-emblem.webp') }}" type="image/webp">
                     <img src="{{ asset('assets/images/netfly-emblem.png') }}" alt="NetFly" class="w-full h-full object-contain">
                 </picture>
             </div>
+            <div class="min-w-0 flex-1 flex items-center gap-1.5">
+                <span class="text-sm font-extrabold text-slate-900 tracking-tight leading-none group-hover:text-blue-600 transition-colors">NetFly</span>
+            </div>
         </a>
+
+        <!-- Mini Logo Island Card (Collapsed) -->
+        <a href="{{ route('dashboard') }}" class="sidebar-mini-logo flex items-center justify-center group" title="NetFly Dashboard">
+            <div class="w-10 h-10 rounded-xl bg-white border border-slate-200/90 flex items-center justify-center p-1 shadow-2xs group-hover:border-blue-400 group-hover:scale-105 transition-all">
+                <div class="w-7 h-7 rounded-lg bg-blue-50/70 border border-blue-100/80 flex items-center justify-center p-0.5">
+                    <picture class="w-full h-full flex items-center justify-center">
+                        <source srcset="{{ asset('assets/images/netfly-emblem.webp') }}" type="image/webp">
+                        <img src="{{ asset('assets/images/netfly-emblem.png') }}" alt="NetFly" class="w-full h-full object-contain">
+                    </picture>
+                </div>
+            </div>
+        </a>
+
         <!-- Mobile close button -->
         <button id="closeSidebar" class="lg:hidden ml-auto text-slate-400 hover:text-slate-600 p-1.5 rounded-md hover:bg-slate-100 cursor-pointer" aria-label="Tutup Menu">
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -56,7 +65,7 @@
                     @php $isDashboardActive = request()->routeIs('dashboard') || request()->routeIs('admin'); @endphp
                     <a href="{{ route('dashboard') }}"
                         data-sidebar-tooltip="Dashboard Konten"
-                        class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-colors {{ $isDashboardActive ? 'bg-blue-50 text-blue-700 font-semibold shadow-2xs ring-1 ring-blue-600/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium' }}">
+                        class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-all border {{ $isDashboardActive ? 'bg-white text-blue-700 font-bold shadow-xs border-slate-200/90' : 'text-slate-600 hover:text-slate-900 hover:bg-white/80 hover:shadow-2xs font-medium border-transparent' }}">
                         <div class="sidebar-icon-box">
                             <svg class="w-5 h-5 shrink-0 {{ $isDashboardActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }}"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -82,7 +91,7 @@
                     @php $isClientsActive = request()->routeIs('klien.*') || request()->routeIs('landing-clients.*'); @endphp
                     <a href="{{ route('klien.index') }}"
                         data-sidebar-tooltip="Klien Landing Page ({{ $totalLandingClients }})"
-                        class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-colors {{ $isClientsActive ? 'bg-blue-50 text-blue-700 font-semibold shadow-2xs ring-1 ring-blue-600/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium' }}">
+                        class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-all border {{ $isClientsActive ? 'bg-white text-blue-700 font-bold shadow-xs border-slate-200/90' : 'text-slate-600 hover:text-slate-900 hover:bg-white/80 hover:shadow-2xs font-medium border-transparent' }}">
                         <div class="sidebar-icon-box">
                             <svg class="w-5 h-5 shrink-0 {{ $isClientsActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }}"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -94,9 +103,24 @@
                             </span>
                         </div>
                         <span class="sidebar-nav-label text-xs truncate">Klien Landing Page</span>
-                        <span class="sidebar-full-badge inline-flex items-center justify-center min-w-4.5 h-4.5 px-1.5 text-[10px] font-bold rounded-full {{ $isClientsActive ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600' }}">
+                        <span class="sidebar-full-badge inline-flex items-center justify-center min-w-4.5 h-4.5 px-1.5 text-[10px] font-bold rounded-full {{ $isClientsActive ? 'bg-blue-100 text-blue-700' : 'bg-slate-200/70 text-slate-600' }}">
                             {{ $totalLandingClients }}
                         </span>
+                    </a>
+
+                    <!-- Link App Mobile & Barcode -->
+                    @php $isAppSettingActive = request()->routeIs('app-setting.*'); @endphp
+                    <a href="{{ route('app-setting.index') }}"
+                        data-sidebar-tooltip="Link App Mobile"
+                        class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-all border {{ $isAppSettingActive ? 'bg-white text-blue-700 font-bold shadow-xs border-slate-200/90' : 'text-slate-600 hover:text-slate-900 hover:bg-white/80 hover:shadow-2xs font-medium border-transparent' }}">
+                        <div class="sidebar-icon-box">
+                            <svg class="w-5 h-5 shrink-0 {{ $isAppSettingActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }}"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                    d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                            </svg>
+                        </div>
+                        <span class="sidebar-nav-label text-xs truncate">Link App Mobile</span>
                     </a>
                 </nav>
             </div>
@@ -114,7 +138,7 @@
                     @php $isAnnouncementsActive = request()->routeIs('pemberitahuan.*') || request()->routeIs('announcements.*'); @endphp
                     <a href="{{ route('pemberitahuan.index') }}"
                         data-sidebar-tooltip="Pemberitahuan{{ $activeAnnouncementCount > 0 ? ' (' . $activeAnnouncementCount . ')' : '' }}"
-                        class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-colors {{ $isAnnouncementsActive ? 'bg-blue-50 text-blue-700 font-semibold shadow-2xs ring-1 ring-blue-600/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium' }}">
+                        class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-all border {{ $isAnnouncementsActive ? 'bg-white text-blue-700 font-bold shadow-xs border-slate-200/90' : 'text-slate-600 hover:text-slate-900 hover:bg-white/80 hover:shadow-2xs font-medium border-transparent' }}">
                         <div class="sidebar-icon-box">
                             <svg class="w-5 h-5 shrink-0 {{ $isAnnouncementsActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }}"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -155,7 +179,7 @@
                     @php $isDashboardActive = request()->routeIs('dashboard') || request()->routeIs('admin'); @endphp
                     <a href="{{ route('dashboard') }}"
                         data-sidebar-tooltip="Dashboard"
-                        class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-colors {{ $isDashboardActive ? 'bg-blue-50 text-blue-700 font-semibold shadow-2xs ring-1 ring-blue-600/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium' }}">
+                        class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-all border {{ $isDashboardActive ? 'bg-white text-blue-700 font-bold shadow-xs border-slate-200/90' : 'text-slate-600 hover:text-slate-900 hover:bg-white/80 hover:shadow-2xs font-medium border-transparent' }}">
                         <div class="sidebar-icon-box">
                             <svg class="w-5 h-5 shrink-0 {{ $isDashboardActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }}"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -170,7 +194,7 @@
                     @php $isMonitoringActive = request()->routeIs('monitoring.*'); @endphp
                     <a href="{{ route('monitoring.index') }}"
                         data-sidebar-tooltip="Monitoring"
-                        class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-colors {{ $isMonitoringActive ? 'bg-blue-50 text-blue-700 font-semibold shadow-2xs ring-1 ring-blue-600/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium' }}">
+                        class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-all border {{ $isMonitoringActive ? 'bg-white text-blue-700 font-bold shadow-xs border-slate-200/90' : 'text-slate-600 hover:text-slate-900 hover:bg-white/80 hover:shadow-2xs font-medium border-transparent' }}">
                         <div class="sidebar-icon-box">
                             <svg class="w-5 h-5 shrink-0 {{ $isMonitoringActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }}"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -185,7 +209,7 @@
                     @php $isDevicesActive = request()->routeIs('devices.*'); @endphp
                     <a href="{{ route('devices.index') }}"
                         data-sidebar-tooltip="Network Devices"
-                        class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-colors {{ $isDevicesActive ? 'bg-blue-50 text-blue-700 font-semibold shadow-2xs ring-1 ring-blue-600/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium' }}">
+                        class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-all border {{ $isDevicesActive ? 'bg-white text-blue-700 font-bold shadow-xs border-slate-200/90' : 'text-slate-600 hover:text-slate-900 hover:bg-white/80 hover:shadow-2xs font-medium border-transparent' }}">
                         <div class="sidebar-icon-box">
                             <svg class="w-5 h-5 shrink-0 {{ $isDevicesActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }}"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -200,7 +224,7 @@
                     @php $isTicketsActive = request()->routeIs('tickets.*'); @endphp
                     <a href="{{ route('tickets.index') }}"
                         data-sidebar-tooltip="Ticket & Insiden{{ $activeTicketCount > 0 ? ' (' . $activeTicketCount . ')' : '' }}"
-                        class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-colors {{ $isTicketsActive ? 'bg-blue-50 text-blue-700 font-semibold shadow-2xs ring-1 ring-blue-600/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium' }}">
+                        class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-all border {{ $isTicketsActive ? 'bg-white text-blue-700 font-bold shadow-xs border-slate-200/90' : 'text-slate-600 hover:text-slate-900 hover:bg-white/80 hover:shadow-2xs font-medium border-transparent' }}">
                         <div class="sidebar-icon-box">
                             <svg class="w-5 h-5 shrink-0 {{ $isTicketsActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }}"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -215,7 +239,7 @@
                         </div>
                         <span class="sidebar-nav-label text-xs truncate">Ticket & Insiden</span>
                         @if($activeTicketCount > 0)
-                            <span class="sidebar-full-badge inline-flex items-center justify-center min-w-4.5 h-4.5 px-1.5 text-[10px] font-bold rounded-full {{ $isTicketsActive ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600' }}">
+                            <span class="sidebar-full-badge inline-flex items-center justify-center min-w-4.5 h-4.5 px-1.5 text-[10px] font-bold rounded-full {{ $isTicketsActive ? 'bg-blue-100 text-blue-700' : 'bg-slate-200/70 text-slate-600' }}">
                                 {{ $activeTicketCount }}
                             </span>
                         @endif
@@ -236,7 +260,7 @@
                     @php $isCustomersActive = request()->routeIs('customers.*') || request()->routeIs('projects.*'); @endphp
                     <a href="{{ route('customers.index') }}"
                         data-sidebar-tooltip="Customer Management"
-                        class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-colors {{ $isCustomersActive ? 'bg-blue-50 text-blue-700 font-semibold shadow-2xs ring-1 ring-blue-600/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium' }}">
+                        class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-all border {{ $isCustomersActive ? 'bg-white text-blue-700 font-bold shadow-xs border-slate-200/90' : 'text-slate-600 hover:text-slate-900 hover:bg-white/80 hover:shadow-2xs font-medium border-transparent' }}">
                         <div class="sidebar-icon-box">
                             <svg class="w-5 h-5 shrink-0 {{ $isCustomersActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }}"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -251,7 +275,7 @@
                     @php $isAccountsActive = request()->routeIs('accounts.*'); @endphp
                     <a href="{{ route('accounts.index') }}"
                         data-sidebar-tooltip="Account Management"
-                        class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-colors {{ $isAccountsActive ? 'bg-blue-50 text-blue-700 font-semibold shadow-2xs ring-1 ring-blue-600/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium' }}">
+                        class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-all border {{ $isAccountsActive ? 'bg-white text-blue-700 font-bold shadow-xs border-slate-200/90' : 'text-slate-600 hover:text-slate-900 hover:bg-white/80 hover:shadow-2xs font-medium border-transparent' }}">
                         <div class="sidebar-icon-box">
                             <svg class="w-5 h-5 shrink-0 {{ $isAccountsActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }}"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -266,7 +290,7 @@
                     @php $isTeknisiActive = request()->routeIs('teknisi.*'); @endphp
                     <a href="{{ route('teknisi.index') }}"
                         data-sidebar-tooltip="Teknisi"
-                        class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-colors {{ $isTeknisiActive ? 'bg-blue-50 text-blue-700 font-semibold shadow-2xs ring-1 ring-blue-600/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium' }}">
+                        class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-all border {{ $isTeknisiActive ? 'bg-white text-blue-700 font-bold shadow-xs border-slate-200/90' : 'text-slate-600 hover:text-slate-900 hover:bg-white/80 hover:shadow-2xs font-medium border-transparent' }}">
                         <div class="sidebar-icon-box">
                             <svg class="w-5 h-5 shrink-0 {{ $isTeknisiActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }}"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -291,7 +315,7 @@
                     @php $isReportsActive = request()->routeIs('reports.*'); @endphp
                     <a href="{{ route('reports.index') }}"
                         data-sidebar-tooltip="Report Generator"
-                        class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-colors {{ $isReportsActive ? 'bg-blue-50 text-blue-700 font-semibold shadow-2xs ring-1 ring-blue-600/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium' }}">
+                        class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-all border {{ $isReportsActive ? 'bg-white text-blue-700 font-bold shadow-xs border-slate-200/90' : 'text-slate-600 hover:text-slate-900 hover:bg-white/80 hover:shadow-2xs font-medium border-transparent' }}">
                         <div class="sidebar-icon-box">
                             <svg class="w-5 h-5 shrink-0 {{ $isReportsActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }}"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -306,7 +330,7 @@
                     @php $isActivityLogsActive = request()->routeIs('activity-logs.*'); @endphp
                     <a href="{{ route('activity-logs.index') }}"
                         data-sidebar-tooltip="Log Aktivitas"
-                        class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-colors {{ $isActivityLogsActive ? 'bg-blue-50 text-blue-700 font-semibold shadow-2xs ring-1 ring-blue-600/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium' }}">
+                        class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-all border {{ $isActivityLogsActive ? 'bg-white text-blue-700 font-bold shadow-xs border-slate-200/90' : 'text-slate-600 hover:text-slate-900 hover:bg-white/80 hover:shadow-2xs font-medium border-transparent' }}">
                         <div class="sidebar-icon-box">
                             <svg class="w-5 h-5 shrink-0 {{ $isActivityLogsActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }}"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -331,7 +355,7 @@
                     @php $isAnnouncementsActive = request()->routeIs('pemberitahuan.*') || request()->routeIs('announcements.*'); @endphp
                     <a href="{{ route('pemberitahuan.index') }}"
                         data-sidebar-tooltip="Pemberitahuan{{ $activeAnnouncementCount > 0 ? ' (' . $activeAnnouncementCount . ')' : '' }}"
-                        class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-colors {{ $isAnnouncementsActive ? 'bg-blue-50 text-blue-700 font-semibold shadow-2xs ring-1 ring-blue-600/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium' }}">
+                        class="sidebar-nav-link relative flex items-center px-1.5 h-10 rounded-xl group transition-all border {{ $isAnnouncementsActive ? 'bg-white text-blue-700 font-bold shadow-xs border-slate-200/90' : 'text-slate-600 hover:text-slate-900 hover:bg-white/80 hover:shadow-2xs font-medium border-transparent' }}">
                         <div class="sidebar-icon-box">
                             <svg class="w-5 h-5 shrink-0 {{ $isAnnouncementsActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }}"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -358,24 +382,23 @@
 
     </div>
 
-    <!-- 3. Profile Admin & Logout (Pinned Bottom - ALWAYS visible, shrink-0 mt-auto) -->
-    <div class="sidebar-profile p-3 border-t border-slate-100 bg-white shrink-0 mt-auto overflow-hidden">
-        <div class="sidebar-profile-box relative flex items-center p-1.5 rounded-xl hover:bg-slate-50 transition-colors"
+    <!-- 3. Profile Admin & Logout (Floating Island Card - shrink-0 mt-auto) -->
+    <div class="sidebar-profile p-2.5 border-t border-slate-200/70 bg-slate-50/50 shrink-0 mt-auto overflow-hidden">
+        <div class="sidebar-profile-box relative flex items-center p-2 rounded-xl bg-white border border-slate-200/90 shadow-2xs hover:shadow-xs transition-all group"
              data-sidebar-tooltip="{{ Auth::user()->name ?? 'Administrator' }} ({{ $isAdminKonten ? 'Admin Konten' : 'NOC Specialist' }})">
-            <div class="sidebar-avatar-box w-9 h-9 rounded-full bg-slate-100 border border-slate-200/90 text-slate-500 flex items-center justify-center shrink-0 shadow-2xs">
-                <svg class="w-4.5 h-4.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
+            <div class="sidebar-avatar-box relative w-8.5 h-8.5 rounded-lg bg-linear-to-br from-blue-50 to-indigo-50 border border-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs shadow-2xs shrink-0 group-hover:border-blue-300 transition-colors">
+                <span>{{ strtoupper(substr(Auth::user()->name ?? 'AD', 0, 2)) }}</span>
+                <span class="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white absolute -bottom-0.5 -right-0.5" title="Online"></span>
             </div>
-            <div class="sidebar-user-details min-w-0">
-                <p class="text-xs font-bold text-slate-800 truncate leading-tight">
+            <div class="sidebar-user-details min-w-0 flex-1 ml-2.5">
+                <p class="text-xs font-bold text-slate-800 truncate leading-tight group-hover:text-blue-600 transition-colors">
                     {{ Auth::user()->name ?? 'Administrator' }}
                 </p>
-                <p class="text-[10px] text-slate-400 truncate">
+                <p class="text-[10px] font-medium text-slate-400 truncate leading-tight mt-0.5">
                     @if($isAdminKonten)
                         <span class="text-blue-600 font-semibold">Admin Konten</span>
                     @elseif($isAdminBiasa)
-                        <span>NOC Specialist (Admin)</span>
+                        <span>NOC Specialist</span>
                     @else
                         {{ ucfirst(Auth::user()->role ?? 'User') }}
                     @endif
@@ -383,9 +406,9 @@
             </div>
 
             <!-- Tombol Logout -->
-            <form action="{{ route('logout') }}" method="POST" data-turbo="false" class="sidebar-logout-form shrink-0">
+            <form action="{{ route('logout') }}" method="POST" data-turbo="false" class="sidebar-logout-form shrink-0 ml-1">
                 @csrf
-                <button type="submit" title="Keluar dari Portal" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer" aria-label="Logout">
+                <button type="submit" title="Keluar dari Portal" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg border border-transparent hover:border-rose-100 transition-colors cursor-pointer" aria-label="Logout">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>

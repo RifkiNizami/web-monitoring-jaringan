@@ -15,6 +15,7 @@
     },
     "dependencies": {
         "@hotwired/turbo": "^8.0.23",
-        "chart.js": "^4.6.1"
+        "chart.js": "^4.6.1",
+        "qrcode": "^1.5.4"
     }
 }

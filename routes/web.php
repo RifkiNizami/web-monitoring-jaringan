@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\MonitoringDeviceController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\TeknisiController;
 use App\Http\Controllers\Admin\TicketController;
+use App\Http\Controllers\AdminKonten\KontenAppSettingController;
 use App\Http\Controllers\AdminKonten\KontenDashboardController;
 use App\Http\Controllers\AdminKonten\KontenKlienController;
 use App\Http\Controllers\AdminKonten\KontenPemberitahuanController;
@@ -77,6 +78,10 @@ Route::middleware('auth')->group(function () {
         Route::match(['post', 'put'], '/announcements/{id}', [KontenPemberitahuanController::class, 'update'])->name('announcements.update');
         Route::delete('/announcements/{id}', [KontenPemberitahuanController::class, 'destroy'])->name('announcements.destroy');
         Route::match(['post', 'put'], '/announcements/{id}/toggle-status', [KontenPemberitahuanController::class, 'toggleStatus'])->name('announcements.toggle-status');
+
+        // Pengaturan Tautan Aplikasi Mobile (Barcode Landing Page)
+        Route::get('/pengaturan-aplikasi', [KontenAppSettingController::class, 'index'])->name('app-setting.index');
+        Route::match(['post', 'put'], '/pengaturan-aplikasi', [KontenAppSettingController::class, 'update'])->name('app-setting.update');
     });
 
     // ==========================================

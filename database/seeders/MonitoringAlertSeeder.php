@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\MonitoringAlert;
+use App\Models\MonitoringDevice;
 use Illuminate\Database\Seeder;
 
 class MonitoringAlertSeeder extends Seeder

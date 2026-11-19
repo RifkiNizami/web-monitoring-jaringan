@@ -7,6 +7,7 @@ if (typeof window !== 'undefined') {
 }
 
 import { initClientsCarousel } from './landing/clients';
+import { initDownloadModal } from './landing/download-modal';
 import { initAdminCommon } from './admin/common';
 import { initAdminLogin } from './admin/login';
 import { initAdminReports } from './admin/reports';
@@ -160,9 +161,59 @@ function initAppModules() {
     });
 
     /* ==========================================
-       5. Module Initializations
+       5. Back to Top Button with Circular Progress Ring
+    ========================================== */
+    const backToTopBtn = document.getElementById('backToTopBtn');
+    const scrollProgressCircle = document.getElementById('scrollProgressCircle');
+
+    if (backToTopBtn && scrollProgressCircle) {
+        const radius = 18;
+        const circumference = 2 * Math.PI * radius; // approx 113.1
+        scrollProgressCircle.style.strokeDasharray = `${circumference}`;
+        scrollProgressCircle.style.strokeDashoffset = `${circumference}`;
+
+        let scrollTicking = false;
+        const updateScrollProgress = () => {
+            const scrollY = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = docHeight > 0 ? Math.min(Math.max(scrollY / docHeight, 0), 1) : 0;
+            const offset = circumference - (progress * circumference);
+
+            scrollProgressCircle.style.strokeDashoffset = `${offset}`;
+
+            if (scrollY > 280) {
+                backToTopBtn.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-3');
+                backToTopBtn.classList.add('opacity-100', 'pointer-events-auto', 'translate-y-0');
+            } else {
+                backToTopBtn.classList.add('opacity-0', 'pointer-events-none', 'translate-y-3');
+                backToTopBtn.classList.remove('opacity-100', 'pointer-events-auto', 'translate-y-0');
+            }
+            scrollTicking = false;
+        };
+
+        window.addEventListener('scroll', () => {
+            if (!scrollTicking) {
+                window.requestAnimationFrame(updateScrollProgress);
+                scrollTicking = true;
+            }
+        }, { passive: true });
+
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // Hitung progress saat load
+        updateScrollProgress();
+    }
+
+    /* ==========================================
+       6. Module Initializations
     ========================================== */
     initClientsCarousel();
+    initDownloadModal();
     initAdminCommon();
     initAdminReports();
     initAdminTickets();
