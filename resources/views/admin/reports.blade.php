@@ -72,14 +72,21 @@
                         </p>
                     </div>
 
+                    @php
+                        // Mempertahankan path URL aktual saat ini untuk mendukung subfolder lokal Laragon maupun root domain produksi
+                        $currentReportUrl = request()->url();
+                        $exportPdfUrl = rtrim($currentReportUrl, '/') . '/export-pdf';
+                        $exportExcelUrl = rtrim($currentReportUrl, '/') . '/export-excel';
+                    @endphp
+
                     <!-- Top Action Button: Export / Download PDF & Excel Resmi -->
                     <div class="flex items-center gap-2.5 shrink-0 flex-wrap">
                         <!-- Tombol Export Excel -->
                         <a 
                             id="btnExportExcel"
                             data-turbo="false"
-                            data-base-url="{{ route('reports.exportExcel') }}"
-                            href="{{ route('reports.exportExcel', ['customer' => $selectedCustomer, 'month' => $selectedMonth, 'year' => $selectedYear]) }}" 
+                            data-base-url="{{ $exportExcelUrl }}"
+                            href="{{ $exportExcelUrl . '?' . http_build_query(['customer' => $selectedCustomer, 'month' => $selectedMonth, 'year' => $selectedYear]) }}" 
                             class="inline-flex items-center gap-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm active:scale-95 transition-all cursor-pointer"
                             title="Unduh laporan data perangkat ke format spreadsheet Excel (.xlsx)"
                         >
@@ -93,8 +100,8 @@
                         <a 
                             id="btnPreviewPdf"
                             data-turbo="false"
-                            data-base-url="{{ route('reports.exportPdf') }}"
-                            href="{{ route('reports.exportPdf', ['customer' => $selectedCustomer, 'month' => $selectedMonth, 'year' => $selectedYear, 'preview' => '1']) }}" 
+                            data-base-url="{{ $exportPdfUrl }}"
+                            href="{{ $exportPdfUrl . '?' . http_build_query(['customer' => $selectedCustomer, 'month' => $selectedMonth, 'year' => $selectedYear, 'preview' => '1']) }}" 
                             target="_blank"
                             class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg border border-slate-200 shadow-2xs active:scale-95 transition-all cursor-pointer"
                             title="Buka pratinjau dokumen PDF di tab baru"
@@ -110,8 +117,8 @@
                         <a 
                             id="btnExportPdf"
                             data-turbo="false"
-                            data-base-url="{{ route('reports.exportPdf') }}"
-                            href="{{ route('reports.exportPdf', ['customer' => $selectedCustomer, 'month' => $selectedMonth, 'year' => $selectedYear]) }}" 
+                            data-base-url="{{ $exportPdfUrl }}"
+                            href="{{ $exportPdfUrl . '?' . http_build_query(['customer' => $selectedCustomer, 'month' => $selectedMonth, 'year' => $selectedYear]) }}" 
                             class="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-sm active:scale-95 transition-all cursor-pointer"
                         >
                             <svg class="w-3.5 h-3.5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -124,7 +131,7 @@
 
                 <!-- FILTER FORM CARD -->
                 <div class="bg-white p-4 lg:p-5 rounded-xl border border-slate-200/80 shadow-2xs">
-                    <form id="reportFilterForm" action="{{ route('reports.index') }}" method="GET" data-turbo="false" class="flex flex-col lg:flex-row items-stretch lg:items-end gap-4">
+                    <form id="reportFilterForm" action="{{ $currentReportUrl }}" method="GET" data-turbo="false" class="flex flex-col lg:flex-row items-stretch lg:items-end gap-4">
                         
                         <!-- Field 1: Pilih Mitra Customer -->
                         <div class="flex-1">
@@ -138,7 +145,7 @@
                                     class="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-800 font-medium focus:outline-none focus:bg-white focus:border-blue-500 transition-colors appearance-none pr-8 cursor-pointer"
                                 >
                                     @foreach($customers as $key => $name)
-                                        <option value="{{ $key }}" {{ $selectedCustomer === $key ? 'selected' : '' }}>
+                                        <option value="{{ $key }}" {{ (string) $selectedCustomer === (string) $key ? 'selected' : '' }}>
                                             {{ $key === 'all' ? '-- ' . $name . ' --' : $name }}
                                         </option>
                                     @endforeach
@@ -212,7 +219,8 @@
 
                             @if($selectedCustomer !== 'all' || $selectedMonth !== (int) now()->month || $selectedYear !== (int) now()->year)
                                 <a 
-                                    href="{{ route('reports.index') }}" 
+                                    id="btnResetFilter"
+                                    href="{{ $currentReportUrl }}" 
                                     data-turbo="false"
                                     class="px-3 py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
                                     title="Reset filter ke kondisi awal"

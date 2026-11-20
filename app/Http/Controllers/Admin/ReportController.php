@@ -243,17 +243,22 @@ class ReportController extends Controller
 
         // Resolusi pilihan customer dari parameter URL (bisa berupa ID angka, slug code, atau slug nama)
         $matchedCustomer = null;
-        if ($rawCustomer !== 'all') {
-            $matchedCustomer = $allDbCustomers->first(function ($c) use ($rawCustomer) {
-                if ((string) $c->id === $rawCustomer) {
+        if ($rawCustomer !== 'all' && trim($rawCustomer) !== '') {
+            $cleanQuery = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '', $rawCustomer));
+
+            $matchedCustomer = $allDbCustomers->first(function ($c) use ($rawCustomer, $cleanQuery) {
+                if ((string) $c->id === (string) $rawCustomer) {
                     return true;
                 }
-                $codeSlug = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', $c->code ?? $c->customer_code ?? ''));
-                if (! empty($codeSlug) && $codeSlug === strtolower($rawCustomer)) {
+                if (empty($cleanQuery)) {
+                    return false;
+                }
+                $cCodeClean = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '', $c->code ?? $c->customer_code ?? ''));
+                if (! empty($cCodeClean) && ($cCodeClean === $cleanQuery || str_contains($cCodeClean, $cleanQuery) || str_contains($cleanQuery, $cCodeClean))) {
                     return true;
                 }
-                $nameSlug = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', $c->name ?? ''));
-                if (! empty($nameSlug) && (str_contains($nameSlug, strtolower($rawCustomer)) || str_contains(strtolower($rawCustomer), $nameSlug))) {
+                $cNameClean = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '', $c->name ?? ''));
+                if (! empty($cNameClean) && ($cNameClean === $cleanQuery || str_contains($cNameClean, $cleanQuery) || str_contains($cleanQuery, $cNameClean))) {
                     return true;
                 }
                 return false;

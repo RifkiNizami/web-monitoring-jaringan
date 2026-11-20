@@ -10,6 +10,22 @@ export function initAdminReports() {
     const monthSelect = document.getElementById('filterMonth');
     const yearSelect = document.getElementById('filterYear');
     const filterForm = document.getElementById('reportFilterForm');
+    const resetBtn = document.getElementById('btnResetFilter');
+
+    // Dapatkan path dasar halaman reports (misal /project-monitoring-web/public/reports atau /reports)
+    function getReportsBasePath() {
+        const currentPath = window.location.pathname.replace(/\/+$/, '');
+        return currentPath.endsWith('/reports') ? currentPath : (currentPath + '/reports');
+    }
+
+    // Pastikan action form filter dan tombol reset selalu mengarah ke URL path saat ini
+    const basePath = getReportsBasePath();
+    if (filterForm) {
+        filterForm.action = basePath;
+    }
+    if (resetBtn) {
+        resetBtn.href = basePath;
+    }
 
     // Sinkronisasi dinamis URL tombol ekspor & pratinjau dengan memelihara path absolut subfolder
     function syncExportUrls() {
@@ -17,37 +33,27 @@ export function initAdminReports() {
         const cust = customerSelect.value;
         const month = monthSelect.value;
         const year = yearSelect.value;
+        const base = getReportsBasePath();
 
-        function updateBtn(btn, isPreview = false) {
-            if (!btn) return;
-            const baseUrl = btn.dataset.baseUrl || btn.getAttribute('href') || '';
-            if (!baseUrl) return;
-            try {
-                const parsed = new URL(baseUrl, window.location.href);
-                parsed.searchParams.set('customer', cust);
-                parsed.searchParams.set('month', month);
-                parsed.searchParams.set('year', year);
-                if (isPreview) {
-                    parsed.searchParams.set('preview', '1');
-                } else {
-                    parsed.searchParams.delete('preview');
-                }
-                btn.href = parsed.toString();
-            } catch (e) {
-                // Fallback manual jika URL constructor gagal
-                const cleanBase = baseUrl.split('?')[0];
-                const params = new URLSearchParams();
-                params.set('customer', cust);
-                params.set('month', month);
-                params.set('year', year);
-                if (isPreview) params.set('preview', '1');
-                btn.href = `${cleanBase}?${params.toString()}`;
-            }
-        }
+        // 1. URL Export PDF (Download)
+        const pdfUrl = new URL(base + '/export-pdf', window.location.origin);
+        pdfUrl.searchParams.set('customer', cust);
+        pdfUrl.searchParams.set('month', month);
+        pdfUrl.searchParams.set('year', year);
 
-        updateBtn(exportPdfBtn, false);
-        updateBtn(exportExcelBtn, false);
-        updateBtn(previewPdfBtn, true);
+        // 2. URL Preview PDF (Buka di tab baru dengan stream/preview)
+        const previewUrl = new URL(pdfUrl.toString());
+        previewUrl.searchParams.set('preview', '1');
+
+        // 3. URL Export Excel
+        const excelUrl = new URL(base + '/export-excel', window.location.origin);
+        excelUrl.searchParams.set('customer', cust);
+        excelUrl.searchParams.set('month', month);
+        excelUrl.searchParams.set('year', year);
+
+        if (exportPdfBtn) exportPdfBtn.href = pdfUrl.toString();
+        if (previewPdfBtn) previewPdfBtn.href = previewUrl.toString();
+        if (exportExcelBtn) exportExcelBtn.href = excelUrl.toString();
     }
 
     // Jalankan sinkronisasi awal saat halaman dimuat
@@ -60,16 +66,26 @@ export function initAdminReports() {
             el.addEventListener('change', () => {
                 syncExportUrls();
                 if (filterForm) {
+                    filterForm.action = getReportsBasePath();
                     filterForm.submit();
                 }
             });
         }
     });
 
+    // Preview PDF click handler
+    if (previewPdfBtn && !previewPdfBtn.dataset.listenerBound) {
+        previewPdfBtn.dataset.listenerBound = 'true';
+        previewPdfBtn.addEventListener('click', function () {
+            syncExportUrls();
+        });
+    }
+
     // Indikator loading untuk Unduh PDF Resmi
     if (exportPdfBtn && !exportPdfBtn.dataset.listenerBound) {
         exportPdfBtn.dataset.listenerBound = 'true';
         exportPdfBtn.addEventListener('click', function () {
+            syncExportUrls();
             const originalHtml = this.innerHTML;
             this.classList.add('opacity-75');
             this.innerHTML = `
@@ -90,6 +106,7 @@ export function initAdminReports() {
     if (exportExcelBtn && !exportExcelBtn.dataset.listenerBound) {
         exportExcelBtn.dataset.listenerBound = 'true';
         exportExcelBtn.addEventListener('click', function () {
+            syncExportUrls();
             const originalHtml = this.innerHTML;
             this.classList.add('opacity-75');
             this.innerHTML = `
