@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
 use App\Models\MonitoringDevice;
+use App\Models\Project;
 use App\Services\ActivityLogger;
 use App\Services\MikrotikService;
 use Illuminate\Http\JsonResponse;
@@ -18,7 +20,10 @@ class MonitoringDeviceController extends Controller
      */
     public function create(): View
     {
-        return view('admin.monitoring.create');
+        $customers = Customer::orderBy('name', 'asc')->get();
+        $projects = Project::orderBy('name', 'asc')->get();
+
+        return view('admin.monitoring.create', compact('customers', 'projects'));
     }
 
     /**
@@ -37,7 +42,9 @@ class MonitoringDeviceController extends Controller
             'hostname' => 'required|string|max:100',
             'unit_type' => 'required|string|max:50',
             'ip_address' => 'required|string|max:100',
-            'customer' => 'required|string|max:150',
+            'customer_id' => 'nullable|exists:customers,id',
+            'project_id' => 'nullable|exists:projects,id',
+            'customer' => 'nullable|string|max:150',
             'project' => 'nullable|string|max:150',
             'model' => 'nullable|string|max:100',
             'rack_location' => 'nullable|string|max:100',
@@ -50,9 +57,18 @@ class MonitoringDeviceController extends Controller
             'hostname.required' => 'Nama hostname/perangkat target wajib diisi.',
             'unit_type.required' => 'Jenis perangkat wajib dipilih.',
             'ip_address.required' => 'IP Address target monitoring wajib diisi.',
-            'customer.required' => 'Nama mitra/pelanggan target wajib diisi.',
+            'customer_id.exists' => 'Mitra customer yang dipilih tidak valid.',
+            'project_id.exists' => 'Proyek yang dipilih tidak valid.',
             'api_username.required' => 'Username API MikroTik wajib diisi untuk perangkat RouterOS.',
         ]);
+
+        $customerId = ! empty($validated['customer_id']) ? (int) $validated['customer_id'] : null;
+        $customerRecord = $customerId ? Customer::find($customerId) : null;
+        $customerName = $customerRecord ? $customerRecord->name : (! empty($validated['customer']) ? trim($validated['customer']) : 'Infrastruktur Backbone NetFly');
+
+        $projectId = ! empty($validated['project_id']) ? (int) $validated['project_id'] : null;
+        $projectRecord = $projectId ? Project::find($projectId) : null;
+        $projectName = $projectRecord ? $projectRecord->name : (! empty($validated['project']) ? trim($validated['project']) : 'Dedicated SLA Monitoring');
 
         $port = $isNonMikrotik
             ? MikrotikService::resolveNonMikrotikPort($inputPort)
@@ -132,11 +148,13 @@ class MonitoringDeviceController extends Controller
         }
 
         $deviceModel = MonitoringDevice::create([
+            'customer_id' => $customerId,
+            'project_id' => $projectId,
             'hostname' => strtoupper(trim($validated['hostname'])),
             'unit_type' => $validated['unit_type'],
             'ip_address' => trim($validated['ip_address']),
-            'customer' => trim($validated['customer']),
-            'project' => ! empty($validated['project']) ? trim($validated['project']) : 'Dedicated SLA Monitoring',
+            'customer' => $customerName,
+            'project' => $projectName,
             'model' => $model,
             'rack_location' => ! empty($validated['rack_location']) ? trim($validated['rack_location']) : 'POP Distribusi',
             'status' => $status,
@@ -193,15 +211,17 @@ class MonitoringDeviceController extends Controller
      */
     public function edit(int $id): View
     {
-        $deviceModel = MonitoringDevice::find($id);
+        $deviceModel = MonitoringDevice::with(['customer', 'project'])->find($id);
 
         if (! $deviceModel) {
             abort(404, 'Perangkat monitoring tidak ditemukan.');
         }
 
         $device = MonitoringController::formatMonitoringDevice($deviceModel);
+        $customers = Customer::orderBy('name', 'asc')->get();
+        $projects = Project::orderBy('name', 'asc')->get();
 
-        return view('admin.monitoring.edit', compact('device'));
+        return view('admin.monitoring.edit', compact('device', 'customers', 'projects'));
     }
 
     /**
@@ -220,7 +240,9 @@ class MonitoringDeviceController extends Controller
             'hostname' => 'required|string|max:100',
             'unit_type' => 'required|string|max:50',
             'ip_address' => 'required|string|max:100',
-            'customer' => 'required|string|max:150',
+            'customer_id' => 'nullable|exists:customers,id',
+            'project_id' => 'nullable|exists:projects,id',
+            'customer' => 'nullable|string|max:150',
             'project' => 'nullable|string|max:150',
             'model' => 'nullable|string|max:100',
             'rack_location' => 'nullable|string|max:100',
@@ -233,7 +255,8 @@ class MonitoringDeviceController extends Controller
             'hostname.required' => 'Nama hostname/perangkat target wajib diisi.',
             'unit_type.required' => 'Jenis perangkat wajib dipilih.',
             'ip_address.required' => 'IP Address target monitoring wajib diisi.',
-            'customer.required' => 'Nama mitra/pelanggan target wajib diisi.',
+            'customer_id.exists' => 'Mitra customer yang dipilih tidak valid.',
+            'project_id.exists' => 'Proyek yang dipilih tidak valid.',
             'api_username.required' => 'Username API MikroTik wajib diisi untuk perangkat RouterOS.',
         ]);
 
@@ -246,6 +269,14 @@ class MonitoringDeviceController extends Controller
 
             return redirect()->route('monitoring.index')->with('error', 'Perangkat monitoring tidak ditemukan.');
         }
+
+        $customerId = $request->filled('customer_id') ? (int) $request->input('customer_id') : null;
+        $customerRecord = $customerId ? Customer::find($customerId) : null;
+        $customerName = $customerRecord ? $customerRecord->name : (! empty($validated['customer']) ? trim($validated['customer']) : ($deviceModel->customer ?: 'Infrastruktur Backbone NetFly'));
+
+        $projectId = $request->filled('project_id') ? (int) $request->input('project_id') : null;
+        $projectRecord = $projectId ? Project::find($projectId) : null;
+        $projectName = $projectRecord ? $projectRecord->name : (! empty($validated['project']) ? trim($validated['project']) : ($deviceModel->project ?: 'Dedicated SLA Monitoring'));
 
         $status = $validated['status'] ?? $deviceModel->status ?? 'online';
         $ip = trim($validated['ip_address']);
@@ -260,11 +291,13 @@ class MonitoringDeviceController extends Controller
             : ($isNonMikrotik ? '' : $deviceModel->api_password);
 
         $updates = [
+            'customer_id' => $customerId,
+            'project_id' => $projectId,
             'hostname' => strtoupper(trim($validated['hostname'])),
             'unit_type' => $validated['unit_type'],
             'ip_address' => $ip,
-            'customer' => trim($validated['customer']),
-            'project' => ! empty($validated['project']) ? trim($validated['project']) : ($deviceModel->project ?: 'Dedicated SLA Monitoring'),
+            'customer' => $customerName,
+            'project' => $projectName,
             'connection_type' => $validated['connection_type'] ?? ($deviceModel->connection_type ?: ($isNonMikrotik ? 'http' : 'lan')),
             'api_port' => $port,
             'api_username' => $username,

@@ -85,9 +85,38 @@ class ReportGeneratorTest extends TestCase
             ],
         ]);
 
-        Device::where('hostname', 'RTR-CORE-MANDIRI-01')->update(['customer_id' => 1]);
-        Device::where('hostname', 'SW-AGG-BKS-04')->update(['customer_id' => 2]);
-        Device::where('hostname', 'AP-OUTDOOR-DISDIK-01')->update(['customer_id' => 3]);
+        $devMandiri = Device::firstOrCreate(
+            ['hostname' => 'RTR-CORE-MANDIRI-01'],
+            [
+                'type' => 'Router',
+                'customer_id' => 1,
+                'project_id' => null,
+                'status' => 'Tersedia',
+            ]
+        );
+        $devMandiri->update(['customer_id' => 1]);
+
+        $devShopee = Device::firstOrCreate(
+            ['hostname' => 'SW-AGG-BKS-04'],
+            [
+                'type' => 'Switch',
+                'customer_id' => 2,
+                'project_id' => null,
+                'status' => 'Tersedia',
+            ]
+        );
+        $devShopee->update(['customer_id' => 2]);
+
+        $devDisdik = Device::firstOrCreate(
+            ['hostname' => 'AP-OUTDOOR-DISDIK-01'],
+            [
+                'type' => 'Access Point',
+                'customer_id' => 3,
+                'project_id' => 1,
+                'status' => 'Tersedia',
+            ]
+        );
+        $devDisdik->update(['customer_id' => 3, 'project_id' => 1]);
 
         // Tiket uji untuk pengujian laporan eksekutif (di-rollback otomatis oleh DatabaseTransactions)
         Ticket::updateOrCreate(
@@ -95,7 +124,7 @@ class ReportGeneratorTest extends TestCase
             [
                 'customer_id' => 3,
                 'project_id' => 1,
-                'device_id' => 3,
+                'device_id' => $devDisdik->id,
                 'client_name' => 'Dinas Pendidikan Provinsi DKI Jakarta',
                 'project_name' => 'Smart City Backbone Sekolah Tahap II',
                 'priority' => 'P2 - HIGH',

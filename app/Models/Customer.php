@@ -43,6 +43,14 @@ class Customer extends Model
     }
 
     /**
+     * Relationship with Monitoring Devices (Live Telemetry & Routers)
+     */
+    public function monitoringDevices(): HasMany
+    {
+        return $this->hasMany(MonitoringDevice::class, 'customer_id');
+    }
+
+    /**
      * Relationship with Tickets
      */
     public function tickets(): HasMany

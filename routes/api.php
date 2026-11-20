@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Api\AnnouncementApiController;
 use App\Http\Controllers\Api\TicketApiController;
+use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -11,6 +13,14 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware('throttle:api')->group(function () {
+    Route::get('/user/profile', [AuthController::class, 'apiProfile'])->name('api.user.profile');
+
+    Route::prefix('reports')->group(function () {
+        Route::get('/', [ReportController::class, 'apiIndex'])->name('api.reports.index');
+        Route::get('/export-pdf', [ReportController::class, 'exportPdf'])->name('api.reports.exportPdf');
+        Route::get('/export-excel', [ReportController::class, 'exportExcel'])->name('api.reports.exportExcel');
+    });
+
     Route::prefix('tickets')->group(function () {
         Route::get('/', [TicketApiController::class, 'index'])->name('api.tickets.index');
         Route::post('/', [TicketApiController::class, 'store'])->name('api.tickets.store');

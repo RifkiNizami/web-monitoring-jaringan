@@ -338,8 +338,11 @@
                                                             {{ $isOffline ? 'Offline' : ($device['status'] === 'warning' ? 'Warning' : 'Online') }}
                                                         </span>
                                                     </div>
-                                                    <p class="mt-1 text-xs text-slate-500 truncate" title="{{ $device['customer'] }}{{ !empty($device['project']) ? ' · '.$device['project'] : '' }}">
+                                                    <p class="mt-1 text-xs text-slate-500 truncate" title="{{ $device['customer'] }}{{ !empty($device['customer_code']) ? ' ('.$device['customer_code'].')' : '' }}{{ !empty($device['project']) ? ' · '.$device['project'] : '' }}">
                                                         {{ $device['customer'] }}
+                                                        @if (!empty($device['customer_code']))
+                                                            <span class="text-slate-400 font-mono text-[11px]">({{ $device['customer_code'] }})</span>
+                                                        @endif
                                                         @if (!empty($device['project']))
                                                             <span class="text-slate-300 mx-1">·</span>
                                                             <span class="text-slate-400">{{ $device['project'] }}</span>

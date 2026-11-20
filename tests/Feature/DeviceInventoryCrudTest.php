@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Device;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
@@ -64,20 +65,22 @@ class DeviceInventoryCrudTest extends TestCase
     public function test_edit_inventory_device_page_renders(): void
     {
         $this->actingAs($this->adminUser)->get('/devices');
+        $targetDevice = Device::first();
 
-        $response = $this->actingAs($this->adminUser)->get('/devices/1/edit');
+        $response = $this->actingAs($this->adminUser)->get("/devices/{$targetDevice->id}/edit");
 
         $response->assertStatus(200);
         $response->assertViewIs('admin.devices.edit');
         $response->assertSee('Edit Data Barang Inventaris', false);
-        $response->assertSee('RTR-CORE-01', false);
+        $response->assertSee($targetDevice->hostname, false);
     }
 
     public function test_admin_can_update_inventory_device(): void
     {
         $this->actingAs($this->adminUser)->get('/devices');
+        $targetDevice = Device::first();
 
-        $response = $this->actingAs($this->adminUser)->put('/devices/1', [
+        $response = $this->actingAs($this->adminUser)->put("/devices/{$targetDevice->id}", [
             'hostname' => 'RTR-CORE-01-REV',
             'type' => 'Router',
             'brand_model' => 'MikroTik CCR2116-12G-4S+',
@@ -90,7 +93,7 @@ class DeviceInventoryCrudTest extends TestCase
         $response->assertSessionHas('success');
 
         $this->assertDatabaseHas('devices', [
-            'id' => 1,
+            'id' => $targetDevice->id,
             'hostname' => 'RTR-CORE-01-REV',
             'brand_model' => 'MikroTik CCR2116-12G-4S+',
             'serial_number' => 'SN-UPDATED01',
@@ -107,14 +110,20 @@ class DeviceInventoryCrudTest extends TestCase
     public function test_admin_can_delete_inventory_device(): void
     {
         $this->actingAs($this->adminUser)->get('/devices');
+        $deviceToDelete = Device::create([
+            'hostname' => 'DEV-TEMP-DELETE',
+            'type' => 'Router',
+            'status' => 'Tersedia',
+            'status_state' => 'available',
+        ]);
 
-        $response = $this->actingAs($this->adminUser)->delete('/devices/1');
+        $response = $this->actingAs($this->adminUser)->delete("/devices/{$deviceToDelete->id}");
 
         $response->assertRedirect(route('devices.index'));
         $response->assertSessionHas('success');
 
         $this->assertDatabaseMissing('devices', [
-            'id' => 1,
+            'id' => $deviceToDelete->id,
         ]);
     }
 }

@@ -205,38 +205,62 @@
                                 <label for="inputCustomer" class="block text-xs font-semibold text-slate-700 mb-1.5">
                                     Mitra Pelanggan / Entitas <span class="text-rose-500">*</span>
                                 </label>
-                                <input
-                                    id="inputCustomer"
-                                    type="text"
-                                    name="customer"
-                                    value="{{ old('customer') }}"
-                                    required
-                                    placeholder="Nama klien / instansi"
-                                    list="monitoringCustomerSuggestions"
-                                    class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
-                                >
-                                <datalist id="monitoringCustomerSuggestions">
-                                    <option value="PT. Bank Mandiri (Persero) Tbk">
-                                    <option value="PT. Shopee International Indonesia">
-                                    <option value="Dinas Pendidikan Provinsi DKI Jakarta">
-                                    <option value="PT. XYZ Teknologi">
-                                    <option value="RS Medika Center">
-                                    <option value="Internal NOC NetFly Backbone">
-                                </datalist>
+                                <div class="relative">
+                                    <select
+                                        id="inputCustomer"
+                                        name="customer_id"
+                                        class="w-full appearance-none pl-3.5 pr-9 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition cursor-pointer"
+                                    >
+                                        <option value="">-- Infrastruktur Backbone / Internal NetFly (Tanpa Pelanggan) --</option>
+                                        @foreach($customers as $c)
+                                            <option value="{{ $c->id }}" {{ (string) old('customer_id') === (string) $c->id ? 'selected' : '' }}>
+                                                {{ $c->name }} ({{ $c->code ?? 'CUST-'.$c->id }}) — {{ ucfirst($c->customer_type ?? 'Pelanggan') }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <p class="mt-1 text-[11px] text-slate-500">Pilih customer pemilik node ini agar router muncul di dashboard monitoring mobile.</p>
                             </div>
 
                             <div>
                                 <label for="inputProject" class="block text-xs font-semibold text-slate-700 mb-1.5">
                                     Proyek / Lokasi Terhubung
                                 </label>
-                                <input
-                                    id="inputProject"
-                                    type="text"
-                                    name="project"
-                                    value="{{ old('project') }}"
-                                    placeholder="Contoh: Dedicated Internet SCBD"
-                                    class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
-                                >
+                                @if(isset($projects) && $projects->isNotEmpty())
+                                    <div class="relative">
+                                        <select
+                                            id="inputProject"
+                                            name="project_id"
+                                            class="w-full appearance-none pl-3.5 pr-9 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition cursor-pointer"
+                                        >
+                                            <option value="">-- Dedicated SLA Monitoring (Standar) --</option>
+                                            @foreach($projects as $p)
+                                                <option value="{{ $p->id }}" {{ (string) old('project_id') === (string) $p->id ? 'selected' : '' }}>
+                                                    {{ $p->name }} {{ $p->branch_location ? '('.$p->branch_location.')' : '' }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                @else
+                                    <input
+                                        id="inputProject"
+                                        type="text"
+                                        name="project"
+                                        value="{{ old('project') }}"
+                                        placeholder="Contoh: Dedicated Internet SCBD"
+                                        class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
+                                    >
+                                @endif
                             </div>
                         </div>
 

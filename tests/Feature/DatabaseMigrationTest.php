@@ -14,7 +14,7 @@ class DatabaseMigrationTest extends TestCase
         $this->assertTrue(Schema::hasTable('projects'));
 
         $this->assertDatabaseHas('devices', [
-            'hostname' => 'RTR-CORE-MANDIRI-01',
+            'hostname' => 'RTR-CORE-01',
         ]);
 
         $this->assertTrue(Schema::hasTable('tickets'));

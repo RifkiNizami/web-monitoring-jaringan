@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Middleware\AuthenticateSingleSession;
 use App\Models\User;
 use App\Services\ActivityLogger;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -142,7 +143,10 @@ class AuthController extends Controller
                 ]
             );
 
-            if ($request->wantsJson()) {
+            if ($request->wantsJson() || $isMobileApp) {
+                $user->load('customer');
+                $customer = $user->customer;
+
                 return response()->json([
                     'success' => true,
                     'message' => 'Login berhasil',
@@ -152,6 +156,22 @@ class AuthController extends Controller
                         'email' => $user->email,
                         'username' => $user->username,
                         'role' => $user->role,
+                        'role_label' => $user->role === 'customer_residential' ? 'Customer Rumahan' : 'PIC Perwakilan Customer',
+                        'phone' => $user->phone ?? ($customer?->phone ?? '-'),
+                        'customer_id' => $user->customer_id,
+                        'customer' => $customer ? [
+                            'id' => $customer->id,
+                            'code' => $customer->code ?? 'CUST-0001',
+                            'customer_type' => $customer->customer_type ?? 'perusahaan',
+                            'name' => $customer->name,
+                            'category' => $customer->category ?? ($customer->customer_type === 'rumahan' ? 'Customer Rumahan' : 'Mitra Korporat'),
+                            'pic_name' => ($customer->pic_name && $customer->pic_name !== '-') ? $customer->pic_name : $user->name,
+                            'email' => $customer->email ?? $user->email,
+                            'phone' => $customer->phone ?? $user->phone,
+                            'address' => $customer->address ?? '-',
+                            'package' => $customer->package ?? ($customer->note ?? 'Layanan Internet NetFly'),
+                            'status' => $customer->status ?? 'Aktif',
+                        ] : null,
                     ],
                 ]);
             }
@@ -213,5 +233,116 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login');
+    }
+
+    /**
+     * API Profile Pengguna & Customer untuk Mobile App NetFly.
+     */
+    public function apiProfile(Request $request): JsonResponse
+    {
+        $identifier = $request->query('email') ?? $request->query('username');
+        if (! $identifier) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Parameter email atau username wajib disertakan.',
+            ], 400);
+        }
+
+        $user = User::with(['customer.devices', 'customer.monitoringDevices'])
+            ->where('email', $identifier)
+            ->orWhere('username', $identifier)
+            ->first();
+
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pengguna tidak ditemukan dalam database.',
+            ], 404);
+        }
+
+        $customer = $user->customer;
+
+        $allCustomerDevices = [];
+        if ($customer) {
+            $monitoringList = $customer->monitoringDevices->map(function ($m) {
+                $st = strtolower($m->status ?: 'online');
+                $isOnline = in_array($st, ['online', 'tersedia', 'terpakai']);
+
+                return [
+                    'id' => (string) $m->id,
+                    'hostname' => $m->hostname,
+                    'type' => $m->unit_type ?: 'Router',
+                    'model' => $m->model ?: ($m->unit_type ?: 'Router Node'),
+                    'ip_address' => $m->ip_address ?: '192.168.1.1',
+                    'status' => ucfirst($m->status ?: 'online'),
+                    'status_state' => $st,
+                    'is_online' => $isOnline,
+                    'uptime' => $m->uptime ?: '10 hari 05 jam',
+                    'rx_rate' => $m->rx_mbps ?: '50.0 Mbps',
+                    'tx_rate' => $m->tx_mbps ?: '35.0 Mbps',
+                    'ping_ms' => $m->last_ping_ms !== null ? "{$m->last_ping_ms} ms" : '8 ms',
+                    'last_ping_ms' => $m->last_ping_ms ?? 8,
+                    'packet_loss' => (string) ($m->packet_loss ?? 0).'%',
+                    'cpu_load' => (float) ($m->cpu_load ?? 0.0),
+                    'ram_load' => (float) ($m->ram_load ?? 0.0),
+                    'rack_location' => $m->rack_location ?: 'CPE Pelanggan',
+                ];
+            });
+
+            $deviceList = $customer->devices->map(function ($d) {
+                $st = strtolower($d->status_state ?: 'online');
+                $isOnline = in_array($st, ['online', 'available', 'in_use', 'tersedia', 'terpakai']);
+
+                return [
+                    'id' => (string) $d->id,
+                    'hostname' => $d->hostname,
+                    'type' => $d->type ?: 'Router',
+                    'model' => $d->brand_model ?: ($d->type ?: 'Hardware Node'),
+                    'ip_address' => $d->ip_address ?: '10.200.1.1',
+                    'status' => ucfirst($d->status ?: 'Tersedia'),
+                    'status_state' => $st,
+                    'is_online' => $isOnline,
+                    'uptime' => $d->uptime ?: '14 hari 02 jam',
+                    'rx_rate' => $d->rx_rate ?: '50.0 Mbps',
+                    'tx_rate' => $d->tx_rate ?: '35.0 Mbps',
+                    'ping_ms' => $d->last_ping_ms !== null ? "{$d->last_ping_ms} ms" : '10 ms',
+                    'last_ping_ms' => $d->last_ping_ms ?? 10,
+                    'packet_loss' => (string) ($d->packet_loss ?? '0.00').'%',
+                    'cpu_load' => (float) ($d->cpu_load ?? 0.0),
+                    'ram_load' => (float) ($d->ram_load ?? 0.0),
+                    'rack_location' => $d->rack_location ?: 'Slot POP NetFly',
+                ];
+            });
+
+            $allCustomerDevices = $monitoringList->concat($deviceList)->unique('hostname')->values()->all();
+        }
+
+        return response()->json([
+            'success' => true,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'username' => $user->username,
+                'role' => $user->role,
+                'role_label' => $user->role === 'customer_residential' ? 'Customer Rumahan' : 'PIC Perwakilan Customer',
+                'phone' => $user->phone ?? ($customer?->phone ?? '-'),
+                'customer_id' => $user->customer_id,
+                'customer' => $customer ? [
+                    'id' => $customer->id,
+                    'code' => $customer->code ?? 'CUST-0001',
+                    'customer_type' => $customer->customer_type ?? 'perusahaan',
+                    'name' => $customer->name,
+                    'category' => $customer->category ?? ($customer->customer_type === 'rumahan' ? 'Customer Rumahan' : 'Mitra Korporat'),
+                    'pic_name' => ($customer->pic_name && $customer->pic_name !== '-') ? $customer->pic_name : $user->name,
+                    'email' => $customer->email ?? $user->email,
+                    'phone' => $customer->phone ?? $user->phone,
+                    'address' => $customer->address ?? '-',
+                    'package' => $customer->package ?? ($customer->note ?? 'Layanan Internet NetFly'),
+                    'status' => $customer->status ?? 'Aktif',
+                    'devices' => $allCustomerDevices,
+                ] : null,
+            ],
+        ]);
     }
 }

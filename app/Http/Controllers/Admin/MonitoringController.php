@@ -55,6 +55,9 @@ class MonitoringController extends Controller
 
         return [
             'id' => $device->id,
+            'customer_id' => $device->customer_id,
+            'project_id' => $device->project_id,
+            'customer_code' => $device->customerRelation?->code,
             'hostname' => $device->hostname,
             'unit_type' => $device->unit_type ?? 'Router',
             'ip_address' => $device->ip_address,
@@ -90,7 +93,8 @@ class MonitoringController extends Controller
      */
     public static function getTelemetryDevicesList(): array
     {
-        return MonitoringDevice::orderBy('id', 'asc')
+        return MonitoringDevice::with(['customerRelation', 'projectRelation'])
+            ->orderBy('id', 'asc')
             ->get()
             ->mapWithKeys(fn ($dev) => [(int) $dev->id => self::formatMonitoringDevice($dev)])
             ->all();
@@ -107,6 +111,8 @@ class MonitoringController extends Controller
             $status = $dev['status'] ?? 'online';
             MonitoringDevice::create([
                 'id' => $dev['id'] ?? (is_numeric($key) ? (int) $key : null),
+                'customer_id' => $dev['customer_id'] ?? null,
+                'project_id' => $dev['project_id'] ?? null,
                 'hostname' => $dev['hostname'] ?? 'NODE-UNKNOWN',
                 'unit_type' => $dev['unit_type'] ?? 'Router',
                 'ip_address' => $dev['ip_address'] ?? '127.0.0.1',
@@ -154,6 +160,8 @@ class MonitoringController extends Controller
 
                 MonitoringDevice::create([
                     'id' => $dev->id,
+                    'customer_id' => $dev->customer_id,
+                    'project_id' => $dev->project_id,
                     'hostname' => $dev->hostname,
                     'unit_type' => $dev->type ?? 'Router',
                     'ip_address' => $dev->ip_address ?: ('10.200.10.'.(10 + ($dev->id % 200))),
@@ -276,9 +284,9 @@ class MonitoringController extends Controller
                 if (! $exists) {
                     MonitoringAlert::create([
                         'device_id' => $deviceId,
-                        'customer_id' => null,
+                        'customer_id' => $node->customer_id,
                         'host' => $node->hostname,
-                        'customer_name' => $node->customer ?: 'Infrastruktur Jaringan',
+                        'customer_name' => $node->customerRelation?->name ?: ($node->customer ?: 'Infrastruktur Jaringan'),
                         'severity' => 'critical',
                         'type' => 'Perangkat Padam',
                         'message' => "Node {$node->hostname} ({$node->ip_address}) tidak merespons poller ICMP/API (Loss of Signal / RTO).",
@@ -307,9 +315,9 @@ class MonitoringController extends Controller
                 if (! $exists) {
                     MonitoringAlert::create([
                         'device_id' => $deviceId,
-                        'customer_id' => null,
+                        'customer_id' => $node->customer_id,
                         'host' => $node->hostname,
-                        'customer_name' => $node->customer ?: 'Infrastruktur Jaringan',
+                        'customer_name' => $node->customerRelation?->name ?: ($node->customer ?: 'Infrastruktur Jaringan'),
                         'severity' => 'warning',
                         'type' => 'Degradasi Jaringan',
                         'message' => "Node {$node->hostname} mengalami degradasi link (Packet loss {$node->packet_loss}%).",
@@ -337,9 +345,9 @@ class MonitoringController extends Controller
                 if (! $exists) {
                     MonitoringAlert::create([
                         'device_id' => $deviceId,
-                        'customer_id' => null,
+                        'customer_id' => $node->customer_id,
                         'host' => $node->hostname,
-                        'customer_name' => $node->customer ?: 'Infrastruktur Jaringan',
+                        'customer_name' => $node->customerRelation?->name ?: ($node->customer ?: 'Infrastruktur Jaringan'),
                         'severity' => 'warning',
                         'type' => 'Beban CPU Tinggi',
                         'message' => "Beban prosessor node {$node->hostname} mencapai {$node->cpu_load}%, terdeteksi potensi antrean trafik.",
