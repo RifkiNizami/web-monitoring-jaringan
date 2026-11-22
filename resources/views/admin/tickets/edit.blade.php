@@ -108,7 +108,7 @@
                 @endif
 
                 <!-- FORM CARD -->
-                <form action="{{ route('tickets.update', $ticket->ticket_number ?? $ticket->id) }}" method="POST" class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
+                <form action="{{ route('tickets.update', $ticket->ticket_number ?? $ticket->id) }}" method="POST" enctype="multipart/form-data" class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
                     @csrf
                     @method('PUT')
 
@@ -309,6 +309,41 @@
                                 placeholder="Deskripsikan indikasi kendala, kronologi waktu awal terjadinya, hasil traceroute/ping, atau catatan dari teknisi..." 
                                 class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
                             >{{ old('description', $ticket->description) }}</textarea>
+                        </div>
+
+                        <!-- Row 7: Bukti Foto / Screenshot Kendala -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1.5">
+                                Bukti Foto / Screenshot Kendala <span class="text-slate-400 font-normal">(Opsional)</span>
+                            </label>
+
+                            @if (!empty($ticket->photo_url))
+                                <div class="mb-3 p-3 bg-slate-50 border border-slate-200 rounded-lg flex items-center gap-3">
+                                    <img src="{{ $ticket->photo_url }}" alt="Bukti {{ $ticket->ticket_number }}" class="w-14 h-14 object-cover rounded-lg border border-slate-200">
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-xs font-semibold text-slate-800">Foto bukti saat ini terlampir</p>
+                                        <a href="{{ $ticket->photo_url }}" target="_blank" class="text-[11px] text-blue-600 hover:underline inline-flex items-center gap-1 mt-0.5">
+                                            <span>Lihat resolusi penuh</span>
+                                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                            </svg>
+                                        </a>
+                                    </div>
+                                    <label class="inline-flex items-center gap-1.5 text-xs text-rose-600 cursor-pointer font-medium">
+                                        <input type="checkbox" name="remove_photo" value="1" class="rounded border-slate-300 text-rose-600 focus:ring-rose-500">
+                                        <span>Hapus foto</span>
+                                    </label>
+                                </div>
+                            @endif
+
+                            <input 
+                                id="inputPhoto"
+                                type="file" 
+                                name="photo" 
+                                accept="image/jpeg,image/png,image/webp"
+                                class="w-full text-xs text-slate-500 file:mr-3.5 file:py-2 file:px-3.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer border border-slate-200 rounded-lg p-1 bg-slate-50/40"
+                            >
+                            <p class="text-[11px] text-slate-400 mt-1">Unggah file baru untuk mengganti foto bukti kendala (JPG, PNG, WebP maks 5MB).</p>
                         </div>
 
                     </div>

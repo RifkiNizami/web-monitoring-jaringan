@@ -62,12 +62,12 @@ class MonitoringController extends Controller
             'unit_type' => $device->unit_type ?? 'Router',
             'ip_address' => $device->ip_address,
             'customer' => $device->customer,
-            'project' => $device->project ?: 'Dedicated SLA Monitoring',
-            'model' => $device->model ?: ($device->unit_type.' Node'),
-            'rack_location' => $device->rack_location ?: 'POP Distribusi',
+            'project' => $device->project ?: '-',
+            'model' => $device->model ?: ($device->unit_type ? $device->unit_type.' Node' : '-'),
+            'rack_location' => $device->rack_location ?: '-',
             'status' => $status,
             'status_label' => $device->status_label ?: strtoupper($status),
-            'uptime' => $device->uptime ?: 'Siap Pantau',
+            'uptime' => $device->uptime ?: ($status === 'online' ? 'Online' : 'Offline'),
             'rx_mbps' => $device->rx_mbps ?: '0.0 Mbps',
             'tx_mbps' => $device->tx_mbps ?: '0.0 Mbps',
             'cpu_load' => (float) ($device->cpu_load ?? 0.0),
@@ -145,45 +145,8 @@ class MonitoringController extends Controller
      */
     public static function seedInitialMonitoringDevices(): void
     {
-        if (MonitoringDevice::count() > 0) {
-            return;
-        }
+        // Jangan menginjeksi data dummy otomatis bila kosong
 
-        $devices = Device::with('customer', 'project')->get();
-
-        if ($devices->isNotEmpty()) {
-            foreach ($devices as $dev) {
-                $isOffline = $dev->status_state === 'out_of_stock';
-                $status = $isOffline ? 'offline' : 'online';
-                $rxRate = self::formatRate($dev->rx_rate, '50.0 Mbps');
-                $txRate = self::formatRate($dev->tx_rate, '35.0 Mbps');
-
-                MonitoringDevice::create([
-                    'id' => $dev->id,
-                    'customer_id' => $dev->customer_id,
-                    'project_id' => $dev->project_id,
-                    'hostname' => $dev->hostname,
-                    'unit_type' => $dev->type ?? 'Router',
-                    'ip_address' => $dev->ip_address ?: ('10.200.10.'.(10 + ($dev->id % 200))),
-                    'customer' => $dev->customer ? $dev->customer->name : 'Infrastruktur Backbone NetFly',
-                    'project' => $dev->project ? $dev->project->name : 'Dedicated Core Interconnect',
-                    'model' => $dev->brand_model ?: ($dev->type.' Node'),
-                    'rack_location' => $dev->rack_location ?: 'POP Distribusi NetFly',
-                    'status' => $status,
-                    'status_label' => strtoupper($status),
-                    'uptime' => $isOffline ? 'Offline (Timeout)' : '14 hari 06 jam',
-                    'rx_mbps' => $isOffline ? '0.0 Mbps' : $rxRate,
-                    'tx_mbps' => $isOffline ? '0.0 Mbps' : $txRate,
-                    'cpu_load' => $isOffline ? 0.0 : round(18.0 + (($dev->id * 7) % 35), 1),
-                    'ram_load' => $isOffline ? 0.0 : round(35.0 + (($dev->id * 11) % 40), 1),
-                    'packet_loss' => $isOffline ? 100.0 : 0.0,
-                    'last_ping_ms' => $isOffline ? null : (8 + ($dev->id % 15)),
-                    'connection_type' => 'lan',
-                    'api_port' => 8728,
-                    'api_username' => 'admin',
-                ]);
-            }
-        }
     }
 
     /**
@@ -234,12 +197,44 @@ class MonitoringController extends Controller
             );
 
             if ($telemetry) {
+                $prevRxBytes = 0.0;
+                $prevTxBytes = 0.0;
+                if (is_array($node->interfaces)) {
+                    foreach ($node->interfaces as $oldIf) {
+                        if (($oldIf['type'] ?? '') !== 'loopback' && ($oldIf['name'] ?? '') !== 'lo') {
+                            $prevRxBytes += (float) ($oldIf['rx_bytes'] ?? 0);
+                            $prevTxBytes += (float) ($oldIf['tx_bytes'] ?? 0);
+                        }
+                    }
+                }
+
+                $newRxBytes = (float) ($telemetry['total_rx_bytes'] ?? 0);
+                $newTxBytes = (float) ($telemetry['total_tx_bytes'] ?? 0);
+
+                $deltaRx = ($newRxBytes >= $prevRxBytes && $prevRxBytes > 0) ? ($newRxBytes - $prevRxBytes) : 0.0;
+                $deltaTx = ($newTxBytes >= $prevTxBytes && $prevTxBytes > 0) ? ($newTxBytes - $prevTxBytes) : 0.0;
+
+                $elapsedSec = $node->updated_at
+                    ? max(1.0, min(60.0, (float) abs(now()->diffInSeconds($node->updated_at))))
+                    : 4.0;
+
+                $deltaRxBps = ($deltaRx * 8.0) / $elapsedSec;
+                $deltaTxBps = ($deltaTx * 8.0) / $elapsedSec;
+
+                $monitorRxBps = (float) ($telemetry['rx_bps'] ?? 0);
+                $monitorTxBps = (float) ($telemetry['tx_bps'] ?? 0);
+
+                $rxMbps = MikrotikService::formatBpsToMbps(max($monitorRxBps, $deltaRxBps), $deltaRx, $newRxBytes);
+                $txMbps = MikrotikService::formatBpsToMbps(max($monitorTxBps, $deltaTxBps), $deltaTx, $newTxBytes);
+
                 $node->update([
                     'status' => 'online',
                     'status_label' => 'ONLINE',
                     'cpu_load' => $telemetry['resource']['cpu_load'],
                     'ram_load' => $telemetry['resource']['ram_load'],
                     'uptime' => $telemetry['resource']['uptime'],
+                    'rx_mbps' => $rxMbps,
+                    'tx_mbps' => $txMbps,
                     'last_ping_ms' => (int) $telemetry['latency_ms'],
                     'packet_loss' => 0.0,
                     'interfaces' => $telemetry['interfaces'] ?? $node->interfaces,
@@ -562,8 +557,6 @@ class MonitoringController extends Controller
     public function pollAllNodes(Request $request): JsonResponse
     {
         if (! app()->runningUnitTests()) {
-            self::seedInitialMonitoringDevices();
-
             $mikrotikService = new MikrotikService;
             $nodes = MonitoringDevice::all();
 

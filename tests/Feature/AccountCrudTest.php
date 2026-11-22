@@ -182,7 +182,7 @@ class AccountCrudTest extends TestCase
             'customer_id' => $this->testCorporateCustomer->id,
         ]);
 
-        $createdUser = \App\Models\User::where('email', $email)->first();
+        $createdUser = User::where('email', $email)->first();
         $this->assertNotNull($createdUser);
         $this->assertNotEmpty($createdUser->username);
     }

@@ -1,0 +1,341 @@
+<mxfile host="app.diagrams.net" agent="Antigravity" scale="1" border="0">
+  <diagram id="diagram-konteks-netfly" name="DIAGRAM KONTEKS">
+    <mxGraphModel dx="1937" dy="1182" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2100" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title_header" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Plus Jakarta Sans,Arial;strokeColor=default;fontColor=#000000;" value="&lt;span style=&quot;font-size: 18px; letter-spacing: 1px;&quot;&gt;&lt;b&gt;DFD LEVEL 0 (Diagram Konteks)&lt;/b&gt;&lt;/span&gt;" vertex="1">
+          <mxGeometry height="60" width="800" x="760" y="31" as="geometry" />
+        </mxCell>
+        <mxCell id="E_ADMIN_KONTEN" parent="1" style="rounded=0;whiteSpace=wrap;html=1;strokeWidth=1.8;fontFamily=Plus Jakarta Sans,Arial;fontColor=default;" value="&lt;b style=&quot;font-size: 15px;&quot;&gt;Admin Konten&lt;/b&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="380" width="220" x="100" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="E_ADMIN_NOC" parent="1" style="rounded=0;whiteSpace=wrap;html=1;strokeWidth=1.8;fontFamily=Plus Jakarta Sans,Arial;fontColor=default;textShadow=0;" value="&lt;font&gt;&lt;span style=&quot;font-size: 15px;&quot;&gt;&lt;b&gt;Admin Monitoring&lt;/b&gt;&lt;/span&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="480" width="220" x="100" y="580" as="geometry" />
+        </mxCell>
+        <mxCell id="P_SISTEM" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeWidth=2.5;fontFamily=Plus Jakarta Sans,Arial;fontColor=#000000;" value="&lt;b style=&quot;font-size: 16px;&quot;&gt;Website &amp;amp; Mobile&lt;br&gt;Sistem Informasi&lt;br&gt;Monitoring Jaringan&lt;/b&gt;" vertex="1">
+          <mxGeometry height="360" width="360" x="870" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="E_PELANGGAN" parent="1" style="rounded=0;whiteSpace=wrap;html=1;strokeWidth=1.8;fontFamily=Plus Jakarta Sans,Arial;fontColor=default;" value="&lt;font&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;&lt;b&gt;User&lt;/b&gt;&lt;/span&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="480" width="220" x="1780" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="F_AK_1" edge="1" parent="1" source="E_ADMIN_KONTEN" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=default;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=default;labelBackgroundColor=light-dark(#ffffff, #dcdde0);fontFamily=Plus Jakarta Sans,Arial;exitX=1;exitY=0.12;textShadow=0;" target="P_SISTEM" value="&lt;span&gt;Data Login&lt;/span&gt;">
+          <mxGeometry relative="1" x="0.0385" y="-10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="1030" y="175.6" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_AK_2" edge="1" parent="1" source="E_ADMIN_KONTEN" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=default;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=default;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;exitX=1;exitY=0.24;entryX=0.337;entryY=0.029;entryDx=0;entryDy=0;entryPerimeter=0;" target="P_SISTEM" value="Data Logo Pelanggan&amp;nbsp;">
+          <mxGeometry relative="1" x="0.0652" y="-10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="991.3" y="221.2" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_AK_3" edge="1" parent="1" source="E_ADMIN_KONTEN" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=default;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;exitX=1;exitY=0.36;" target="P_SISTEM" value="Data Pengumuman">
+          <mxGeometry relative="1" x="0.1583" y="-10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="969" y="266.8" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_AK_4" edge="1" parent="1" source="E_ADMIN_KONTEN" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=default;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=none;fontFamily=Plus Jakarta Sans,Arial;exitX=1;exitY=0.48;entryX=0.214;entryY=0.095;entryDx=0;entryDy=0;entryPerimeter=0;" target="P_SISTEM" value="Link app mobile">
+          <mxGeometry relative="1" x="-0.0096" y="-10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="947" y="312.4" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_S_AK_1" edge="1" parent="1" source="P_SISTEM" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=default;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=default;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;exitX=0.146;exitY=0.15;exitDx=0;exitDy=0;exitPerimeter=0;" target="E_ADMIN_KONTEN" value="Status Login">
+          <mxGeometry relative="1" x="-0.0396" y="10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="922.6" y="412.7" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_S_AK_2" edge="1" parent="1" source="P_SISTEM" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=default;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=default;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;entryX=1;entryY=0.72;exitX=0.092;exitY=0.209;exitDx=0;exitDy=0;exitPerimeter=0;textShadow=0;" value="Informasi Logo Pelanggan&amp;nbsp;">
+          <mxGeometry relative="1" x="-0.1" y="10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points" />
+            <mxPoint x="924.6565358969006" y="438.4497697652996" as="sourcePoint" />
+            <mxPoint x="316.0000000000002" y="434.9999999999998" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_S_AK_3" edge="1" parent="1" source="P_SISTEM" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=default;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=default;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;exitX=0.044;entryX=1.002;exitY=0.296;entryY=0.883;exitDx=0;exitDy=0;exitPerimeter=0;entryDx=0;entryDy=0;entryPerimeter=0;textShadow=0;" target="E_ADMIN_KONTEN" value="Informasi Pengumuman">
+          <mxGeometry relative="1" x="-0.0643" y="10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="885.8" y="465.5" />
+              <mxPoint x="331.7" y="465.5" />
+            </Array>
+            <mxPoint x="882.36" y="459.0000000000001" as="sourcePoint" />
+            <mxPoint x="314.00000000000006" y="449.19999999999993" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_S_AK_4" edge="1" parent="1" source="P_SISTEM" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=default;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=default;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;exitX=0.022;entryX=1.005;exitY=0.357;entryY=0.941;exitDx=0;exitDy=0;exitPerimeter=0;entryDx=0;entryDy=0;entryPerimeter=0;textShadow=0;" target="E_ADMIN_KONTEN" value="Informasi Link app mobile">
+          <mxGeometry relative="1" x="-0.0963" y="10" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="875.3743499738403" y="495.34358749345995" as="sourcePoint" />
+            <mxPoint x="320.0000000000002" y="489.9999999999998" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_AN_1" edge="1" parent="1" source="E_ADMIN_NOC" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=default;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=default;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;textShadow=0;" target="P_SISTEM" value="Data Login">
+          <mxGeometry relative="1" x="0.0685" y="-10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="498.6" y="594.3" />
+              <mxPoint x="498.6" y="568.1" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_AN_2" edge="1" parent="1" source="E_ADMIN_NOC" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=default;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=default;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;exitX=1.002;exitY=0.104;entryX=0.02;entryY=0.65;exitDx=0;exitDy=0;exitPerimeter=0;" target="P_SISTEM" value="Data Akun Pelanggan">
+          <mxGeometry relative="1" x="0.0139" y="-10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="320.4" y="618.9" />
+              <mxPoint x="560" y="618.9" />
+              <mxPoint x="560" y="593.9" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_AN_3" edge="1" parent="1" source="E_ADMIN_NOC" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=default;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=default;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;entryX=0.049;entryY=0.713;entryDx=0;entryDy=0;entryPerimeter=0;" target="P_SISTEM" value="Data Perangkat/Device">
+          <mxGeometry relative="1" x="0.5117" y="-2" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="583.6" y="644.4" />
+              <mxPoint x="583.6" y="616.7" />
+            </Array>
+            <mxPoint x="430.98" y="669.21" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_AN_4" edge="1" parent="1" source="E_ADMIN_NOC" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=default;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=default;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;" target="P_SISTEM" value="Data Tiket">
+          <mxGeometry relative="1" x="-0.0779" y="-10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="639.1" y="655" />
+              <mxPoint x="639.1" y="631.1" />
+            </Array>
+            <mxPoint x="320.0000000000002" y="687.8400000000001" as="sourcePoint" />
+            <mxPoint x="914.9481581021571" y="655" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_S_AN_1" edge="1" parent="1" source="P_SISTEM" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=default;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=default;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;" target="E_ADMIN_NOC" value="Status Login">
+          <mxGeometry relative="1" x="-0.013" y="10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="965.1" y="840.2" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_S_AN_2" edge="1" parent="1" source="P_SISTEM" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=default;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=default;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;" target="E_ADMIN_NOC" value="Informasi Pelanggan">
+          <mxGeometry relative="1" x="0.0098" y="10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="1014.5" y="864.2" />
+            </Array>
+            <mxPoint x="984.9069428053017" y="757.9980380800818" as="sourcePoint" />
+            <mxPoint x="320" y="966.18" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_P_1" edge="1" parent="1" source="E_PELANGGAN" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=default;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;exitX=0;exitY=0.12;textShadow=0;" target="P_SISTEM" value="Data Login">
+          <mxGeometry relative="1" x="0.1" y="-10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="1374.94" y="377.6" />
+              <mxPoint x="1374.94" y="377.6" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_P_2" edge="1" parent="1" source="E_PELANGGAN" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=default;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=default;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;exitX=0;exitY=0.24;" target="P_SISTEM" value="Data Ticketing">
+          <mxGeometry relative="1" x="0.1" y="-10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="1376.33" y="435.2" />
+              <mxPoint x="1376.33" y="435.2" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_P_3" edge="1" parent="1" source="E_PELANGGAN" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=default;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=default;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;exitX=0;exitY=0.36;" target="P_SISTEM" value="Request Monitoring">
+          <mxGeometry relative="1" x="0.1" y="-10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="1371.47" y="492.8" />
+              <mxPoint x="1371.47" y="492.8" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_P_4" edge="1" parent="1" source="E_PELANGGAN" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=default;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=default;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;exitX=0;exitY=0.48;" target="P_SISTEM" value="Request Menu">
+          <mxGeometry relative="1" x="0.0988" y="-10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_S_P_1" edge="1" parent="1" source="P_SISTEM" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=default;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=default;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;exitX=0.97;exitY=0.65;" target="E_PELANGGAN" value="Status Login">
+          <mxGeometry relative="1" x="-0.0979" y="10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="1566.6" y="594.8" />
+              <mxPoint x="1566.6" y="618" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_S_P_2" edge="1" parent="1" source="P_SISTEM" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=default;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=default;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;" target="E_PELANGGAN" value="Informasi Tiket">
+          <mxGeometry relative="1" x="-0.0753" y="10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="1480" y="634" />
+              <mxPoint x="1480" y="652.4" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_S_P_3" edge="1" parent="1" source="P_SISTEM" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=default;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=default;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;entryX=0.002;entryY=0.784;entryDx=0;entryDy=0;entryPerimeter=0;" target="E_PELANGGAN" value="Informasi Jaringan">
+          <mxGeometry relative="1" x="-0.049" y="10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="1530" y="685.4" />
+              <mxPoint x="1530" y="696.3" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_S_P_4" edge="1" parent="1" source="P_SISTEM" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=default;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=default;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;exitX=0.65;exitY=0.96;entryX=0.002;entryY=0.879;entryDx=0;entryDy=0;entryPerimeter=0;" target="E_PELANGGAN" value="Informasi Beranda">
+          <mxGeometry relative="1" x="-0.0523" y="10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="1106" y="741.9" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="v4PDCCxjjoHV5FdFiR2J-2" edge="1" parent="1" source="E_ADMIN_NOC" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;defaultLabelBackgroundColor=page;labelPadding=0 4;strokeWidth=1.5;entryX=0;entryY=1;entryDx=0;entryDy=0;" target="P_SISTEM">
+          <mxGeometry relative="1" x="-0.0742" as="geometry">
+            <Array as="points">
+              <mxPoint x="922.7" y="714.3" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="v4PDCCxjjoHV5FdFiR2J-3" connectable="0" parent="v4PDCCxjjoHV5FdFiR2J-2" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];inheritText=1;defaultLabelBackgroundColor=page;labelPadding=0 4;" value="Data Teknisi" vertex="1">
+          <mxGeometry relative="1" x="0.0245" y="-3" as="geometry">
+            <mxPoint x="128" y="-3" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="v4PDCCxjjoHV5FdFiR2J-4" edge="1" parent="1" source="P_SISTEM" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;defaultLabelBackgroundColor=page;labelPadding=0 4;strokeWidth=1.5;" target="E_ADMIN_NOC">
+          <mxGeometry relative="1" x="-0.0515" as="geometry">
+            <Array as="points">
+              <mxPoint x="975.3" y="942.7" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="v4PDCCxjjoHV5FdFiR2J-5" connectable="0" parent="v4PDCCxjjoHV5FdFiR2J-4" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];inheritText=1;defaultLabelBackgroundColor=page;labelPadding=0 4;" value="Informasi Teknisi" vertex="1">
+          <mxGeometry relative="1" x="0.0914" y="3" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="v4PDCCxjjoHV5FdFiR2J-6" edge="1" parent="1" source="P_SISTEM" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;defaultLabelBackgroundColor=page;labelPadding=0 4;strokeWidth=1.5;" target="E_ADMIN_NOC">
+          <mxGeometry relative="1" x="-0.0314" as="geometry">
+            <Array as="points">
+              <mxPoint x="992.8" y="898.2" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="v4PDCCxjjoHV5FdFiR2J-7" connectable="0" parent="v4PDCCxjjoHV5FdFiR2J-6" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];inheritText=1;defaultLabelBackgroundColor=page;labelPadding=0 4;" value="Informasi Perangkat/Device" vertex="1">
+          <mxGeometry relative="1" x="-0.1243" y="-3" as="geometry">
+            <mxPoint x="-69" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="v4PDCCxjjoHV5FdFiR2J-8" edge="1" parent="1" source="P_SISTEM" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;defaultLabelBackgroundColor=page;labelPadding=0 4;strokeWidth=1.5;" target="E_ADMIN_NOC">
+          <mxGeometry relative="1" x="0.0643" as="geometry">
+            <Array as="points">
+              <mxPoint x="1045.1" y="967" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="v4PDCCxjjoHV5FdFiR2J-9" connectable="0" parent="v4PDCCxjjoHV5FdFiR2J-8" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];inheritText=1;defaultLabelBackgroundColor=page;labelPadding=0 4;" value="Informasi Akun Pelanggan" vertex="1">
+          <mxGeometry relative="1" x="0.4202" y="-2" as="geometry">
+            <mxPoint x="129" y="5" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="v4PDCCxjjoHV5FdFiR2J-12" edge="1" parent="1" source="P_SISTEM" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.991;entryY=0.721;entryDx=0;entryDy=0;entryPerimeter=0;defaultLabelBackgroundColor=page;labelPadding=0 4;strokeWidth=1.5;" target="E_ADMIN_NOC">
+          <mxGeometry relative="1" x="-0.0243" as="geometry">
+            <Array as="points">
+              <mxPoint x="1026.3" y="926.1" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="v4PDCCxjjoHV5FdFiR2J-13" connectable="0" parent="v4PDCCxjjoHV5FdFiR2J-12" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];inheritText=1;defaultLabelBackgroundColor=page;labelPadding=0 4;" value="Informasi Ticketing" vertex="1">
+          <mxGeometry relative="1" x="0.1854" as="geometry">
+            <mxPoint x="44" y="-5" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="v4PDCCxjjoHV5FdFiR2J-14" edge="1" parent="1" source="E_ADMIN_NOC" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.178;entryY=0.88;entryDx=0;entryDy=0;entryPerimeter=0;defaultLabelBackgroundColor=page;labelPadding=0 4;strokeWidth=1.5;" target="P_SISTEM">
+          <mxGeometry relative="1" x="-0.305" as="geometry">
+            <Array as="points">
+              <mxPoint x="934.1" y="739.2" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="v4PDCCxjjoHV5FdFiR2J-15" connectable="0" parent="v4PDCCxjjoHV5FdFiR2J-14" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];inheritText=1;defaultLabelBackgroundColor=page;labelPadding=0 4;" value="Data Pelanggan" vertex="1">
+          <mxGeometry relative="1" x="-0.1313" y="1" as="geometry">
+            <mxPoint x="169" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="v4PDCCxjjoHV5FdFiR2J-16" edge="1" parent="1" source="E_ADMIN_NOC" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;defaultLabelBackgroundColor=page;labelPadding=0 4;strokeWidth=1.5;" target="P_SISTEM">
+          <mxGeometry relative="1" x="-0.0001" as="geometry">
+            <Array as="points">
+              <mxPoint x="662.2" y="684.8" />
+              <mxPoint x="662.2" y="643.3" />
+            </Array>
+            <mxPoint x="844.85" y="666.9" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="v4PDCCxjjoHV5FdFiR2J-18" connectable="0" parent="v4PDCCxjjoHV5FdFiR2J-16" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];inheritText=1;defaultLabelBackgroundColor=page;labelPadding=0 4;" value="&lt;blockquote style=&quot;margin: 0 0 0 40px; border: none; padding: 0px;&quot;&gt;Request Data Monitoring&lt;/blockquote&gt;" vertex="1">
+          <mxGeometry relative="1" x="0.4806" y="-1" as="geometry">
+            <mxPoint x="8" y="6" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="v4PDCCxjjoHV5FdFiR2J-19" edge="1" parent="1" source="E_ADMIN_NOC" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.11;entryY=0.816;entryDx=0;entryDy=0;entryPerimeter=0;defaultLabelBackgroundColor=page;labelPadding=0 4;strokeWidth=1.5;" target="P_SISTEM">
+          <mxGeometry relative="1" x="0.0054" as="geometry">
+            <Array as="points">
+              <mxPoint x="692.8" y="702.7" />
+              <mxPoint x="692.8" y="673.3" />
+              <mxPoint x="909.6" y="673.3" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="v4PDCCxjjoHV5FdFiR2J-20" connectable="0" parent="v4PDCCxjjoHV5FdFiR2J-19" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];inheritText=1;defaultLabelBackgroundColor=page;labelPadding=0 4;" value="Request Laporan &amp;amp; Log Aktivitas" vertex="1">
+          <mxGeometry relative="1" x="0.4192" y="2" as="geometry">
+            <mxPoint x="47" y="12" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="v4PDCCxjjoHV5FdFiR2J-21" edge="1" parent="1" source="P_SISTEM" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;defaultLabelBackgroundColor=page;labelPadding=0 4;strokeWidth=1.5;" target="E_ADMIN_NOC" value="">
+          <mxGeometry relative="1" x="0.0193" as="geometry">
+            <Array as="points">
+              <mxPoint x="1067" y="996.4" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="v4PDCCxjjoHV5FdFiR2J-22" connectable="0" parent="v4PDCCxjjoHV5FdFiR2J-21" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];inheritText=1;defaultLabelBackgroundColor=page;labelPadding=0 4;" value="&lt;code dir=&quot;ltr&quot; style=&quot;&quot;&gt;&lt;font face=&quot;Helvetica&quot;&gt;Informasi Monitoring&lt;/font&gt;&lt;/code&gt;" vertex="1">
+          <mxGeometry relative="1" x="0.2776" y="2" as="geometry">
+            <mxPoint x="27" y="-2" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="v4PDCCxjjoHV5FdFiR2J-23" edge="1" parent="1" source="P_SISTEM" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.992;entryY=0.928;entryDx=0;entryDy=0;entryPerimeter=0;defaultLabelBackgroundColor=page;labelPadding=0 4;strokeWidth=1.5;" target="E_ADMIN_NOC">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1090" y="1025.4" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="v4PDCCxjjoHV5FdFiR2J-24" connectable="0" parent="v4PDCCxjjoHV5FdFiR2J-23" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];inheritText=1;defaultLabelBackgroundColor=page;labelPadding=0 4;" value="Laporan &amp;amp; Log Aktivitas" vertex="1">
+          <mxGeometry relative="1" x="0.3636" y="-1" as="geometry">
+            <mxPoint x="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

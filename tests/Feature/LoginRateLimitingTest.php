@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\RateLimiter;
 use Tests\TestCase;
@@ -52,7 +53,7 @@ class LoginRateLimitingTest extends TestCase
 
     public function test_user_can_login_using_username(): void
     {
-        $admin = \App\Models\User::factory()->create([
+        $admin = User::factory()->create([
             'username' => 'superadmin_test',
             'email' => 'superadmin_test@netfly.id',
             'password' => bcrypt('password123'),

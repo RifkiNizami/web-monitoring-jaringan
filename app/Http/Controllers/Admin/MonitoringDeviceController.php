@@ -64,6 +64,10 @@ class MonitoringDeviceController extends Controller
 
         $customerId = ! empty($validated['customer_id']) ? (int) $validated['customer_id'] : null;
         $customerRecord = $customerId ? Customer::find($customerId) : null;
+        if (! $customerRecord && ! empty($validated['customer'])) {
+            $customerRecord = Customer::whereRaw('LOWER(TRIM(name)) = ?', [strtolower(trim($validated['customer']))])->first();
+            $customerId = $customerRecord?->id;
+        }
         $customerName = $customerRecord ? $customerRecord->name : (! empty($validated['customer']) ? trim($validated['customer']) : 'Infrastruktur Backbone NetFly');
 
         $projectId = ! empty($validated['project_id']) ? (int) $validated['project_id'] : null;
@@ -81,6 +85,8 @@ class MonitoringDeviceController extends Controller
         $status = $validated['status'] ?? 'online';
         $cpu = 0.0;
         $ram = 0.0;
+        $rxMbps = '0.0 Mbps';
+        $txMbps = '0.0 Mbps';
         $uptime = $isNonMikrotik ? "HTTP/TCP Port {$port} Siap Pantau" : 'Siap Pantau';
         $latency = $status === 'offline' ? null : 0;
         $model = ! empty($validated['model']) ? trim($validated['model']) : ($validated['unit_type'].' Node');
@@ -129,6 +135,8 @@ class MonitoringDeviceController extends Controller
                     $status = 'online';
                     $cpu = $telemetry['resource']['cpu_load'];
                     $ram = $telemetry['resource']['ram_load'];
+                    $rxMbps = $telemetry['rx_mbps'] ?? '0.01 Mbps';
+                    $txMbps = $telemetry['tx_mbps'] ?? '0.01 Mbps';
                     $uptime = $telemetry['resource']['uptime'];
                     $latency = (int) $telemetry['latency_ms'];
                     if (empty($validated['model'])) {
@@ -160,8 +168,8 @@ class MonitoringDeviceController extends Controller
             'status' => $status,
             'status_label' => strtoupper($status),
             'uptime' => $uptime,
-            'rx_mbps' => '0.0 Mbps',
-            'tx_mbps' => '0.0 Mbps',
+            'rx_mbps' => $rxMbps,
+            'tx_mbps' => $txMbps,
             'cpu_load' => $cpu,
             'ram_load' => $ram,
             'temperature' => '-',
@@ -211,7 +219,7 @@ class MonitoringDeviceController extends Controller
      */
     public function edit(int $id): View
     {
-        $deviceModel = MonitoringDevice::with(['customer', 'project'])->find($id);
+        $deviceModel = MonitoringDevice::with(['customerRelation', 'projectRelation'])->find($id);
 
         if (! $deviceModel) {
             abort(404, 'Perangkat monitoring tidak ditemukan.');
@@ -272,6 +280,10 @@ class MonitoringDeviceController extends Controller
 
         $customerId = $request->filled('customer_id') ? (int) $request->input('customer_id') : null;
         $customerRecord = $customerId ? Customer::find($customerId) : null;
+        if (! $customerRecord && ! empty($validated['customer'])) {
+            $customerRecord = Customer::whereRaw('LOWER(TRIM(name)) = ?', [strtolower(trim($validated['customer']))])->first();
+            $customerId = $customerRecord?->id;
+        }
         $customerName = $customerRecord ? $customerRecord->name : (! empty($validated['customer']) ? trim($validated['customer']) : ($deviceModel->customer ?: 'Infrastruktur Backbone NetFly'));
 
         $projectId = $request->filled('project_id') ? (int) $request->input('project_id') : null;

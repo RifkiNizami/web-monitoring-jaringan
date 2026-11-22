@@ -63,9 +63,6 @@
                 <!-- WELCOME BANNER & ACTION BUTTON -->
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1.5">
-                            <span>ADMINISTRATOR</span>
-                        </div>
                         <h1 class="text-xl lg:text-2xl font-extrabold text-slate-900 tracking-tight">
                             Selamat Datang, Di dashboard Admin
                         </h1>

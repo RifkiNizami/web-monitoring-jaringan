@@ -93,11 +93,6 @@
                 <!-- PAGE HEADER -->
                 <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                     <div>
-                        <div class="text-[11px] font-semibold text-slate-400 mb-1 flex items-center gap-1.5">
-                            <span class="text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded border border-blue-200">NOC MONITORING</span>
-                            <span>›</span>
-                            <span>Live Telemetri & Target Node</span>
-                        </div>
                         <h1 class="text-xl lg:text-2xl font-black text-slate-900 tracking-tight">Monitoring Perangkat</h1>
                         <p class="text-xs text-slate-500 mt-1">
                             Kelola dan pantau telemetri CPU, RAM, bandwidth, dan latensi node secara mandiri tanpa bergantung ke inventaris.

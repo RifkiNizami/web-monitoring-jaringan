@@ -65,12 +65,6 @@
                 <!-- PAGE HEADER -->
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                        <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-bold uppercase tracking-wider mb-2">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                            </svg>
-                            <span>Kemitraan Korporat & B2B</span>
-                        </div>
                         <h1 class="text-xl lg:text-2xl font-bold text-slate-900 tracking-tight">Tambah Customer Perusahaan Baru</h1>
                         <p class="text-xs text-slate-500 mt-1">
                             Daftarkan mitra bisnis perusahaan, nama PIC penanggung jawab, status SLA kontrak, dan alamat kantor operasional.

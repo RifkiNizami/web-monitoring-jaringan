@@ -10,6 +10,8 @@ use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class TicketController extends Controller
@@ -21,16 +23,6 @@ class TicketController extends Controller
     {
         // 1. Ambil data teknisi lapangan dari database (Model Teknisi)
         $technicians = Teknisi::orderBy('nama', 'asc')->get();
-
-        if ($technicians->isEmpty()) {
-            $technicians = collect([
-                (object) ['nama' => 'Agus Prasetyo, S.T.', 'spesialisasi' => 'Fiber Optic & Splicing OTB'],
-                (object) ['nama' => 'Budi Santoso', 'spesialisasi' => 'Wireless Microwave & Tower Climber'],
-                (object) ['nama' => 'Dimas Nugroho', 'spesialisasi' => 'Troubleshooting Last Mile & ONT/CPE'],
-                (object) ['nama' => 'Fajar Maulana', 'spesialisasi' => 'Emergency Response & Core NOC Support'],
-                (object) ['nama' => 'Rahmat Hidayat', 'spesialisasi' => 'Routing & Switching Core (Cisco/Mikrotik)'],
-            ]);
-        }
 
         // 2. Daftar status penanganan standar NOC
         $statusOptions = [
@@ -57,6 +49,8 @@ class TicketController extends Controller
                 'node_code' => $ticket->node_code,
                 'subject' => $ticket->subject,
                 'description' => $ticket->description,
+                'photo' => $ticket->photo,
+                'photo_url' => $ticket->photo_url,
                 'assigned_technician' => $ticket->assigned_technician,
                 'is_tech_warning' => (bool) $ticket->is_tech_warning,
                 'status' => $ticket->status ?? '1. Open (Baru)',
@@ -86,17 +80,6 @@ class TicketController extends Controller
     public function create(): View
     {
         $technicians = Teknisi::orderBy('nama', 'asc')->get();
-
-        if ($technicians->isEmpty()) {
-            $technicians = collect([
-                (object) ['nama' => 'Agus Prasetyo, S.T.', 'spesialisasi' => 'Fiber Optic & Splicing OTB'],
-                (object) ['nama' => 'Budi Santoso', 'spesialisasi' => 'Wireless Microwave & Tower Climber'],
-                (object) ['nama' => 'Dimas Nugroho', 'spesialisasi' => 'Troubleshooting Last Mile & ONT/CPE'],
-                (object) ['nama' => 'Fajar Maulana', 'spesialisasi' => 'Emergency Response & Core NOC Support'],
-                (object) ['nama' => 'Rahmat Hidayat', 'spesialisasi' => 'Routing & Switching Core (Cisco/Mikrotik)'],
-            ]);
-        }
-
         $customers = Customer::orderBy('name', 'asc')->get();
 
         return view('admin.tickets.create', compact('technicians', 'customers'));
@@ -108,19 +91,7 @@ class TicketController extends Controller
     public function edit(string $id): View
     {
         $ticket = Ticket::where('ticket_number', $id)->orWhere('id', $id)->firstOrFail();
-
         $technicians = Teknisi::orderBy('nama', 'asc')->get();
-
-        if ($technicians->isEmpty()) {
-            $technicians = collect([
-                (object) ['nama' => 'Agus Prasetyo, S.T.', 'spesialisasi' => 'Fiber Optic & Splicing OTB'],
-                (object) ['nama' => 'Budi Santoso', 'spesialisasi' => 'Wireless Microwave & Tower Climber'],
-                (object) ['nama' => 'Dimas Nugroho', 'spesialisasi' => 'Troubleshooting Last Mile & ONT/CPE'],
-                (object) ['nama' => 'Fajar Maulana', 'spesialisasi' => 'Emergency Response & Core NOC Support'],
-                (object) ['nama' => 'Rahmat Hidayat', 'spesialisasi' => 'Routing & Switching Core (Cisco/Mikrotik)'],
-            ]);
-        }
-
         $statusOptions = [
             '1. Open (Baru)',
             '2. Assigned (Ditugaskan)',
@@ -159,7 +130,32 @@ class TicketController extends Controller
             'assigned_technician' => ['nullable', 'string', 'max:150'],
             'status' => ['nullable', 'string', 'max:100'],
             'status_note' => ['nullable', 'string', 'max:255'],
+            'photo' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:5120'],
+            'remove_photo' => ['nullable', 'boolean'],
         ]);
+
+        if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
+            $file = $request->file('photo');
+            $ext = strtolower($file->guessExtension() ?: $file->getClientOriginalExtension());
+            if (! in_array($ext, ['jpg', 'jpeg', 'png', 'webp'], true)) {
+                $ext = 'jpg';
+            }
+            $filename = 'ticket_'.time().'_'.Str::random(8).'.'.$ext;
+            $destination = public_path('uploads/tickets');
+            if (! File::exists($destination)) {
+                File::makeDirectory($destination, 0755, true);
+            }
+            if ($ticket->photo && File::exists(public_path($ticket->photo))) {
+                @File::delete(public_path($ticket->photo));
+            }
+            $file->move($destination, $filename);
+            $ticket->photo = 'uploads/tickets/'.$filename;
+        } elseif ($request->boolean('remove_photo')) {
+            if ($ticket->photo && File::exists(public_path($ticket->photo))) {
+                @File::delete(public_path($ticket->photo));
+            }
+            $ticket->photo = null;
+        }
 
         if (isset($validated['client_name']) && filled($validated['client_name'])) {
             $ticket->client_name = trim($validated['client_name']);
@@ -283,7 +279,24 @@ class TicketController extends Controller
             'subject' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'assigned_technician' => ['nullable', 'string', 'max:150'],
+            'photo' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:5120'],
         ]);
+
+        $photoPath = null;
+        if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
+            $file = $request->file('photo');
+            $ext = strtolower($file->guessExtension() ?: $file->getClientOriginalExtension());
+            if (! in_array($ext, ['jpg', 'jpeg', 'png', 'webp'], true)) {
+                $ext = 'jpg';
+            }
+            $filename = 'ticket_'.time().'_'.Str::random(8).'.'.$ext;
+            $destination = public_path('uploads/tickets');
+            if (! File::exists($destination)) {
+                File::makeDirectory($destination, 0755, true);
+            }
+            $file->move($destination, $filename);
+            $photoPath = 'uploads/tickets/'.$filename;
+        }
 
         $priorityLevel = match (strtolower($validated['priority'])) {
             'critical', 'p1' => 'critical',
@@ -317,6 +330,7 @@ class TicketController extends Controller
             'priority_level' => $priorityLevel,
             'subject' => $validated['subject'],
             'description' => $validated['description'],
+            'photo' => $photoPath,
             'assigned_technician' => $assignedTech,
             'is_tech_warning' => empty($assignedTech) && ($priorityLevel === 'high' || $priorityLevel === 'critical'),
             'status' => $status,
@@ -389,75 +403,6 @@ class TicketController extends Controller
      */
     protected function getDefaultTickets(): array
     {
-        return [
-            [
-                'id' => 'INC-2026-1024',
-                'priority' => 'P2 - HIGH',
-                'priority_level' => 'high',
-                'client_name' => 'Dinas Pendidikan Provinsi DKI Jakarta',
-                'project_name' => 'Smart City Backbone Sekolah Tahap II',
-                'node_code' => 'AP-OUTDOOR-DISDIK-01',
-                'subject' => 'Packet Loss Tinggi (>14%) Backbone Disdik Jakarta Pusat',
-                'description' => 'Akses koneksi Internet di lokasi hub pusat mengalami degradasi kualitas dan loss tinggi.',
-                'assigned_technician' => null,
-                'is_tech_warning' => false,
-                'status' => '3. In Progress (Sedang Dikerjakan)',
-                'status_type' => 'in_progress',
-                'status_note' => null,
-                'report_date' => '10 Okt 2026',
-                'report_time' => '04:06 WIB',
-            ],
-            [
-                'id' => 'INC-2026-1030',
-                'priority' => 'P1 - CRITICAL',
-                'priority_level' => 'critical',
-                'client_name' => 'PT. Shopee International Indonesia',
-                'project_name' => 'Fulfillment Center Warehouse Cikarang',
-                'node_code' => 'SW-AGG-BKS-02',
-                'subject' => 'Switch Agg-Bks_04 Terputus (Site Warehouse Bekasi)',
-                'description' => 'Unit switch padam total, tim teknisi lapangan sedang menuju lokasi untuk pengecekan fisik.',
-                'assigned_technician' => null,
-                'is_tech_warning' => false,
-                'status' => '2. Assigned (Ditugaskan)',
-                'status_type' => 'assigned',
-                'status_note' => null,
-                'report_date' => '10 Okt 2026',
-                'report_time' => '04:06 WIB',
-            ],
-            [
-                'id' => 'REQ-2026-0882',
-                'priority' => 'P3 - MEDIUM',
-                'priority_level' => 'medium',
-                'client_name' => 'PT. Shopee International Indonesia',
-                'project_name' => 'Dedicated Internet SCBD Hub',
-                'node_code' => null,
-                'subject' => 'Permintaan Bandwidth On-Demand (+500 Mbps) Flash Sale',
-                'description' => 'Permintaan alokasi bandwidth sementara selama periode kampanye belanja online akbar.',
-                'assigned_technician' => null,
-                'is_tech_warning' => true,
-                'status' => '1. Open (Baru)',
-                'status_type' => 'open',
-                'status_note' => null,
-                'report_date' => '10 Okt 2026',
-                'report_time' => '04:06 WIB',
-            ],
-            [
-                'id' => 'INC-2026-0955',
-                'priority' => 'P2 - HIGH',
-                'priority_level' => 'high',
-                'client_name' => 'PT. Bank Mandiri (Persero) Tbk',
-                'project_name' => 'MPLS Core Interconnect Plaza Mandiri',
-                'node_code' => 'RTR-CORE-MANDIRI-01',
-                'subject' => 'High Latency Spike (>120ms) Core Link Plaza Mandiri',
-                'description' => 'Terjadi fluktuasi latensi pada link utama. Rute telah berhasil distabilkan dengan backup link.',
-                'assigned_technician' => null,
-                'is_tech_warning' => false,
-                'status' => '4. Resolved (Terselesaikan)',
-                'status_type' => 'resolved',
-                'status_note' => 'Selesai: 10/10 02:00',
-                'report_date' => '10 Okt 2026',
-                'report_time' => '04:06 WIB',
-            ],
-        ];
+        return [];
     }
 }

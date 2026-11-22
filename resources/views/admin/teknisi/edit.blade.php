@@ -65,12 +65,6 @@
                 <!-- PAGE TITLE -->
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                        <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-bold uppercase tracking-wider mb-2">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                            <span>Perbarui Data Teknisi</span>
-                        </div>
                         <h1 class="text-xl lg:text-2xl font-bold text-slate-900 tracking-tight">
                             Edit Data Teknisi: <span class="text-blue-600">{{ $teknisi->nama }}</span>
                         </h1>

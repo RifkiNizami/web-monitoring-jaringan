@@ -87,59 +87,10 @@ class DeviceController extends Controller
     }
 
     /**
-     * Ambil daftar barang inventaris dari database (dengan inisialisasi awal bila kosong).
+     * Ambil daftar barang inventaris dari database.
      */
     public static function getInventoryDevicesList(): array
     {
-        if (Device::count() === 0) {
-            $defaults = [
-                [
-                    'hostname' => 'RTR-CORE-01',
-                    'type' => 'Router',
-                    'brand_model' => 'MikroTik CCR2004-16G-2S+',
-                    'serial_number' => 'SN-9A82B1002',
-                    'quantity' => 4,
-                    'status' => 'Tersedia',
-                    'status_state' => 'available',
-                    'photo' => null,
-                ],
-                [
-                    'hostname' => 'SW-AGG-02',
-                    'type' => 'Switch',
-                    'brand_model' => 'MikroTik CRS328-24P-4S+RM',
-                    'serial_number' => 'SN-7C11D4098',
-                    'quantity' => 8,
-                    'status' => 'Terpakai',
-                    'status_state' => 'in_use',
-                    'photo' => null,
-                ],
-                [
-                    'hostname' => 'AP-OUTDOOR-01',
-                    'type' => 'Access Point',
-                    'brand_model' => 'Ubiquiti UniFi U6-Mesh Pro',
-                    'serial_number' => 'SN-4F55E9210',
-                    'quantity' => 12,
-                    'status' => 'Tersedia',
-                    'status_state' => 'available',
-                    'photo' => null,
-                ],
-                [
-                    'hostname' => 'FW-EDGE-01',
-                    'type' => 'Firewall',
-                    'brand_model' => 'FortiGate 60F Next-Gen',
-                    'serial_number' => 'SN-1B33C8841',
-                    'quantity' => 0,
-                    'status' => 'Habis',
-                    'status_state' => 'out_of_stock',
-                    'photo' => null,
-                ],
-            ];
-
-            foreach ($defaults as $item) {
-                Device::create($item);
-            }
-        }
-
         /** @var Collection<int, Device> $deviceModels */
         $deviceModels = Device::orderBy('id', 'asc')->get();
         $devices = [];

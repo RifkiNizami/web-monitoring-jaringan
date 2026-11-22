@@ -65,7 +65,14 @@ class DeviceInventoryCrudTest extends TestCase
     public function test_edit_inventory_device_page_renders(): void
     {
         $this->actingAs($this->adminUser)->get('/devices');
-        $targetDevice = Device::first();
+        $targetDevice = Device::first() ?? Device::create([
+            'hostname' => 'DEV-TEST-01',
+            'type' => 'Router',
+            'brand_model' => 'MikroTik CCR2004',
+            'serial_number' => 'SN-TEST-01',
+            'quantity' => 2,
+            'status' => 'Tersedia',
+        ]);
 
         $response = $this->actingAs($this->adminUser)->get("/devices/{$targetDevice->id}/edit");
 
@@ -78,7 +85,14 @@ class DeviceInventoryCrudTest extends TestCase
     public function test_admin_can_update_inventory_device(): void
     {
         $this->actingAs($this->adminUser)->get('/devices');
-        $targetDevice = Device::first();
+        $targetDevice = Device::first() ?? Device::create([
+            'hostname' => 'DEV-TEST-02',
+            'type' => 'Router',
+            'brand_model' => 'MikroTik CCR2004',
+            'serial_number' => 'SN-TEST-02',
+            'quantity' => 2,
+            'status' => 'Tersedia',
+        ]);
 
         $response = $this->actingAs($this->adminUser)->put("/devices/{$targetDevice->id}", [
             'hostname' => 'RTR-CORE-01-REV',

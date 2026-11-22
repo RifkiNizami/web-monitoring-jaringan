@@ -233,6 +233,27 @@ class ReportGeneratorTest extends TestCase
     }
 
     /**
+     * Uji ekspor PDF dengan parameter custom nama dan jabatan penandatangan/penerbit.
+     */
+    public function test_export_pdf_with_custom_issuer(): void
+    {
+        $response = $this->actingAs($this->adminUser)->get(route('reports.exportPdf', [
+            'customer' => 'mandiri',
+            'month' => 10,
+            'year' => 2026,
+            'preview' => 1,
+            'issuer_name' => 'Ir. Hendra Wijaya, S.T., M.T.',
+            'issuer_role' => 'VP of Network Infrastructure',
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertHeader('content-type', 'application/pdf');
+        $content = $response->getContent();
+        $this->assertNotEmpty($content);
+        $this->assertStringStartsWith('%PDF', $content);
+    }
+
+    /**
      * Uji ekspor Excel perangkat pada Executive Report Generator.
      */
     public function test_export_excel_in_report_generator_downloads_valid_xlsx(): void

@@ -81,7 +81,7 @@
                 @endif
 
                 <!-- FORM CARD -->
-                <form action="{{ route('tickets.store') }}" method="POST" class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
+                <form action="{{ route('tickets.store') }}" method="POST" enctype="multipart/form-data" class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
                     @csrf
 
                     <div class="p-6 lg:p-8 space-y-5">
@@ -219,6 +219,21 @@
                                 placeholder="Deskripsikan indikasi kendala, kronologi waktu awal terjadinya, hasil traceroute/ping, atau permintaan khusus dari pelanggan..." 
                                 class="w-full px-3.5 py-2.5 text-xs bg-slate-50/60 focus:bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition"
                             >{{ old('description') }}</textarea>
+                        </div>
+
+                        <!-- Row 6: Bukti Foto / Screenshot Kendala (Opsional) -->
+                        <div>
+                            <label for="inputPhoto" class="block text-xs font-semibold text-slate-700 mb-1.5">
+                                Bukti Foto / Screenshot Kendala <span class="text-slate-400 font-normal">(Opsional)</span>
+                            </label>
+                            <input 
+                                id="inputPhoto"
+                                type="file" 
+                                name="photo" 
+                                accept="image/jpeg,image/png,image/webp"
+                                class="w-full text-xs text-slate-500 file:mr-3.5 file:py-2 file:px-3.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer border border-slate-200 rounded-lg p-1 bg-slate-50/40"
+                            >
+                            <p class="text-[11px] text-slate-400 mt-1">Mendukung format JPG, PNG, atau WebP (maksimal 5MB). Lampiran opsional untuk membantu analisis tim teknisi.</p>
                         </div>
 
                     </div>

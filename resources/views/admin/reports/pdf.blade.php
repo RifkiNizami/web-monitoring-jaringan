@@ -37,76 +37,99 @@
         .text-amber { color: #b45309; }
         .text-red { color: #b91c1c; }
 
-        /* KOP SURAT (Letterhead) */
+        /* KOP SURAT RESMI (LETTERHEAD STANDAR BAKU INDONESIA) */
         .letterhead-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 12px;
+            margin-bottom: 2px;
         }
         .letterhead-table td {
             vertical-align: middle;
         }
+        .letterhead-logo-cell {
+            width: 18%;
+            text-align: center;
+        }
+        .letterhead-text-cell {
+            width: 64%;
+            text-align: center;
+            padding: 0 4px;
+        }
+        .letterhead-spacer-cell {
+            width: 18%;
+        }
         .company-name {
-            font-size: 13pt;
-            font-weight: 800;
-            color: #0f172a;
-            letter-spacing: 0.5px;
+            font-size: 12.5pt;
+            font-weight: 900;
+            color: #000000;
+            letter-spacing: 0.3px;
             margin: 0;
-            line-height: 1.2;
+            line-height: 1.15;
+            text-transform: uppercase;
         }
         .company-desc {
-            font-size: 8pt;
-            font-weight: 600;
-            color: #0066cc;
+            font-size: 7.2pt;
+            font-weight: bold;
+            color: #1e293b;
             margin: 2px 0 3px 0;
             letter-spacing: 0.3px;
+            text-transform: uppercase;
         }
         .company-address {
-            font-size: 7pt;
-            color: #475569;
-            line-height: 1.3;
+            font-size: 6.2pt;
+            color: #334155;
+            line-height: 1.35;
             margin: 0;
         }
-        .header-divider-thick {
-            height: 2px;
-            background-color: #0f172a;
-            margin-top: 8px;
+        /* Garis ganda pembatas kop surat resmi Indonesia */
+        .kop-divider {
+            margin-top: 6px;
+            margin-bottom: 12px;
+        }
+        .kop-line-thick {
+            height: 2.2px;
+            background-color: #000000;
             margin-bottom: 1.5px;
         }
-        .header-divider-thin {
-            height: 0.5px;
-            background-color: #94a3b8;
-            margin-bottom: 16px;
+        .kop-line-thin {
+            height: 0.7px;
+            background-color: #000000;
         }
 
-        /* DOCUMENT TITLE & BADGE */
-        .report-header-box {
-            background-color: #f8fafc;
-            border: 1px solid #cbd5e1;
-            padding: 10px 14px;
-            border-radius: 4px;
-            margin-bottom: 14px;
+        /* DOCUMENT TITLE & METADATA TABLE (FORMAL REPORT STYLE) */
+        .report-title-container {
+            text-align: center;
+            margin-bottom: 10px;
         }
         .report-title {
             font-size: 11pt;
             font-weight: 800;
             color: #0f172a;
-            margin: 0 0 4px 0;
+            margin: 0;
             text-transform: uppercase;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.5px;
+        }
+        .report-subtitle {
+            font-size: 7.5pt;
+            color: #475569;
+            margin-top: 2px;
         }
         .report-meta-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 7.5pt;
+            margin-bottom: 12px;
+            border: 1px solid #cbd5e1;
         }
         .report-meta-table td {
-            padding: 2px 4px;
-            vertical-align: top;
+            padding: 3.5px 6px;
+            vertical-align: middle;
+            border: 1px solid #e2e8f0;
         }
         .meta-label {
             width: 22%;
-            color: #64748b;
+            background-color: #f8fafc;
+            color: #475569;
             font-weight: 600;
         }
         .meta-val {
@@ -292,7 +315,7 @@
             padding: 3px 6px;
             text-align: center;
             border-radius: 3px;
-            margin-top: -30px;
+            margin-top: 0;
             text-transform: uppercase;
         }
 
@@ -312,12 +335,13 @@
 </head>
 <body>
 
-    <!-- KOP SURAT RESMI (LETTERHEAD) -->
+    <!-- KOP SURAT RESMI (LETTERHEAD STANDAR BAKU INDONESIA) -->
     <table class="letterhead-table">
         <tr>
-            <td style="width: 20%; text-align: left;">
+            <td class="letterhead-logo-cell">
                 @php
-                    $logoPath = public_path('assets/images/netfly-logo.png');
+                    $hdLogo = public_path('assets/images/netfly-logo-hd.png');
+                    $logoPath = file_exists($hdLogo) ? $hdLogo : public_path('assets/images/netfly-logo.png');
                     $logoBase64 = '';
                     if (file_exists($logoPath)) {
                         $logoData = file_get_contents($logoPath);
@@ -325,59 +349,60 @@
                     }
                 @endphp
                 @if($logoBase64)
-                    <img src="{{ $logoBase64 }}" alt="NetFly" style="height: 38px; width: auto;">
+                    <img src="{{ $logoBase64 }}" alt="NetFly" style="width: 118px; height: auto;">
                 @else
                     <span style="font-size: 16pt; font-weight: 900; color: #0066cc;">NET<span style="color: #62b300;">FLY</span></span>
                 @endif
             </td>
-            <td style="width: 80%; text-align: right;">
+            <td class="letterhead-text-cell">
                 <h1 class="company-name">PT. NETMEDIA FIBEROPTIK LANCARMULYA</h1>
-                <div class="company-desc">NETWORK OPERATION CENTER & MANAGED ENTERPRISE INFRASTRUCTURE</div>
+                <div class="company-desc">NETWORK OPERATION CENTER & MANAGED SERVICE PROVIDER</div>
                 <p class="company-address">
-                    Cyber Building 2 Lt. 8, Jl. H. R. Rasuna Said Blok X-5 No. 13, Kuningan Timur, Jakarta Selatan 12950<br>
-                    Izin Jasa Akses Internet (ISP) Kominfo No. 420/DIRJEN/2021 • Hotline 24/7 NOC: (021) 5290-7888 • noc@netfly.net.id
+                    Jl. Taman Aloha E1 - 45, Sidoarjo, Jawa Timur (Kawasan Surabaya Hub) 61256<br>
+                    Izin Penyelenggara ISP Kominfo RI No. 420/DIRJEN/2021 • Telp: (031) 33557377 • Hotline NOC: 0813-5843-9094<br>
+                    Email: noc@netfly.net.id • Website: www.netfly.co.id
                 </p>
             </td>
+            <td class="letterhead-spacer-cell"></td>
         </tr>
     </table>
 
-    <div class="header-divider-thick"></div>
-    <div class="header-divider-thin"></div>
-
-    <!-- DOCUMENT TITLE & AUDIT METADATA BOX -->
-    <div class="report-header-box">
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 6px;">
-            <tr>
-                <td>
-                    <div class="report-title">LAPORAN RESMI EVALUASI SERVICE LEVEL AGREEMENT (SLA) & AUDIT TELEMETRI</div>
-                </td>
-                <td style="text-align: right;">
-                    <span class="badge-sla">STATUS: {{ strtoupper($slaStatusLabel) }}</span>
-                </td>
-            </tr>
-        </table>
-
-        <table class="report-meta-table">
-            <tr>
-                <td class="meta-label">Nomor Registrasi Laporan</td>
-                <td class="meta-val font-mono">{{ $reportDocumentNumber }}</td>
-                <td class="meta-label">Bulan & Periode Audit</td>
-                <td class="meta-val">{{ $formattedPeriod }}</td>
-            </tr>
-            <tr>
-                <td class="meta-label">Mitra / Entitas Pelanggan</td>
-                <td class="meta-val text-blue">{{ $evaluatedPartner }}</td>
-                <td class="meta-label">Waktu Cetak Generator</td>
-                <td class="meta-val font-mono">{{ $generatedAt }}</td>
-            </tr>
-            <tr>
-                <td class="meta-label">Target Komitmen Kontrak</td>
-                <td class="meta-val">Min. Ketersediaan {{ $targetSlaMin }}</td>
-                <td class="meta-label">Klasifikasi Dokumen</td>
-                <td class="meta-val text-dark">Confidential / Legal SLA Evidence</td>
-            </tr>
-        </table>
+    <!-- GARIS PEMBATAS KOP GANDA (STANDAR DOKUMEN RESMI) -->
+    <div class="kop-divider">
+        <div class="kop-line-thick"></div>
+        <div class="kop-line-thin"></div>
     </div>
+
+    <!-- JUDUL DOKUMEN & METADATA AUDIT FORMAL -->
+    <div class="report-title-container">
+        <h2 class="report-title">LAPORAN EVALUASI SERVICE LEVEL AGREEMENT (SLA) & AUDIT JARINGAN</h2>
+        <div class="report-subtitle">
+            Nomor Registrasi: <span class="font-mono font-bold text-dark">{{ $reportDocumentNumber }}</span>
+        </div>
+    </div>
+
+    <table class="report-meta-table">
+        <tr>
+            <td class="meta-label">Bulan & Periode Audit</td>
+            <td class="meta-val">{{ $formattedPeriod }}</td>
+            <td class="meta-label">Status SLA Kontrak</td>
+            <td class="meta-val">
+                <span class="badge-sla" style="float: none; display: inline-block;">{{ strtoupper($slaStatusLabel) }}</span>
+            </td>
+        </tr>
+        <tr>
+            <td class="meta-label">Mitra / Entitas Pelanggan</td>
+            <td class="meta-val text-blue">{{ $evaluatedPartner }}</td>
+            <td class="meta-label">Target Komitmen SLA</td>
+            <td class="meta-val">Min. Ketersediaan {{ $targetSlaMin }}</td>
+        </tr>
+        <tr>
+            <td class="meta-label">Waktu Cetak Dokumen</td>
+            <td class="meta-val font-mono">{{ $generatedAt }}</td>
+            <td class="meta-label">Klasifikasi Dokumen</td>
+            <td class="meta-val text-dark">Confidential / Legal SLA Evidence</td>
+        </tr>
+    </table>
 
     <!-- 4 EXECUTIVE SUMMARY KPI BOXES -->
     <table class="kpi-table">
@@ -385,9 +410,15 @@
             <!-- Box 1 -->
             <td class="kpi-cell">
                 <div class="kpi-title">Ketersediaan SLA</div>
-                <div class="kpi-value-lg text-emerald">{{ number_format($actualSla, 1) }}%</div>
+                @php
+                    $minThresholdNum = (float) str_replace('%', '', $targetSlaMin);
+                    $isSlaFulfilled = ($actualSla >= $minThresholdNum && $totalDevices > 0);
+                @endphp
+                <div class="kpi-value-lg {{ $isSlaFulfilled ? 'text-emerald' : ($actualSla > 0 ? 'text-amber' : 'text-muted') }}">{{ number_format($actualSla, 1) }}%</div>
                 <div class="kpi-sub">Target Kontrak: Min {{ $targetSlaMin }}</div>
-                <div class="kpi-sub" style="color: #047857; margin-top: 2px;">✔ {{ $slaCommitmentText }}</div>
+                <div class="kpi-sub" style="color: {{ $isSlaFulfilled ? '#047857' : '#b45309' }}; margin-top: 2px;">
+                    {{ $isSlaFulfilled ? '[OK] ' : '[!] ' }}{{ $slaCommitmentText }}
+                </div>
             </td>
             <!-- Box 2 -->
             <td class="kpi-cell">
@@ -513,15 +544,7 @@
         </tbody>
     </table>
 
-    <!-- SECTION 3: ANALISIS OPERASIONAL & PERNYATAAN AUDIT -->
-    <div class="notes-box">
-        <strong>CATATAN OPERASIONAL & REKOMENDASI AUDIT NOC:</strong><br>
-        1. Ketersediaan uptime koneksi transmisi selama periode {{ $formattedPeriod }} mencapai <strong>{{ number_format($actualSla, 1) }}%</strong>, telah memenuhi standar minimum SLA kontrak ({{ $targetSlaMin }}).<br>
-        2. Seluruh anomali latensi dan insiden penanganan teknis pada antrean helpdesk telah diverifikasi dan diawasi melalui sistem telemetri otomatis 24/7.<br>
-        3. Dokumen ini sah dan diterbitkan secara digital oleh PT Netmedia Fiberoptik Lancarmulya sebagai bukti pertanggungjawaban operasional bulanan resmi.
-    </div>
-
-    <!-- SECTION 4: TANDA TANGAN & PENGESAHAN DOKUMEN -->
+    <!-- SECTION 3: TANDA TANGAN & PENGESAHAN DOKUMEN -->
     <table class="signature-table">
         <tr>
             <!-- Pihak 1: NetFly NOC -->
@@ -532,8 +555,8 @@
                     </div>
                     <div class="sign-title">Diterbitkan & Diverifikasi Oleh:</div>
                     <div style="height: 35px;"></div>
-                    <div class="sign-name">DIMAS PRASETYO, M.Kom.</div>
-                    <div class="sign-role">Network Operations Lead • NetFly NOC Division</div>
+                    <div class="sign-name">{{ $issuerName }}</div>
+                    <div class="sign-role">{{ $issuerRole }}</div>
                 </div>
             </td>
             <!-- Pihak 2: Mitra Customer -->

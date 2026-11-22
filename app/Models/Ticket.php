@@ -22,6 +22,7 @@ class Ticket extends Model
         'priority_level',
         'subject',
         'description',
+        'photo',
         'assigned_technician',
         'is_tech_warning',
         'status',
@@ -30,6 +31,26 @@ class Ticket extends Model
         'reported_at',
         'resolved_at',
     ];
+
+    protected $appends = [
+        'photo_url',
+    ];
+
+    /**
+     * URL lengkap foto bukti gangguan (jika ada).
+     */
+    public function getPhotoUrlAttribute(): ?string
+    {
+        if (! $this->photo) {
+            return null;
+        }
+
+        if (str_starts_with($this->photo, 'http://') || str_starts_with($this->photo, 'https://')) {
+            return $this->photo;
+        }
+
+        return asset(ltrim($this->photo, '/'));
+    }
 
     protected function casts(): array
     {

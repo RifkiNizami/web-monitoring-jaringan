@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
@@ -83,7 +84,7 @@ class MonitoringDevice extends Model
     /**
      * Relasi dengan Customer (Pelanggan Pemilik Node / Sirkuit)
      */
-    public function customer(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class, 'customer_id');
     }
@@ -91,7 +92,7 @@ class MonitoringDevice extends Model
     /**
      * Alias relasi customer
      */
-    public function customerRelation(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function customerRelation(): BelongsTo
     {
         return $this->belongsTo(Customer::class, 'customer_id');
     }
@@ -99,7 +100,7 @@ class MonitoringDevice extends Model
     /**
      * Relasi dengan Proyek Jaringan
      */
-    public function project(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class, 'project_id');
     }
@@ -107,7 +108,7 @@ class MonitoringDevice extends Model
     /**
      * Alias relasi project
      */
-    public function projectRelation(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function projectRelation(): BelongsTo
     {
         return $this->belongsTo(Project::class, 'project_id');
     }

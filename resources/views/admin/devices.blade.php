@@ -93,11 +93,6 @@
                 <!-- HEADER SECTION: CATEGORY, TITLE, & ACTION BUTTONS -->
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <div class="text-[11px] font-semibold text-slate-400 mb-1 flex items-center gap-1.5">
-                            <span class="text-slate-500 font-medium">NetFly Asset</span>
-                            <span>›</span>
-                            <span>Manajemen Inventaris Barang</span>
-                        </div>
                         <h1 class="text-xl lg:text-2xl font-black text-slate-900 tracking-tight">
                             Inventaris Perangkat & Barang
                         </h1>

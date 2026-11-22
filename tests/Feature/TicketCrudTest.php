@@ -179,4 +179,28 @@ class TicketCrudTest extends TestCase
         $response->assertSee(route('tickets.create'), false);
         $response->assertDontSee('id="createTicketModal"', false);
     }
+
+    public function test_tickets_index_page_displays_photo_evidence_column(): void
+    {
+        $ticketWithPhoto = Ticket::create([
+            'ticket_number' => 'INC-TEST-PHOTO',
+            'client_name' => 'PT Mitra Foto Test',
+            'project_name' => 'Link Test',
+            'priority' => 'P2 - HIGH',
+            'priority_level' => 'high',
+            'subject' => 'Tes Lampiran Foto',
+            'description' => 'Deskripsi tes dengan foto.',
+            'photo' => 'uploads/tickets/dummy_test.jpg',
+            'status' => '1. Open (Baru)',
+            'status_type' => 'open',
+            'reported_at' => now(),
+        ]);
+
+        $response = $this->actingAs($this->adminUser)->get(route('tickets.index'));
+
+        $response->assertStatus(200);
+        $response->assertSee('BUKTI FOTO');
+        $response->assertSee('openTicketPhotoModal', false);
+        $response->assertSee('ticketPhotoModal', false);
+    }
 }

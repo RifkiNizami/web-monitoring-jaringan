@@ -44,7 +44,7 @@ class ReportController extends Controller
                 continue;
             }
             $code = $cust->code ?? $cust->customer_code;
-            $label = $custName . ($code ? " ({$code})" : '');
+            $label = $custName.($code ? " ({$code})" : '');
             $options[(string) $cust->id] = $label;
         }
 
@@ -113,21 +113,18 @@ class ReportController extends Controller
         $alertsQuery = MonitoringAlert::orderBy('id', 'desc');
         $custAlerts = $targetCustId
             ? (clone $alertsQuery)->where('customer_id', $targetCustId)->limit(15)->get()
-            : collect();
-        if ($custAlerts->isEmpty()) {
-            $custAlerts = $alertsQuery->limit(15)->get();
-        }
+            : $alertsQuery->limit(15)->get();
 
         $alertsList = $custAlerts->map(function (MonitoringAlert $a) {
             return [
                 'id' => (string) $a->id,
-                'host' => $a->host ?: 'NODE-NETFLY',
-                'customer_name' => $a->customer_name ?: 'Jaringan NetFly',
+                'host' => $a->host ?: '-',
+                'customer_name' => $a->customer_name ?: '-',
                 'severity' => $a->severity ?: 'warning',
                 'type' => $a->type ?: 'Notifikasi Monitoring',
                 'message' => $a->message ?: '-',
                 'is_resolved' => (bool) $a->is_resolved,
-                'created_at' => $a->created_at ? $a->created_at->format('d M Y, H:i').' WIB' : 'Baru saja',
+                'created_at' => $a->created_at ? $a->created_at->format('d M Y, H:i').' WIB' : '-',
             ];
         })->values()->all();
 
@@ -139,10 +136,10 @@ class ReportController extends Controller
         $projectsList = $custProjects->map(function (Project $p) {
             return [
                 'id' => (string) $p->id,
-                'name' => $p->name ?: 'Proyek Jaringan',
-                'branch_location' => $p->branch_location ?: 'Site Pelanggan',
-                'service_type' => $p->service_type ?: 'Fiber Optic',
-                'status' => $p->status ?: 'Aktif',
+                'name' => $p->name ?: '-',
+                'branch_location' => $p->branch_location ?: '-',
+                'service_type' => $p->service_type ?: '-',
+                'status' => $p->status ?: '-',
             ];
         })->values()->all();
 
@@ -261,6 +258,7 @@ class ReportController extends Controller
                 if (! empty($cNameClean) && ($cNameClean === $cleanQuery || str_contains($cNameClean, $cleanQuery) || str_contains($cleanQuery, $cNameClean))) {
                     return true;
                 }
+
                 return false;
             });
         }
@@ -304,13 +302,14 @@ class ReportController extends Controller
                 $resolvedCust = $allDbCustomers->first(function ($c) use ($hostLower, $snmpLower, $rackLower) {
                     $cName = strtolower($c->name ?? '');
                     $cCode = strtolower($c->code ?? $c->customer_code ?? '');
+
                     return (! empty($cName) && (str_contains($hostLower, $cName) || str_contains($snmpLower, $cName) || str_contains($rackLower, $cName)))
                         || (! empty($cCode) && (str_contains($hostLower, $cCode) || str_contains($snmpLower, $cCode)));
                 });
             }
 
             $cId = $resolvedCust?->id ?? $d->customer_id;
-            $custName = $resolvedCust?->name ?? 'Infrastruktur Backbone NetFly';
+            $custName = $resolvedCust?->name ?? ($cId ? '-' : '-');
 
             $rawStatus = strtolower($d->status ?? '');
             $statusState = match ($rawStatus) {
@@ -324,34 +323,35 @@ class ReportController extends Controller
                 default => 'Offline',
             };
 
+            $lossVal = (float) ($d->packet_loss ?? 0.0);
             $uptimeVal = match ($statusState) {
-                'online' => 99.92,
-                'warning' => 98.15,
-                default => 97.45,
+                'online' => round(max(0.0, 100.0 - $lossVal), 2),
+                'warning' => round(max(0.0, 90.0 - $lossVal), 2),
+                default => 0.0,
             };
 
             $allDevices[] = [
                 'id' => $d->id,
                 'hostname' => $d->hostname,
                 'type' => $d->type ?: 'Router',
-                'brand_model' => $d->brand_model ?: ($d->type ?: 'Hardware Node'),
+                'brand_model' => $d->brand_model ?: ($d->type ?: '-'),
                 'serial_number' => $d->serial_number ?: '-',
-                'ip_address' => $d->ip_address ?: '10.200.1.1',
+                'ip_address' => $d->ip_address ?: '-',
                 'status' => $statusLabel,
                 'status_state' => $statusState,
                 'customer_id' => $cId,
                 'customer_key' => $cId ? (string) $cId : 'core',
                 'customer_name' => $custName,
-                'location' => $d->rack_location ?: 'Data Center POP NetFly',
-                'rack_position' => $d->rack_location ?: 'Slot Standard U',
+                'location' => $d->rack_location ?: '-',
+                'rack_position' => $d->rack_location ?: '-',
                 'uptime_percent' => $uptimeVal,
-                'uptime_text' => $d->uptime ?: '30 hari 12 jam',
-                'rtt_ms' => (float) ($d->last_ping_ms ?: 8.0),
+                'uptime_text' => $d->uptime ?: ($statusState === 'online' ? 'Online' : 'Offline'),
+                'rtt_ms' => $d->last_ping_ms !== null ? (float) $d->last_ping_ms : null,
                 'packet_loss' => (string) ($d->packet_loss ?? '0.00').'%',
-                'rx_rate' => $d->rx_rate ?: '120.5 Mbps',
-                'tx_rate' => $d->tx_rate ?: '84.2 Mbps',
-                'cpu_load' => (float) ($d->cpu_load ?? 12.0),
-                'ram_load' => (float) ($d->ram_load ?? 34.0),
+                'rx_rate' => $d->rx_rate ?: '0.0 Mbps',
+                'tx_rate' => $d->tx_rate ?: '0.0 Mbps',
+                'cpu_load' => (float) ($d->cpu_load ?? 0.0),
+                'ram_load' => (float) ($d->ram_load ?? 0.0),
             ];
         }
 
@@ -371,28 +371,36 @@ class ReportController extends Controller
                     $mCustResolved = $allDbCustomers->first(function ($c) use ($mCustLower, $mHostLower) {
                         $cName = strtolower($c->name ?? '');
                         $cCode = strtolower($c->code ?? $c->customer_code ?? '');
+
                         return (! empty($cName) && (str_contains($mCustLower, $cName) || str_contains($mHostLower, $cName)))
                             || (! empty($cCode) && str_contains($mHostLower, $cCode));
                     });
                 }
 
+                $lossValM = (float) ($m->packet_loss ?? 0.0);
+                $uptimeValM = match ($state) {
+                    'online' => round(max(0.0, 100.0 - $lossValM), 2),
+                    'warning' => round(max(0.0, 90.0 - $lossValM), 2),
+                    default => 0.0,
+                };
+
                 $allDevices[] = [
                     'id' => $m->id,
                     'hostname' => $m->hostname,
-                    'type' => $m->unit_type ?: 'Generic Router',
-                    'brand_model' => $m->model ?: ($m->unit_type ?: 'Router Node'),
+                    'type' => $m->unit_type ?: 'Router',
+                    'brand_model' => $m->model ?: ($m->unit_type ? $m->unit_type.' Node' : '-'),
                     'serial_number' => '-',
-                    'ip_address' => $m->ip_address ?: '192.168.1.1',
+                    'ip_address' => $m->ip_address ?: '-',
                     'status' => ucfirst($state),
                     'status_state' => $state,
                     'customer_id' => $mCustResolved?->id,
                     'customer_key' => $mCustResolved ? (string) $mCustResolved->id : 'monitoring',
-                    'customer_name' => $mCustResolved?->name ?? ($m->customer ?: 'Node Monitoring NetFly'),
-                    'location' => $m->rack_location ?: 'Lokasi Site',
-                    'rack_position' => $m->rack_location ?: 'Rack Node',
-                    'uptime_percent' => 99.80,
-                    'uptime_text' => $m->uptime ?: '10 hari',
-                    'rtt_ms' => (float) ($m->last_ping_ms ?: 5.0),
+                    'customer_name' => $mCustResolved?->name ?? ($m->customer ?: '-'),
+                    'location' => $m->rack_location ?: '-',
+                    'rack_position' => $m->rack_location ?: '-',
+                    'uptime_percent' => $uptimeValM,
+                    'uptime_text' => $m->uptime ?: ($state === 'online' ? 'Online' : 'Offline'),
+                    'rtt_ms' => $m->last_ping_ms !== null ? (float) $m->last_ping_ms : null,
                     'packet_loss' => (string) ($m->packet_loss ?? '0').'%',
                     'rx_rate' => $m->rx_mbps ?: '0.0 Mbps',
                     'tx_rate' => $m->tx_mbps ?: '0.0 Mbps',
@@ -417,13 +425,14 @@ class ReportController extends Controller
                 $resolvedCust = $allDbCustomers->first(function ($c) use ($clientLower, $subjLower) {
                     $cName = strtolower($c->name ?? '');
                     $cCode = strtolower($c->code ?? $c->customer_code ?? '');
+
                     return (! empty($cName) && (str_contains($clientLower, $cName) || str_contains($cName, $clientLower) || str_contains($subjLower, $cName)))
                         || (! empty($cCode) && (str_contains($clientLower, $cCode) || str_contains($subjLower, $cCode)));
                 });
             }
 
             $cId = $resolvedCust?->id ?? $t->customer_id;
-            $custName = $resolvedCust?->name ?? ($t->client_name ?: 'Pelanggan NetFly');
+            $custName = $resolvedCust?->name ?? ($t->client_name ?: '-');
 
             $stLower = strtolower($t->status ?? '');
             $statusType = match (true) {
@@ -442,42 +451,50 @@ class ReportController extends Controller
 
             $tDate = $t->reported_at ?? $t->created_at;
 
-            $durationText = '45 Menit';
+            $durationText = '-';
+            $durationMinutes = 0;
             if ($t->reported_at) {
-                $end = $t->resolved_at ?? now();
-                $diffMinutes = max(15, (int) $t->reported_at->diffInMinutes($end));
-                $hours = floor($diffMinutes / 60);
-                $mins = $diffMinutes % 60;
-                $durationText = $hours > 0 ? "{$hours} Jam {$mins} Menit" : "{$mins} Menit";
+                $end = $t->resolved_at ?? (in_array($statusType, ['resolved', 'closed'], true) ? now() : null);
+                if ($end) {
+                    $diffMinutes = max(1, (int) $t->reported_at->diffInMinutes($end));
+                    $durationMinutes = $diffMinutes;
+                    $hours = floor($diffMinutes / 60);
+                    $mins = $diffMinutes % 60;
+                    $durationText = $hours > 0 ? "{$hours} Jam {$mins} Menit" : "{$mins} Menit";
+                } else {
+                    $durationText = 'Dalam Penanganan';
+                }
             }
 
             $allTickets[] = [
                 'ticket_number' => $t->ticket_number,
                 'subject' => Str::limit($t->subject, 32),
                 'full_subject' => $t->subject,
-                'technician' => $t->assigned_technician ?: ($t->id === 2 ? 'Rian Hidayat' : ($t->id === 1 ? 'Fajar Ramadhan' : 'NOC Administrator')),
+                'technician' => $t->assigned_technician ?: '-',
                 'status' => $statusText,
                 'status_type' => $statusType,
-                'priority' => $t->priority ?? 'P2 - High',
-                'priority_level' => $t->priority_level ?? 'high',
+                'priority' => $t->priority ?? 'P3 - Medium',
+                'priority_level' => $t->priority_level ?? 'medium',
                 'customer_id' => $cId,
                 'customer_key' => $cId ? (string) $cId : 'general',
                 'customer_name' => $custName,
                 'date_raw' => $tDate,
-                'report_date' => $tDate ? $tDate->format('d M Y, H:i').' WIB' : '10 Okt 2026, 08:00 WIB',
+                'report_date' => $tDate ? $tDate->format('d M Y, H:i').' WIB' : '-',
                 'duration' => $durationText,
+                'duration_minutes' => $durationMinutes,
             ];
         }
 
         // 3. FILTERING PER MITRA & PERIODE
         $periodTickets = array_values(array_filter($allTickets, function ($t) use ($selectedYear, $selectedMonth) {
             if (empty($t['date_raw'])) {
-                return true;
+                return false;
             }
+
             return (int) $t['date_raw']->year === (int) $selectedYear && (int) $t['date_raw']->month === (int) $selectedMonth;
         }));
 
-        $sourceTickets = ! empty($periodTickets) ? $periodTickets : $allTickets;
+        $sourceTickets = $periodTickets;
 
         if ($selectedCustomer === 'all') {
             $filteredDevices = $allDevices;
@@ -541,18 +558,24 @@ class ReportController extends Controller
             if ($dayTickets->count() > 0) {
                 $firstTicket = $dayTickets->first();
                 $ticketCount = $dayTickets->count();
-                if ($hasCriticalTicket) {
+                $downtimeMin = 0;
+                foreach ($dayTickets as $dt) {
+                    if ($dt->reported_at && $dt->resolved_at) {
+                        $downtimeMin += max(15, (int) $dt->reported_at->diffInMinutes($dt->resolved_at));
+                    } else {
+                        $downtimeMin += 30;
+                    }
+                }
+                $uptime = max(0.0, round((1440 - min(1440, $downtimeMin)) / 1440 * 100, 2));
+
+                if ($hasCriticalTicket || $uptime < 98.0) {
                     $status = 'outage';
                     $statusLabel = 'Padam / Major Outage';
                     $barColor = 'bg-red-500 hover:bg-red-600';
-                    $uptime = 96.50;
-                    $downtimeMin = 45;
                 } else {
                     $status = 'warning';
                     $statusLabel = 'Degradasi / Flap';
                     $barColor = 'bg-amber-400 hover:bg-amber-500';
-                    $uptime = 98.40;
-                    $downtimeMin = 15;
                 }
                 $notes = "Tiket #{$firstTicket->ticket_number}: {$firstTicket->subject}".($ticketCount > 1 ? ' (+'.($ticketCount - 1).' insiden lain)' : '');
             } elseif ($metric) {
@@ -573,6 +596,20 @@ class ReportController extends Controller
                 $uptime = (float) $metric->uptime_percentage;
                 $downtimeMin = (int) $metric->downtime_minutes;
                 $notes = $metric->notes ?: 'Operasi Jaringan Normal';
+            } elseif ($totalDevices === 0) {
+                $status = 'nodata';
+                $statusLabel = 'Nihil Node';
+                $barColor = 'bg-slate-200';
+                $uptime = 0.0;
+                $downtimeMin = 0;
+                $notes = 'Belum Ada Perangkat Terdaftar';
+            } elseif ($dateObj->isFuture()) {
+                $status = 'future';
+                $statusLabel = 'Belum Berjalan';
+                $barColor = 'bg-slate-100';
+                $uptime = 0.0;
+                $downtimeMin = 0;
+                $notes = 'Periode Belum Berjalan';
             } else {
                 $status = 'normal';
                 $statusLabel = 'Normal 100%';
@@ -608,23 +645,34 @@ class ReportController extends Controller
         if ($totalDevices > 0) {
             $slaSum = array_sum(array_column($filteredDevices, 'uptime_percent'));
             $actualSla = round($slaSum / $totalDevices, 2);
-        } else {
-            $actualSla = 99.80;
-        }
 
-        $minThreshold = (float) str_replace('%', '', $targetSlaMin);
-        if ($actualSla >= $minThreshold) {
-            $slaStatusLabel = 'Tercapai';
-            $slaStatusColor = 'emerald';
-            $slaCommitmentText = 'Memenuhi Komitmen Kontrak SLA';
+            $minThreshold = (float) str_replace('%', '', $targetSlaMin);
+            if ($actualSla >= $minThreshold) {
+                $slaStatusLabel = 'Tercapai';
+                $slaStatusColor = 'emerald';
+                $slaCommitmentText = 'Memenuhi Komitmen Kontrak SLA';
+            } else {
+                $slaStatusLabel = 'Deviasi Terdeteksi';
+                $slaStatusColor = 'amber';
+                $slaCommitmentText = 'Dalam Penyesuaian Restitusi SLA Insiden';
+            }
         } else {
-            $slaStatusLabel = 'Deviasi Terdeteksi';
-            $slaStatusColor = 'amber';
-            $slaCommitmentText = 'Dalam Penyesuaian Restitusi SLA Insiden';
+            $actualSla = 0.0;
+            $slaStatusLabel = 'Nihil Node';
+            $slaStatusColor = 'slate';
+            $slaCommitmentText = 'Belum Ada Node Terpantau';
         }
 
         // Waktu resolusi rata-rata
-        $avgResolutionTime = '45 Menit';
+        $resolvedWithDuration = array_filter($filteredTickets, fn ($t) => in_array($t['status_type'], ['resolved', 'closed']) && ! empty($t['duration_minutes']));
+        if (count($resolvedWithDuration) > 0) {
+            $avgMinutes = round(array_sum(array_column($resolvedWithDuration, 'duration_minutes')) / count($resolvedWithDuration));
+            $avgHours = floor($avgMinutes / 60);
+            $remMins = $avgMinutes % 60;
+            $avgResolutionTime = $avgHours > 0 ? "{$avgHours} Jam {$remMins} Menit" : "{$remMins} Menit";
+        } else {
+            $avgResolutionTime = '-';
+        }
 
         // Nomor Registrasi Dokumen Resmi
         $docPrefix = 'CONS';
@@ -642,6 +690,23 @@ class ReportController extends Controller
         $selectedMonthName = $this->months[$selectedMonth];
         $formattedPeriod = $selectedMonthName.' '.$selectedYear;
 
+        // Resolusi Pejabat Penerbit / Penandatangan Laporan (Semi-Dinamis Enterprise)
+        $currentUser = auth()->user();
+        $defaultIssuerName = $currentUser ? $currentUser->name : 'DIMAS PRASETYO, M.Kom.';
+        $defaultIssuerRole = $currentUser
+            ? ($currentUser->role === 'admin' ? 'Network Operations Lead • NetFly NOC Division' : 'Technical Operations Specialist • NetFly Division')
+            : 'Network Operations Lead • NetFly NOC Division';
+
+        $issuerName = trim((string) $request->query('issuer_name', ''));
+        if ($issuerName === '') {
+            $issuerName = $defaultIssuerName;
+        }
+
+        $issuerRole = trim((string) $request->query('issuer_role', ''));
+        if ($issuerRole === '') {
+            $issuerRole = $defaultIssuerRole;
+        }
+
         return [
             'customers' => $customerOptions,
             'months' => $this->months,
@@ -653,6 +718,10 @@ class ReportController extends Controller
             'formattedPeriod' => $formattedPeriod,
             'evaluatedPartner' => $evaluatedPartner,
             'reportDocumentNumber' => $reportDocumentNumber,
+            'issuerName' => $issuerName,
+            'issuerRole' => $issuerRole,
+            'defaultIssuerName' => $defaultIssuerName,
+            'defaultIssuerRole' => $defaultIssuerRole,
             'actualSla' => $actualSla,
             'targetSlaMin' => $targetSlaMin,
             'slaStatusLabel' => $slaStatusLabel,

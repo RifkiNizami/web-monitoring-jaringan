@@ -59,11 +59,6 @@
                 <!-- HEADER SECTION: CATEGORY, TITLE, & EXPORT ACTION BUTTON -->
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <div class="text-[11px] font-semibold text-slate-400 mb-1 flex items-center gap-1.5">
-                            <span class="text-slate-500 font-medium">NetFly NMS</span>
-                            <span>›</span>
-                            <span>Laporan Kinerja SLA & Audit</span>
-                        </div>
                         <h1 class="text-xl lg:text-2xl font-black text-slate-900 tracking-tight">
                             Executive Report Generator
                         </h1>
@@ -131,103 +126,142 @@
 
                 <!-- FILTER FORM CARD -->
                 <div class="bg-white p-4 lg:p-5 rounded-xl border border-slate-200/80 shadow-2xs">
-                    <form id="reportFilterForm" action="{{ $currentReportUrl }}" method="GET" data-turbo="false" class="flex flex-col lg:flex-row items-stretch lg:items-end gap-4">
+                    <form id="reportFilterForm" action="{{ $currentReportUrl }}" method="GET" data-turbo="false" class="space-y-4">
                         
-                        <!-- Field 1: Pilih Mitra Customer -->
-                        <div class="flex-1">
-                            <label for="filterCustomer" class="block text-[10px] font-bold text-slate-500 uppercase tracking-tight mb-1.5">
-                                PILIH MITRA CUSTOMER
-                            </label>
-                            <div class="relative">
-                                <select 
-                                    name="customer" 
-                                    id="filterCustomer"
-                                    class="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-800 font-medium focus:outline-none focus:bg-white focus:border-blue-500 transition-colors appearance-none pr-8 cursor-pointer"
-                                >
-                                    @foreach($customers as $key => $name)
-                                        <option value="{{ $key }}" {{ (string) $selectedCustomer === (string) $key ? 'selected' : '' }}>
-                                            {{ $key === 'all' ? '-- ' . $name . ' --' : $name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-slate-400">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                    </svg>
+                        <div class="flex flex-col lg:flex-row items-stretch lg:items-end gap-4">
+                            <!-- Field 1: Pilih Mitra Customer -->
+                            <div class="flex-1">
+                                <label for="filterCustomer" class="block text-[10px] font-bold text-slate-500 uppercase tracking-tight mb-1.5">
+                                    PILIH MITRA CUSTOMER
+                                </label>
+                                <div class="relative">
+                                    <select 
+                                        name="customer" 
+                                        id="filterCustomer"
+                                        class="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-800 font-medium focus:outline-none focus:bg-white focus:border-blue-500 transition-colors appearance-none pr-8 cursor-pointer"
+                                    >
+                                        @foreach($customers as $key => $name)
+                                            <option value="{{ $key }}" {{ (string) $selectedCustomer === (string) $key ? 'selected' : '' }}>
+                                                {{ $key === 'all' ? '-- ' . $name . ' --' : $name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-slate-400">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
                                 </div>
+                            </div>
+
+                            <!-- Field 2: Bulan Pelaporan -->
+                            <div class="w-full lg:w-48">
+                                <label for="filterMonth" class="block text-[10px] font-bold text-slate-500 uppercase tracking-tight mb-1.5">
+                                    BULAN PELAPORAN
+                                </label>
+                                <div class="relative">
+                                    <select 
+                                        name="month" 
+                                        id="filterMonth"
+                                        class="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-800 font-medium focus:outline-none focus:bg-white focus:border-blue-500 transition-colors appearance-none pr-8 cursor-pointer"
+                                    >
+                                        @foreach($months as $num => $name)
+                                            <option value="{{ $num }}" {{ $selectedMonth === $num ? 'selected' : '' }}>
+                                                {{ $name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-slate-400">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Field 3: Tahun -->
+                            <div class="w-full lg:w-32">
+                                <label for="filterYear" class="block text-[10px] font-bold text-slate-500 uppercase tracking-tight mb-1.5">
+                                    TAHUN
+                                </label>
+                                <div class="relative">
+                                    <select 
+                                        name="year" 
+                                        id="filterYear"
+                                        class="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-800 font-medium focus:outline-none focus:bg-white focus:border-blue-500 transition-colors appearance-none pr-8 cursor-pointer"
+                                    >
+                                        @foreach($years as $yr)
+                                            <option value="{{ $yr }}" {{ $selectedYear === $yr ? 'selected' : '' }}>
+                                                {{ $yr }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-slate-400">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Submit Button: Terapkan -->
+                            <div class="shrink-0 flex items-center gap-2">
+                                <button 
+                                    type="submit" 
+                                    class="w-full lg:w-auto px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-sm active:scale-95 transition-all cursor-pointer"
+                                >
+                                    Terapkan
+                                </button>
+
+                                @if($selectedCustomer !== 'all' || $selectedMonth !== (int) now()->month || $selectedYear !== (int) now()->year || request('issuer_name') || request('issuer_role'))
+                                    <a 
+                                        id="btnResetFilter"
+                                        href="{{ $currentReportUrl }}" 
+                                        data-turbo="false"
+                                        class="px-3 py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
+                                        title="Reset filter ke kondisi awal"
+                                    >
+                                        Reset
+                                    </a>
+                                @endif
                             </div>
                         </div>
 
-                        <!-- Field 2: Bulan Pelaporan -->
-                        <div class="w-full lg:w-48">
-                            <label for="filterMonth" class="block text-[10px] font-bold text-slate-500 uppercase tracking-tight mb-1.5">
-                                BULAN PELAPORAN
-                            </label>
-                            <div class="relative">
-                                <select 
-                                    name="month" 
-                                    id="filterMonth"
-                                    class="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-800 font-medium focus:outline-none focus:bg-white focus:border-blue-500 transition-colors appearance-none pr-8 cursor-pointer"
-                                >
-                                    @foreach($months as $num => $name)
-                                        <option value="{{ $num }}" {{ $selectedMonth === $num ? 'selected' : '' }}>
-                                            {{ $name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-slate-400">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                    </svg>
+                        <!-- Secondary Row: Konfigurasi Penandatangan PDF (Semi-Dinamis) -->
+                        <div class="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between mb-1">
+                                    <label for="filterIssuerName" class="block text-[10px] font-bold text-slate-500 uppercase tracking-tight">
+                                        PENANDATANGAN PDF (NOC LEAD / PENERBIT)
+                                    </label>
+                                    <span class="text-[10px] text-slate-400">Default: {{ $defaultIssuerName }}</span>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Field 3: Tahun -->
-                        <div class="w-full lg:w-32">
-                            <label for="filterYear" class="block text-[10px] font-bold text-slate-500 uppercase tracking-tight mb-1.5">
-                                TAHUN
-                            </label>
-                            <div class="relative">
-                                <select 
-                                    name="year" 
-                                    id="filterYear"
-                                    class="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-800 font-medium focus:outline-none focus:bg-white focus:border-blue-500 transition-colors appearance-none pr-8 cursor-pointer"
+                                <input 
+                                    type="text" 
+                                    name="issuer_name" 
+                                    id="filterIssuerName"
+                                    value="{{ request('issuer_name', '') }}"
+                                    placeholder="Ketik untuk kustomisasi nama (misal: Ir. Hendra Wijaya)"
+                                    class="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-slate-800 placeholder-slate-400 font-medium focus:outline-none focus:bg-white focus:border-blue-500 transition-colors"
                                 >
-                                    @foreach($years as $yr)
-                                        <option value="{{ $yr }}" {{ $selectedYear === $yr ? 'selected' : '' }}>
-                                            {{ $yr }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-slate-400">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                    </svg>
+                            </div>
+
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between mb-1">
+                                    <label for="filterIssuerRole" class="block text-[10px] font-bold text-slate-500 uppercase tracking-tight">
+                                        JABATAN / DIVISI PENERBIT
+                                    </label>
+                                    <span class="text-[10px] text-slate-400">Default: {{ $defaultIssuerRole }}</span>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Action Submit Button: Terapkan -->
-                        <div class="shrink-0 flex items-center gap-2">
-                            <button 
-                                type="submit" 
-                                class="w-full lg:w-auto px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-sm active:scale-95 transition-all cursor-pointer"
-                            >
-                                Terapkan
-                            </button>
-
-                            @if($selectedCustomer !== 'all' || $selectedMonth !== (int) now()->month || $selectedYear !== (int) now()->year)
-                                <a 
-                                    id="btnResetFilter"
-                                    href="{{ $currentReportUrl }}" 
-                                    data-turbo="false"
-                                    class="px-3 py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
-                                    title="Reset filter ke kondisi awal"
+                                <input 
+                                    type="text" 
+                                    name="issuer_role" 
+                                    id="filterIssuerRole"
+                                    value="{{ request('issuer_role', '') }}"
+                                    placeholder="Ketik untuk kustomisasi jabatan (misal: Head of Operations)"
+                                    class="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-slate-800 placeholder-slate-400 font-medium focus:outline-none focus:bg-white focus:border-blue-500 transition-colors"
                                 >
-                                    Reset
-                                </a>
-                            @endif
+                            </div>
                         </div>
                     </form>
                 </div>

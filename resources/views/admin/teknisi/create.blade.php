@@ -65,12 +65,6 @@
                 <!-- PAGE TITLE -->
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                        <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-bold uppercase tracking-wider mb-2">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                            <span>Tim Lapangan NetFly</span>
-                        </div>
                         <h1 class="text-xl lg:text-2xl font-bold text-slate-900 tracking-tight">Tambah Teknisi Baru</h1>
                         <p class="text-xs text-slate-500 mt-1">
                             Daftarkan personel teknisi lapangan baru, nomor kontak WhatsApp, dan wilayah penugasan atau alamat domisili.

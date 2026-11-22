@@ -178,29 +178,27 @@ class DashboardController extends Controller
             ->orderBy('date', 'asc')
             ->get();
 
-        // Fallback jika belum terisi 30 hari penuh
-        if ($records->count() < 30) {
-            $existingDates = $records->pluck('date')->map(fn ($d) => Carbon::parse($d)->toDateString())->toArray();
-            for ($i = 29; $i >= 0; $i--) {
-                $curDate = $today->copy()->subDays($i)->toDateString();
-                if (! in_array($curDate, $existingDates)) {
-                    $uptime = ($i === 15) ? 99.50 : (($i === 14) ? 99.65 : 99.90 + (sin($i) * 0.08));
-                    $uptime = min(100.0, max(99.4, round($uptime, 2)));
-                    NetworkSlaMetric::create([
-                        'date' => $curDate,
-                        'uptime_percentage' => $uptime,
-                        'downtime_minutes' => $uptime < 99.7 ? 5 : ($uptime < 99.9 ? 2 : 0),
-                        'incidents_count' => $uptime < 99.7 ? 1 : 0,
-                        'status' => $uptime >= 99.9 ? 'Normal' : 'Warning',
-                        'notes' => 'Telemetri Transmisi Backbone Otomatis',
-                    ]);
-                }
-            }
-
-            $records = NetworkSlaMetric::where('date', '>=', $startDate->toDateString())
-                ->where('date', '<=', $today->toDateString())
-                ->orderBy('date', 'asc')
-                ->get();
+        if ($records->isEmpty()) {
+            return [
+                'average' => '0.00',
+                'highest' => '0.00%',
+                'lowest' => '0.00%',
+                'is_sla_met' => false,
+                'sla_target' => '99.5%',
+                'sla_target_y' => 0,
+                'scale_min' => 0,
+                'scale_max' => 100,
+                'y_ticks' => [],
+                'plot_left' => 0,
+                'plot_right' => 0,
+                'plot_bottom' => 0,
+                'stroke_path' => '',
+                'area_path' => '',
+                'sample_points' => [],
+                'all_points' => [],
+                'date_start' => '-',
+                'date_end' => '-',
+            ];
         }
 
         $avgUptime = round($records->avg('uptime_percentage'), 2);

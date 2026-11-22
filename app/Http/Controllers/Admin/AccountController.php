@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Customer;
 use App\Models\User;
 use App\Services\ActivityLogger;
@@ -87,11 +88,45 @@ class AccountController extends Controller
             ->orderBy('id', 'desc')
             ->get();
 
-        return $users->map(function ($user) {
+        $userIds = $users->pluck('id')->all();
+        $userIdsStr = array_map('strval', $userIds);
+
+        $loginLogs = collect();
+        if (! empty($userIds)) {
+            $loginLogs = ActivityLog::where('module', 'auth')
+                ->where('action', 'login')
+                ->where(function ($q) use ($userIds, $userIdsStr) {
+                    $q->whereIn('user_id', $userIds)
+                        ->orWhereIn('subject_id', $userIdsStr);
+                })
+                ->orderBy('id', 'desc')
+                ->get();
+        }
+
+        return $users->map(function ($user) use ($loginLogs) {
             $customer = $user->customer;
             $custType = $user->role === 'customer_residential'
                 ? 'rumahan'
                 : ($customer?->customer_type ?? 'perusahaan');
+
+            $latestLogin = $loginLogs->first(function ($log) use ($user) {
+                return (int) $log->user_id === (int) $user->id
+                    || (string) $log->subject_id === (string) $user->id;
+            });
+
+            $lastLoginText = 'Belum pernah login';
+            $lastLoginIp = '-';
+
+            if ($latestLogin) {
+                if ($latestLogin->created_at) {
+                    $wibTime = $latestLogin->created_at->copy()->setTimezone('Asia/Jakarta');
+                    $lastLoginText = $wibTime->format('d M Y, H:i').' WIB';
+                } else {
+                    $lastLoginText = 'Tercatat login';
+                }
+                $props = is_array($latestLogin->properties) ? $latestLogin->properties : [];
+                $lastLoginIp = $latestLogin->ip_address ?: ($props['ip'] ?? '-');
+            }
 
             return [
                 'id' => $user->id,
@@ -110,8 +145,8 @@ class AccountController extends Controller
                 'role' => $user->role,
                 'role_label' => $custType === 'rumahan' ? 'Customer Rumahan' : 'PIC Perwakilan Customer',
                 'is_active' => (bool) $user->is_active,
-                'last_login' => 'Belum pernah login',
-                'last_login_ip' => '-',
+                'last_login' => $lastLoginText,
+                'last_login_ip' => $lastLoginIp,
                 'created_at' => $user->created_at ? $user->created_at->format('d M Y') : date('d M Y'),
                 'must_change_password' => false,
             ];

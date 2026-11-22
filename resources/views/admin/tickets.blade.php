@@ -90,11 +90,6 @@
                 <!-- HEADER SECTION: CATEGORY, TITLE, & ACTION BUTTONS -->
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <div class="text-[11px] font-semibold text-slate-400 mb-1 flex items-center gap-1.5">
-                            <span class="text-slate-500 font-medium">NetFly NMS</span>
-                            <span>›</span>
-                            <span>Layanan Pelanggan & Penanganan Insiden</span>
-                        </div>
                         <h1 class="text-xl lg:text-2xl font-black text-slate-900 tracking-tight">
                             Antrean Tiket Komplain Klien
                         </h1>
@@ -236,6 +231,7 @@
                                     <th scope="col" class="py-3 px-5 whitespace-nowrap">ID & PRIORITAS</th>
                                     <th scope="col" class="py-3 px-5 whitespace-nowrap">KLIEN / PROJECT</th>
                                     <th scope="col" class="py-3 px-5 whitespace-nowrap">SUBJEK / MASALAH</th>
+                                    <th scope="col" class="py-3 px-5 text-center whitespace-nowrap">BUKTI FOTO</th>
                                     <th scope="col" class="py-3 px-5 whitespace-nowrap min-w-47.5">TEKNISI DITUGASKAN (ASSIGN)</th>
                                     <th scope="col" class="py-3 px-5 whitespace-nowrap min-w-52.5">STATUS PENANGANAN (WORKFLOW)</th>
                                     <th scope="col" class="py-3 px-5 whitespace-nowrap">WAKTU LAPOR</th>
@@ -306,7 +302,44 @@
                                             </div>
                                         </td>
 
-                                        <!-- 4. TEKNISI DITUGASKAN (ASSIGN) -->
+                                        <!-- 4. BUKTI FOTO (OPSIONAL) -->
+                                        <td class="py-4 px-5 align-top text-center whitespace-nowrap">
+                                            @if (!empty($ticket['photo_url']))
+                                                <div class="inline-flex flex-col items-center gap-1">
+                                                    <button 
+                                                        type="button" 
+                                                        onclick="openTicketPhotoModal('{{ $ticket['photo_url'] }}', '{{ $ticket['id'] }}', '{{ addslashes($ticket['subject']) }}', '{{ addslashes($ticket['client_name']) }}')"
+                                                        class="group relative inline-flex items-center justify-center w-10 h-10 rounded-lg overflow-hidden border border-slate-200 hover:border-blue-500 shadow-2xs hover:shadow-xs transition-all cursor-pointer bg-slate-100"
+                                                        title="Klik untuk memperbesar foto bukti kendala"
+                                                    >
+                                                        <img 
+                                                            src="{{ $ticket['photo_url'] }}" 
+                                                            alt="Bukti Tiket {{ $ticket['id'] }}" 
+                                                            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200"
+                                                            loading="lazy"
+                                                        >
+                                                        <div class="absolute inset-0 bg-slate-900/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                                                            <svg class="w-4 h-4 drop-shadow-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                                            </svg>
+                                                        </div>
+                                                    </button>
+                                                    <button 
+                                                        type="button" 
+                                                        onclick="openTicketPhotoModal('{{ $ticket['photo_url'] }}', '{{ $ticket['id'] }}', '{{ addslashes($ticket['subject']) }}', '{{ addslashes($ticket['client_name']) }}')"
+                                                        class="text-[11px] font-semibold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                                                    >
+                                                        Lihat Foto
+                                                    </button>
+                                                </div>
+                                            @else
+                                                <div class="inline-flex items-center justify-center text-slate-300 font-mono text-xs pt-2" title="Tidak ada lampiran foto">
+                                                    -
+                                                </div>
+                                            @endif
+                                        </td>
+
+                                        <!-- 5. TEKNISI DITUGASKAN (ASSIGN) -->
                                         <td class="py-4 px-5 align-top">
                                             <div>
                                                 <div class="relative">
@@ -445,7 +478,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="py-8 text-center text-xs text-slate-400">
+                                        <td colspan="8" class="py-8 text-center text-xs text-slate-400">
                                             Tidak ada antrean tiket yang tersedia.
                                         </td>
                                     </tr>
@@ -470,6 +503,9 @@
 
     {{-- Modal Konfirmasi Hapus Tiket --}}
     @include('admin.tickets.delete_modal')
+
+    {{-- Modal Preview Foto Bukti Gangguan --}}
+    @include('admin.tickets.photo_modal')
 
 </body>
 </html>

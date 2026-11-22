@@ -9,6 +9,8 @@ export function initAdminReports() {
     const customerSelect = document.getElementById('filterCustomer');
     const monthSelect = document.getElementById('filterMonth');
     const yearSelect = document.getElementById('filterYear');
+    const issuerNameInput = document.getElementById('filterIssuerName');
+    const issuerRoleInput = document.getElementById('filterIssuerRole');
     const filterForm = document.getElementById('reportFilterForm');
     const resetBtn = document.getElementById('btnResetFilter');
 
@@ -33,6 +35,8 @@ export function initAdminReports() {
         const cust = customerSelect.value;
         const month = monthSelect.value;
         const year = yearSelect.value;
+        const issuerName = issuerNameInput ? issuerNameInput.value.trim() : '';
+        const issuerRole = issuerRoleInput ? issuerRoleInput.value.trim() : '';
         const base = getReportsBasePath();
 
         // 1. URL Export PDF (Download)
@@ -40,6 +44,8 @@ export function initAdminReports() {
         pdfUrl.searchParams.set('customer', cust);
         pdfUrl.searchParams.set('month', month);
         pdfUrl.searchParams.set('year', year);
+        if (issuerName) pdfUrl.searchParams.set('issuer_name', issuerName);
+        if (issuerRole) pdfUrl.searchParams.set('issuer_role', issuerRole);
 
         // 2. URL Preview PDF (Buka di tab baru dengan stream/preview)
         const previewUrl = new URL(pdfUrl.toString());
@@ -58,6 +64,14 @@ export function initAdminReports() {
 
     // Jalankan sinkronisasi awal saat halaman dimuat
     syncExportUrls();
+
+    // Dengarkan input teks pejabat penerbit agar tautan tombol ekspor langsung tersinkron
+    [issuerNameInput, issuerRoleInput].forEach(el => {
+        if (el && !el.dataset.listenerBound) {
+            el.dataset.listenerBound = 'true';
+            el.addEventListener('input', syncExportUrls);
+        }
+    });
 
     // Dengarkan perubahan pada select dropdown: sinkronkan link dan otomatis submit form filter
     [customerSelect, monthSelect, yearSelect].forEach(el => {

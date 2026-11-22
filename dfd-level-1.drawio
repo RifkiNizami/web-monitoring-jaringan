@@ -1,0 +1,293 @@
+<mxfile host="app.diagrams.net" agent="Antigravity" version="24.7.17">
+  <diagram id="dfd-level-1-netfly" name="DFD LEVEL 1">
+    <mxGraphModel dx="2600" dy="1700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2600" pageHeight="1700" background="#FFFFFF" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <!-- TITLE HEADER -->
+        <mxCell id="title_header" value="&lt;b style=&quot;font-size:18px;letter-spacing:1px;color:#000000;&quot;&gt;DFD LEVEL 1 — SISTEM INFORMASI MONITORING JARINGAN &amp;amp; HELPDESK (NETFLY)&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:13px;color:#334155;&quot;&gt;Dekomposisi Proses 1.0 s.d. 8.0 &amp;amp; Keseimbangan Penuh (100% Selaras dengan DFD Level 0)&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Plus Jakarta Sans,Arial;" vertex="1" parent="1">
+          <mxGeometry x="750" y="20" width="1000" height="45" as="geometry" />
+        </mxCell>
+        <!-- ================= ENTITAS LUAR ================= -->
+        <mxCell id="E_ADMIN_KONTEN" value="&lt;b style=&quot;font-size:15px;color:#000000;&quot;&gt;Admin Konten&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:12px;color:#475569;&quot;&gt;(Website Admin Konten)&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;fontFamily=Plus Jakarta Sans,Arial;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="80" y="120" width="220" height="360" as="geometry" />
+        </mxCell>
+        <mxCell id="E_ADMIN_MONITORING" value="&lt;b style=&quot;font-size:16px;color:#000000;&quot;&gt;Admin Monitoring&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:12px;color:#475569;&quot;&gt;(Website NOC / Operasional)&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;fontFamily=Plus Jakarta Sans,Arial;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="80" y="540" width="220" height="960" as="geometry" />
+        </mxCell>
+        <mxCell id="E_USER" value="&lt;b style=&quot;font-size:16px;color:#000000;&quot;&gt;User&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:12px;color:#475569;&quot;&gt;(Aplikasi Mobile &amp;amp; Pengunjung)&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;fontFamily=Plus Jakarta Sans,Arial;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="2220" y="480" width="220" height="800" as="geometry" />
+        </mxCell>
+        <!-- ================= PROSES 1.0 s.d 7.0 ================= -->
+        <mxCell id="P1" value="&lt;div style=&quot;border-bottom: 1.5px solid #000000; padding-bottom: 3px; margin-bottom: 4px; font-weight: bold; color: #000000;&quot;&gt;1.0&lt;/div&gt;&lt;b style=&quot;color: #000000;&quot;&gt;Memvalidasi Akun&lt;/b&gt;" style="shape=swimlane;startSize=28;rounded=1;arcSize=14;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.8;fontFamily=Plus Jakarta Sans,Arial;fontColor=#000000;collapsible=0;" vertex="1" parent="1">
+          <mxGeometry x="560" y="120" width="240" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="P2" value="&lt;div style=&quot;border-bottom: 1.5px solid #000000; padding-bottom: 3px; margin-bottom: 4px; font-weight: bold; color: #000000;&quot;&gt;2.0&lt;/div&gt;&lt;b style=&quot;color: #000000;&quot;&gt;Mengelola Konten Web&lt;/b&gt;" style="shape=swimlane;startSize=28;rounded=1;arcSize=14;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.8;fontFamily=Plus Jakarta Sans,Arial;fontColor=#000000;collapsible=0;" vertex="1" parent="1">
+          <mxGeometry x="560" y="230" width="240" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="P3" value="&lt;div style=&quot;border-bottom: 1.5px solid #000000; padding-bottom: 3px; margin-bottom: 4px; font-weight: bold; color: #000000;&quot;&gt;3.0&lt;/div&gt;&lt;b style=&quot;color: #000000;&quot;&gt;Mengelola Akun Pelanggan&lt;/b&gt;" style="shape=swimlane;startSize=28;rounded=1;arcSize=14;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.8;fontFamily=Plus Jakarta Sans,Arial;fontColor=#000000;collapsible=0;" vertex="1" parent="1">
+          <mxGeometry x="560" y="540" width="240" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="P4" value="&lt;div style=&quot;border-bottom: 1.5px solid #000000; padding-bottom: 3px; margin-bottom: 4px; font-weight: bold; color: #000000;&quot;&gt;4.0&lt;/div&gt;&lt;b style=&quot;color: #000000;&quot;&gt;Mengelola Data Pelanggan&lt;/b&gt;" style="shape=swimlane;startSize=28;rounded=1;arcSize=14;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.8;fontFamily=Plus Jakarta Sans,Arial;fontColor=#000000;collapsible=0;" vertex="1" parent="1">
+          <mxGeometry x="560" y="680" width="240" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="P5" value="&lt;div style=&quot;border-bottom: 1.5px solid #000000; padding-bottom: 3px; margin-bottom: 4px; font-weight: bold; color: #000000;&quot;&gt;5.0&lt;/div&gt;&lt;b style=&quot;color: #000000;&quot;&gt;Mengelola Data Teknisi&lt;/b&gt;" style="shape=swimlane;startSize=28;rounded=1;arcSize=14;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.8;fontFamily=Plus Jakarta Sans,Arial;fontColor=#000000;collapsible=0;" vertex="1" parent="1">
+          <mxGeometry x="560" y="820" width="240" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="P6" value="&lt;div style=&quot;border-bottom: 1.5px solid #000000; padding-bottom: 3px; margin-bottom: 4px; font-weight: bold; color: #000000;&quot;&gt;6.0&lt;/div&gt;&lt;b style=&quot;color: #000000;&quot;&gt;Mengelola Data Perangkat&lt;/b&gt;" style="shape=swimlane;startSize=28;rounded=1;arcSize=14;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.8;fontFamily=Plus Jakarta Sans,Arial;fontColor=#000000;collapsible=0;" vertex="1" parent="1">
+          <mxGeometry x="560" y="960" width="240" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="P7" value="&lt;div style=&quot;border-bottom: 1.5px solid #000000; padding-bottom: 3px; margin-bottom: 4px; font-weight: bold; color: #000000;&quot;&gt;7.0&lt;/div&gt;&lt;b style=&quot;color: #000000;&quot;&gt;Mengelola Data Tiket&lt;/b&gt;" style="shape=swimlane;startSize=28;rounded=1;arcSize=14;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.8;fontFamily=Plus Jakarta Sans,Arial;fontColor=#000000;collapsible=0;" vertex="1" parent="1">
+          <mxGeometry x="560" y="1100" width="240" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="P8" value="&lt;div style=&quot;border-bottom: 1.5px solid #000000; padding-bottom: 4px; margin-bottom: 6px; font-weight: bold; color: #000000; font-size: 15px;&quot;&gt;8.0&lt;/div&gt;&lt;b style=&quot;color: #000000; font-size: 15px;&quot;&gt;Menampilkan Informasi,&lt;br&gt;Monitoring &amp;amp; Laporan&lt;/b&gt;" style="shape=swimlane;startSize=28;rounded=1;arcSize=14;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.8;fontFamily=Plus Jakarta Sans,Arial;fontColor=#000000;collapsible=0;" vertex="1" parent="1">
+          <mxGeometry x="1500" y="310" width="280" height="1030" as="geometry" />
+        </mxCell>
+        <!-- ================= DATA STORES (TABEL) ================= -->
+        <mxCell id="T_ADMIN" value="&lt;b style=&quot;color:#000000;&quot;&gt;t_admin&lt;/b&gt;" style="shape=partialRectangle;whiteSpace=wrap;html=1;left=1;right=0;top=1;bottom=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.8;fontSize=13;fontFamily=Plus Jakarta Sans,Arial;align=left;spacingLeft=14;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="135" width="200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="T_KONTEN" value="&lt;b style=&quot;color:#000000;&quot;&gt;t_konten&lt;/b&gt;" style="shape=partialRectangle;whiteSpace=wrap;html=1;left=1;right=0;top=1;bottom=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.8;fontSize=13;fontFamily=Plus Jakarta Sans,Arial;align=left;spacingLeft=14;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="330" width="200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="T_AKUN" value="&lt;b style=&quot;color:#000000;&quot;&gt;t_akun_pelanggan&lt;/b&gt;" style="shape=partialRectangle;whiteSpace=wrap;html=1;left=1;right=0;top=1;bottom=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.8;fontSize=13;fontFamily=Plus Jakarta Sans,Arial;align=left;spacingLeft=14;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="555" width="200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="T_PELANGGAN" value="&lt;b style=&quot;color:#000000;&quot;&gt;t_pelanggan&lt;/b&gt;" style="shape=partialRectangle;whiteSpace=wrap;html=1;left=1;right=0;top=1;bottom=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.8;fontSize=13;fontFamily=Plus Jakarta Sans,Arial;align=left;spacingLeft=14;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="695" width="200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="T_TEKNISI" value="&lt;b style=&quot;color:#000000;&quot;&gt;t_teknisi&lt;/b&gt;" style="shape=partialRectangle;whiteSpace=wrap;html=1;left=1;right=0;top=1;bottom=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.8;fontSize=13;fontFamily=Plus Jakarta Sans,Arial;align=left;spacingLeft=14;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="835" width="200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="T_PERANGKAT" value="&lt;b style=&quot;color:#000000;&quot;&gt;t_perangkat&lt;/b&gt;" style="shape=partialRectangle;whiteSpace=wrap;html=1;left=1;right=0;top=1;bottom=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.8;fontSize=13;fontFamily=Plus Jakarta Sans,Arial;align=left;spacingLeft=14;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="975" width="200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="T_TIKET" value="&lt;b style=&quot;color:#000000;&quot;&gt;t_tiket&lt;/b&gt;" style="shape=partialRectangle;whiteSpace=wrap;html=1;left=1;right=0;top=1;bottom=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.8;fontSize=13;fontFamily=Plus Jakarta Sans,Arial;align=left;spacingLeft=14;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="1125" width="200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="T_LOG" value="&lt;b style=&quot;color:#000000;&quot;&gt;t_log_aktivitas&lt;/b&gt;" style="shape=partialRectangle;whiteSpace=wrap;html=1;left=1;right=0;top=1;bottom=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.8;fontSize=13;fontFamily=Plus Jakarta Sans,Arial;align=left;spacingLeft=14;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="1265" width="200" height="50" as="geometry" />
+        </mxCell>
+        <!-- ================= ALUR DATA (EDGES) ================= -->
+        <mxCell id="F_AK_P1" value="Data Login" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.07;entryX=0;entryY=0.31;" edge="1" parent="1" source="E_ADMIN_KONTEN" target="P1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_P1_AK" value="Status Login" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=0;exitY=0.69;entryX=1;entryY=0.15;" edge="1" parent="1" source="P1" target="E_ADMIN_KONTEN">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_P1_T" value="Verifikasi Cek" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="P1" target="T_ADMIN">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_AK_P2_1" value="Data Logo Pelanggan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.4;entryX=0;entryY=0.14;" edge="1" parent="1" source="E_ADMIN_KONTEN" target="P2">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_P2_AK_1" value="Informasi Logo Pelanggan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=0;exitY=0.28;entryX=1;entryY=0.5;" edge="1" parent="1" source="P2" target="E_ADMIN_KONTEN">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_AK_P2_2" value="Data Pengumuman" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.6;entryX=0;entryY=0.42;" edge="1" parent="1" source="E_ADMIN_KONTEN" target="P2">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_P2_AK_2" value="Informasi Pengumuman" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=0;exitY=0.56;entryX=1;entryY=0.69;" edge="1" parent="1" source="P2" target="E_ADMIN_KONTEN">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_AK_P2_3" value="Link app mobile" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.79;entryX=0;entryY=0.7;" edge="1" parent="1" source="E_ADMIN_KONTEN" target="P2">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_P2_AK_3" value="Informasi Link app mobile" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=0;exitY=0.84;entryX=1;entryY=0.89;" edge="1" parent="1" source="P2" target="E_ADMIN_KONTEN">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_P2_T" value="Detail Konten" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="P2" target="T_KONTEN">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_AM_P1" value="Data Login" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=0;exitY=0.03125;entryX=0.33;entryY=0;" edge="1" parent="1" source="E_ADMIN_MONITORING" target="P1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="45" y="570" />
+              <mxPoint x="45" y="95" />
+              <mxPoint x="640" y="95" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_P1_AM" value="Status Login" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=0.5;exitY=0;entryX=0;entryY=0.0625;" edge="1" parent="1" source="P1" target="E_ADMIN_MONITORING">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="680" y="75" />
+              <mxPoint x="25" y="75" />
+              <mxPoint x="25" y="600" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_AM_P3" value="Data Akun Pelanggan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.026;entryX=0;entryY=0.3125;" edge="1" parent="1" source="E_ADMIN_MONITORING" target="P3">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_P3_AM" value="Informasi Akun Pelanggan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=0;exitY=0.6875;entryX=1;entryY=0.0573;" edge="1" parent="1" source="P3" target="E_ADMIN_MONITORING">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_P3_T" value="Detail Akun Pelanggan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="P3" target="T_AKUN">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_AM_P4" value="Data Pelanggan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.1719;entryX=0;entryY=0.3125;" edge="1" parent="1" source="E_ADMIN_MONITORING" target="P4">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_P4_AM" value="Informasi Pelanggan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=0;exitY=0.6875;entryX=1;entryY=0.2031;" edge="1" parent="1" source="P4" target="E_ADMIN_MONITORING">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_P4_T" value="Detail Pelanggan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="P4" target="T_PELANGGAN">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_AM_P5" value="Data Teknisi" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.3177;entryX=0;entryY=0.3125;" edge="1" parent="1" source="E_ADMIN_MONITORING" target="P5">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_P5_AM" value="Informasi Teknisi" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=0;exitY=0.6875;entryX=1;entryY=0.349;" edge="1" parent="1" source="P5" target="E_ADMIN_MONITORING">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_P5_T" value="Detail Teknisi" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="P5" target="T_TEKNISI">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_AM_P6" value="Data Perangkat/Device" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.4635;entryX=0;entryY=0.3125;" edge="1" parent="1" source="E_ADMIN_MONITORING" target="P6">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_P6_AM" value="Informasi Perangkat/Device" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=0;exitY=0.6875;entryX=1;entryY=0.4948;" edge="1" parent="1" source="P6" target="E_ADMIN_MONITORING">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_P6_T" value="Detail Perangkat" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="P6" target="T_PERANGKAT">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_AM_P7" value="Data Tiket" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.6094;entryX=0;entryY=0.1786;" edge="1" parent="1" source="E_ADMIN_MONITORING" target="P7">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_P7_AM" value="Informasi Ticketing" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=0;exitY=0.3929;entryX=1;entryY=0.6406;" edge="1" parent="1" source="P7" target="E_ADMIN_MONITORING">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_P7_T" value="Detail Tiket" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.3571;entryX=0;entryY=0.5;" edge="1" parent="1" source="P7" target="T_TIKET">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_T_KON_P8" value="Isi Beranda" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.5;entryX=0;entryY=0.0437;" edge="1" parent="1" source="T_KONTEN" target="P8">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_T_PEL_P8" value="Daftar Pelanggan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.5;entryX=0;entryY=0.3981;" edge="1" parent="1" source="T_PELANGGAN" target="P8">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_T_DEV_P8" value="Status Jaringan &amp; Telemetri" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.5;entryX=0;entryY=0.6699;" edge="1" parent="1" source="T_PERANGKAT" target="P8">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_T_TIK_P8" value="Data Riwayat Tiket" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.5;entryX=0;entryY=0.8155;" edge="1" parent="1" source="T_TIKET" target="P8">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_T_LOG_P8" value="Rekam Jejak Log" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.5;entryX=0;entryY=0.9515;" edge="1" parent="1" source="T_LOG" target="P8">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_U_P7" value="Data Ticketing" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;verticalAlign=bottom;exitX=0;exitY=0.8875;entryX=1;entryY=0.6429;" edge="1" parent="1" source="E_USER" target="P7">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2140" y="1190" />
+              <mxPoint x="2140" y="1390" />
+              <mxPoint x="950" y="1390" />
+              <mxPoint x="950" y="1190" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_P7_U" value="Informasi Tiket" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;verticalAlign=top;exitX=1;exitY=0.8929;entryX=0;entryY=0.9313;" edge="1" parent="1" source="P7" target="E_USER">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="920" y="1225" />
+              <mxPoint x="920" y="1425" />
+              <mxPoint x="2160" y="1425" />
+              <mxPoint x="2160" y="1225" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_AM_P8_REQ" value="Request Data Monitoring" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.9792;entryX=0.2143;entryY=1;" edge="1" parent="1" source="E_ADMIN_MONITORING" target="P8">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1560" y="1480" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_P8_AM_INF" value="Informasi Monitoring" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=0.4286;exitY=1;entryX=1;entryY=0.9844;" edge="1" parent="1" source="P8" target="E_ADMIN_MONITORING">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1620" y="1515" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_AM_P8_REP" value="Request Laporan &amp; Log Aktivitas" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.9896;entryX=0.6429;entryY=1;" edge="1" parent="1" source="E_ADMIN_MONITORING" target="P8">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1680" y="1550" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_P8_AM_REP" value="Laporan &amp; Log Aktivitas" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=0.8571;exitY=1;entryX=1;entryY=0.9948;" edge="1" parent="1" source="P8" target="E_ADMIN_MONITORING">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1740" y="1585" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_U_P1" value="Data Login" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=0.27;exitY=0;entryX=0.75;entryY=0;" edge="1" parent="1" source="E_USER" target="P1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2280" y="85" />
+              <mxPoint x="740" y="85" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_P1_U" value="Status Login" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;exitX=0.92;exitY=0;entryX=0.45;entryY=0;" edge="1" parent="1" source="P1" target="E_USER">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="780" y="65" />
+              <mxPoint x="2320" y="65" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_U_P8_REQ1" value="Request Monitoring" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;whiteSpace=nowrap;exitX=0;exitY=0.175;entryX=1;entryY=0.301;" edge="1" parent="1" source="E_USER" target="P8">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_P8_U_INF" value="Informasi Jaringan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;whiteSpace=nowrap;exitX=1;exitY=0.3786;entryX=0;entryY=0.275;" edge="1" parent="1" source="P8" target="E_USER">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_U_P8_REQ2" value="Request Menu" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;whiteSpace=nowrap;exitX=0;exitY=0.375;entryX=1;entryY=0.4563;" edge="1" parent="1" source="E_USER" target="P8">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="F_P8_U_BER" value="Informasi Beranda" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontFamily=Plus Jakarta Sans,Arial;jumpStyle=arc;jumpSize=6;whiteSpace=nowrap;exitX=1;exitY=0.534;entryX=0;entryY=0.475;" edge="1" parent="1" source="P8" target="E_USER">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

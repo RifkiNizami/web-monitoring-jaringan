@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Ticket;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\File;
 use Tests\TestCase;
 
 class TicketApiTest extends TestCase
@@ -127,5 +128,37 @@ class TicketApiTest extends TestCase
 
         $ticket->refresh();
         $this->assertStringContainsString('Jessica Tanuwijaya: Kondisi terbaru', $ticket->status_note);
+    }
+
+    public function test_mobile_app_can_create_ticket_with_optional_photo(): void
+    {
+        $customNumber = 'INC-2026-9988';
+        // 1x1 transparent PNG as base64 data URI
+        $dummyBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+
+        $payload = [
+            'ticket_number' => $customNumber,
+            'client_name' => 'PT. Bukalapak Mitra',
+            'subject' => 'Kabel Dropcore Putus',
+            'description' => 'Terkena pohon tumbang, terlampir foto bukti fisik kabel di tiang.',
+            'photo' => $dummyBase64,
+        ];
+
+        $response = $this->postJson('/api/tickets', $payload);
+
+        $response->assertStatus(201);
+        $data = $response->json('data');
+        $this->assertNotNull($data['photo']);
+        $this->assertNotNull($data['photo_url']);
+
+        $ticket = Ticket::where('ticket_number', $customNumber)->first();
+        $this->assertNotNull($ticket);
+        $this->assertNotNull($ticket->photo);
+        $this->assertFileExists(public_path($ticket->photo));
+
+        // Clean up created test file
+        if (File::exists(public_path($ticket->photo))) {
+            File::delete(public_path($ticket->photo));
+        }
     }
 }

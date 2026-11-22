@@ -13,7 +13,12 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware('throttle:api')->group(function () {
+    Route::post('/login', [AuthController::class, 'apiLogin'])->name('api.login');
     Route::get('/user/profile', [AuthController::class, 'apiProfile'])->name('api.user.profile');
+    Route::post('/user/profile', [AuthController::class, 'apiUpdateProfile'])->name('api.user.updateProfile');
+    Route::put('/user/profile', [AuthController::class, 'apiUpdateProfile'])->name('api.user.updateProfile.put');
+    Route::post('/user/update-profile', [AuthController::class, 'apiUpdateProfile'])->name('api.user.updateProfile.alias');
+    Route::post('/user/change-password', [AuthController::class, 'apiChangePassword'])->name('api.user.changePassword');
 
     Route::prefix('reports')->group(function () {
         Route::get('/', [ReportController::class, 'apiIndex'])->name('api.reports.index');
