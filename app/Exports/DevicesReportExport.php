@@ -48,7 +48,7 @@ class DevicesReportExport implements FromCollection, WithColumnWidths, WithHeadi
     public function headings(): array
     {
         return [
-            'No',
+            'ID',
             'Hostname / Perangkat',
             'Tipe Perangkat',
             'IP Address',
@@ -67,13 +67,10 @@ class DevicesReportExport implements FromCollection, WithColumnWidths, WithHeadi
      */
     public function map(mixed $row): array
     {
-        static $number = 0;
-        $number++;
-
         $device = is_array($row) ? $row : (array) $row;
 
         return [
-            $number,
+            $device['id'] ?? '-',
             $device['hostname'] ?? '-',
             $device['type'] ?? '-',
             $device['ip_address'] ?? '-',

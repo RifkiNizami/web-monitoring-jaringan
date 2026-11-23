@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Exports\FullReportExport;
 use App\Http\Controllers\Controller;
+use App\Imports\FullReportImport;
 use App\Models\Customer;
 use App\Models\Device;
 use App\Models\MonitoringAlert;
@@ -226,6 +227,70 @@ class ReportController extends Controller
             $export,
             $filename
         );
+    }
+
+    /**
+     * Impor kembali data laporan Excel yang telah diedit secara manual.
+     */
+    public function importExcel(Request $request): \Illuminate\Http\RedirectResponse
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:10240'], // Maks 10MB
+        ], [
+            'file.required' => 'File Excel wajib diunggah.',
+            'file.file' => 'Unggahan harus berupa file yang valid.',
+            'file.mimes' => 'Format file harus berupa spreadsheet Excel (.xlsx, .xls) atau CSV.',
+            'file.max' => 'Ukuran file Excel maksimal 10 MB.',
+        ]);
+
+        try {
+            $uploadedFile = $request->file('file');
+            $realPath = $uploadedFile->getRealPath();
+
+            // Deteksi daftar sheet secara otomatis
+            $actualSheetNames = [];
+            try {
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+                $actualSheetNames = $reader->listWorksheetNames($realPath);
+            } catch (\Throwable $e) {
+                // Abaikan jika bukan format xlsx standar
+            }
+
+            $import = new FullReportImport($actualSheetNames);
+            Excel::import($import, $uploadedFile);
+
+            $devicesImport = $import->getDevicesImport();
+            $ticketsImport = $import->getTicketsImport();
+
+            $totalUpdated = $devicesImport->updatedCount + $ticketsImport->updatedCount;
+            $totalCreated = $devicesImport->importedCount + $ticketsImport->importedCount;
+
+            $message = sprintf(
+                'Data laporan berhasil diimpor: %d perangkat (%d diperbarui, %d baru) dan %d tiket (%d diperbarui, %d baru).',
+                $devicesImport->updatedCount + $devicesImport->importedCount,
+                $devicesImport->updatedCount,
+                $devicesImport->importedCount,
+                $ticketsImport->updatedCount + $ticketsImport->importedCount,
+                $ticketsImport->updatedCount,
+                $ticketsImport->importedCount
+            );
+
+            // Teruskan parameter filter yang sedang aktif agar user langsung melihat hasilnya
+            $redirectParams = [];
+            if ($request->filled('customer')) {
+                $redirectParams['customer'] = $request->input('customer');
+            }
+            if ($request->filled('month')) {
+                $redirectParams['month'] = $request->input('month');
+            }
+            if ($request->filled('year')) {
+                $redirectParams['year'] = $request->input('year');
+            }
+
+            return redirect()->route('reports.index', $redirectParams)->with('success', $message);
+        } catch (\Throwable $e) {
+            return redirect()->route('reports.index')->with('error', 'Gagal memproses file Excel: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -467,6 +532,7 @@ class ReportController extends Controller
             }
 
             $allTickets[] = [
+                'id' => $t->id,
                 'ticket_number' => $t->ticket_number,
                 'subject' => Str::limit($t->subject, 32),
                 'full_subject' => $t->subject,

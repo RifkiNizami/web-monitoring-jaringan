@@ -72,10 +72,25 @@
                         $currentReportUrl = request()->url();
                         $exportPdfUrl = rtrim($currentReportUrl, '/') . '/export-pdf';
                         $exportExcelUrl = rtrim($currentReportUrl, '/') . '/export-excel';
+                        $importExcelUrl = route('reports.importExcel');
                     @endphp
 
-                    <!-- Top Action Button: Export / Download PDF & Excel Resmi -->
+                    <!-- Top Action Button: Export / Download PDF & Excel Resmi, serta Impor Excel -->
                     <div class="flex items-center gap-2.5 shrink-0 flex-wrap">
+                        <!-- Tombol Impor Excel -->
+                        <button 
+                            type="button"
+                            id="btnOpenImportModal"
+                            onclick="document.getElementById('importModal').classList.remove('hidden')"
+                            class="inline-flex items-center gap-2 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm active:scale-95 transition-all cursor-pointer"
+                            title="Unggah dan impor kembali file spreadsheet Excel yang telah diedit"
+                        >
+                            <svg class="w-3.5 h-3.5 text-indigo-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                            </svg>
+                            <span>Impor dari Excel</span>
+                        </button>
+
                         <!-- Tombol Export Excel -->
                         <a 
                             id="btnExportExcel"
@@ -123,6 +138,46 @@
                         </a>
                     </div>
                 </div>
+
+                <!-- NOTIFICATION ALERT (IF FLASH SESSION MESSAGE) -->
+                @if (session('success'))
+                    <div id="flashSuccessAlert" class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between text-xs text-emerald-800 animate-in fade-in duration-200 shadow-2xs">
+                        <div class="flex items-center gap-2.5">
+                            <span class="p-1 rounded-full bg-emerald-200 text-emerald-800">
+                                <svg class="w-4 h-4 text-emerald-700 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </span>
+                            <span class="font-medium">{{ session('success') }}</span>
+                        </div>
+                        <button type="button" onclick="document.getElementById('flashSuccessAlert').remove()" class="text-emerald-600 hover:text-emerald-900 font-bold p-1 cursor-pointer">✕</button>
+                    </div>
+                @endif
+
+                @if (session('error'))
+                    <div id="flashErrorAlert" class="p-4 bg-rose-50 border border-rose-200 rounded-xl flex items-center justify-between text-xs text-rose-800 animate-in fade-in duration-200 shadow-2xs">
+                        <div class="flex items-center gap-2.5">
+                            <span class="p-1 rounded-full bg-rose-200 text-rose-800">
+                                <svg class="w-4 h-4 text-rose-700 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </span>
+                            <span class="font-medium">{{ session('error') }}</span>
+                        </div>
+                        <button type="button" onclick="document.getElementById('flashErrorAlert').remove()" class="text-rose-600 hover:text-rose-900 font-bold p-1 cursor-pointer">✕</button>
+                    </div>
+                @endif
+
+                @if ($errors->any())
+                    <div class="p-4 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 animate-in fade-in duration-200 shadow-2xs">
+                        <div class="font-bold mb-1">Terjadi kesalahan validasi:</div>
+                        <ul class="list-disc list-inside space-y-0.5 text-rose-700">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
 
                 <!-- FILTER FORM CARD -->
                 <div class="bg-white p-4 lg:p-5 rounded-xl border border-slate-200/80 shadow-2xs">
@@ -519,6 +574,109 @@
                 <footer class="pt-8 pb-4 text-center text-xs text-slate-400">
                     <p>© 2026 PT Netmedia Fiberoptik Lancarmulya • Network Operation Center</p>
                 </footer>
+
+            </main>
+
+        </div>
+
+    </div>
+
+    <!-- MODAL IMPOR LAPORAN EXCEL -->
+    <div id="importModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="relative bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900">Impor Laporan dari Excel</h3>
+                        <p class="text-[11px] text-slate-500">Unggah file hasil ekspor Excel yang telah Anda edit secara manual</p>
+                    </div>
+                </div>
+                <button 
+                    type="button" 
+                    onclick="document.getElementById('importModal').classList.add('hidden')"
+                    class="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                >
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Modal Form -->
+            <form action="{{ $importExcelUrl }}" method="POST" enctype="multipart/form-data" class="mt-4 space-y-4">
+                @csrf
+                <input type="hidden" name="customer" value="{{ $selectedCustomer }}">
+                <input type="hidden" name="month" value="{{ $selectedMonth }}">
+                <input type="hidden" name="year" value="{{ $selectedYear }}">
+
+                <!-- Panduan Singkat -->
+                <div class="p-3 bg-slate-50 border border-slate-200/80 rounded-xl text-xs space-y-1.5 text-slate-600">
+                    <div class="font-semibold text-slate-800 flex items-center gap-1.5">
+                        <svg class="w-4 h-4 text-indigo-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>Ketentuan Berkas Excel:</span>
+                    </div>
+                    <ul class="list-disc list-inside space-y-1 pl-1 text-[11px] text-slate-500">
+                        <li>Gunakan file hasil <strong>Export ke Excel</strong> dari sistem ini.</li>
+                        <li>Format sheet yang didukung: <strong>Daftar Perangkat</strong> dan <strong>Riwayat Tiket & Insiden</strong>.</li>
+                        <li>Sistem otomatis memperbarui data bila <em>Hostname</em> atau <em>Nomor Tiket</em> sudah ada, atau menambahkan data baru jika belum terdaftar.</li>
+                    </ul>
+                </div>
+
+                <!-- File Input Drag-Drop Area -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1.5">Pilih Berkas Excel (.xlsx, .xls, .csv)</label>
+                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-xl hover:border-indigo-400 hover:bg-indigo-50/20 transition-all cursor-pointer relative group">
+                        <div class="space-y-1 text-center">
+                            <svg class="mx-auto h-9 w-9 text-slate-400 group-hover:text-indigo-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <div class="flex text-xs text-slate-600 justify-center">
+                                <span class="font-medium text-indigo-600 group-hover:underline">Klik untuk memilih file</span>
+                            </div>
+                            <p id="selectedFileName" class="text-[11px] text-slate-400">XLSX, XLS, atau CSV hingga 10MB</p>
+                        </div>
+                        <input 
+                            id="excelFileInput" 
+                            name="file" 
+                            type="file" 
+                            accept=".xlsx, .xls, .csv" 
+                            required
+                            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            onchange="const f = this.files[0]; if(f) document.getElementById('selectedFileName').textContent = f.name + ' (' + (f.size/1024).toFixed(1) + ' KB)';"
+                        >
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+                    <button 
+                        type="button" 
+                        onclick="document.getElementById('importModal').classList.add('hidden')"
+                        class="px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg border border-slate-200 shadow-2xs transition-all cursor-pointer"
+                    >
+                        Batal
+                    </button>
+                    <button 
+                        type="submit" 
+                        class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm active:scale-95 transition-all cursor-pointer"
+                    >
+                        <svg class="w-3.5 h-3.5 text-indigo-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                        <span>Mulai Impor</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
             </main>
 

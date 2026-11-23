@@ -159,10 +159,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/monitoring/alerts/resolve-all', [MonitoringController::class, 'resolveAllAlerts'])->name('monitoring.alerts.resolve-all');
         Route::post('/monitoring/settings', [MonitoringDeviceController::class, 'saveSettings'])->name('monitoring.settings.save');
 
-        // Laporan Kinerja SLA & Audit (Executive Report Generator & PDF/Excel Export)
+        // Laporan Kinerja SLA & Audit (Executive Report Generator & PDF/Excel Export/Import)
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
         Route::get('/reports/export-pdf', [ReportController::class, 'exportPdf'])->name('reports.exportPdf');
         Route::get('/reports/export-excel', [ReportController::class, 'exportExcel'])->name('reports.exportExcel');
+        Route::post('/reports/import-excel', [ReportController::class, 'importExcel'])->name('reports.importExcel');
 
         // Log Aktivitas Sistem (Activity Log Audit Trail)
         Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
