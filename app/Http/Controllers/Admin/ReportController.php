@@ -8,7 +8,6 @@ use App\Models\Customer;
 use App\Models\Device;
 use App\Models\MonitoringAlert;
 use App\Models\MonitoringDevice;
-use App\Models\NetworkSlaMetric;
 use App\Models\Project;
 use App\Models\Ticket;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -297,14 +296,13 @@ class ReportController extends Controller
             }
             if (! $resolvedCust && $allDbCustomers->isNotEmpty()) {
                 $hostLower = strtolower($d->hostname ?? '');
-                $snmpLower = strtolower($d->snmp_community ?? '');
                 $rackLower = strtolower($d->rack_location ?? '');
-                $resolvedCust = $allDbCustomers->first(function ($c) use ($hostLower, $snmpLower, $rackLower) {
+                $resolvedCust = $allDbCustomers->first(function ($c) use ($hostLower, $rackLower) {
                     $cName = strtolower($c->name ?? '');
                     $cCode = strtolower($c->code ?? $c->customer_code ?? '');
 
-                    return (! empty($cName) && (str_contains($hostLower, $cName) || str_contains($snmpLower, $cName) || str_contains($rackLower, $cName)))
-                        || (! empty($cCode) && (str_contains($hostLower, $cCode) || str_contains($snmpLower, $cCode)));
+                    return (! empty($cName) && (str_contains($hostLower, $cName) || str_contains($rackLower, $cName)))
+                        || (! empty($cCode) && str_contains($hostLower, $cCode));
                 });
             }
 
@@ -323,10 +321,9 @@ class ReportController extends Controller
                 default => 'Offline',
             };
 
-            $lossVal = (float) ($d->packet_loss ?? 0.0);
             $uptimeVal = match ($statusState) {
-                'online' => round(max(0.0, 100.0 - $lossVal), 2),
-                'warning' => round(max(0.0, 90.0 - $lossVal), 2),
+                'online' => 100.0,
+                'warning' => 90.0,
                 default => 0.0,
             };
 
@@ -345,13 +342,13 @@ class ReportController extends Controller
                 'location' => $d->rack_location ?: '-',
                 'rack_position' => $d->rack_location ?: '-',
                 'uptime_percent' => $uptimeVal,
-                'uptime_text' => $d->uptime ?: ($statusState === 'online' ? 'Online' : 'Offline'),
-                'rtt_ms' => $d->last_ping_ms !== null ? (float) $d->last_ping_ms : null,
-                'packet_loss' => (string) ($d->packet_loss ?? '0.00').'%',
-                'rx_rate' => $d->rx_rate ?: '0.0 Mbps',
-                'tx_rate' => $d->tx_rate ?: '0.0 Mbps',
-                'cpu_load' => (float) ($d->cpu_load ?? 0.0),
-                'ram_load' => (float) ($d->ram_load ?? 0.0),
+                'uptime_text' => $statusState === 'online' ? 'Online' : 'Offline',
+                'rtt_ms' => null,
+                'packet_loss' => '0.00%',
+                'rx_rate' => '0.0 Mbps',
+                'tx_rate' => '0.0 Mbps',
+                'cpu_load' => 0.0,
+                'ram_load' => 0.0,
             ];
         }
 
@@ -519,15 +516,10 @@ class ReportController extends Controller
         $totalTickets = count($filteredTickets);
         $resolvedTickets = count(array_filter($filteredTickets, fn ($t) => in_array($t['status_type'], ['resolved', 'closed'])));
 
-        // 5. KALKULASI TIMELINE UPTIME HARIAN (HISTORIS DINAMIS DARI DATABASE)
+        // 5. KALKULASI TIMELINE UPTIME HARIAN (HISTORIS DINAMIS BERBASIS TIKET INSIDEN & STATUS NODE)
         $startOfMonth = Carbon::create($selectedYear, $selectedMonth, 1)->startOfMonth();
         $daysInMonth = $startOfMonth->daysInMonth;
         $endOfMonth = Carbon::create($selectedYear, $selectedMonth, $daysInMonth)->endOfDay();
-
-        // Tarik data SLA harian dari tabel network_sla_metrics
-        $slaMetrics = NetworkSlaMetric::whereBetween('date', [$startOfMonth->toDateString(), $endOfMonth->toDateString()])
-            ->get()
-            ->keyBy(fn ($item) => Carbon::parse($item->date)->format('Y-m-d'));
 
         // Tarik tiket insiden untuk bulan dan pelanggan yang difilter
         $ticketsInMonth = Ticket::whereBetween('reported_at', [$startOfMonth, $endOfMonth])
@@ -542,7 +534,6 @@ class ReportController extends Controller
         for ($day = 1; $day <= $daysInMonth; $day++) {
             $dateObj = Carbon::create($selectedYear, $selectedMonth, $day);
             $dateKey = $dateObj->format('Y-m-d');
-            $metric = $slaMetrics->get($dateKey);
 
             // Filter tiket insiden spesifik pada hari ini
             $dayTickets = $ticketsInMonth->filter(function ($t) use ($dateObj) {
@@ -578,24 +569,6 @@ class ReportController extends Controller
                     $barColor = 'bg-amber-400 hover:bg-amber-500';
                 }
                 $notes = "Tiket #{$firstTicket->ticket_number}: {$firstTicket->subject}".($ticketCount > 1 ? ' (+'.($ticketCount - 1).' insiden lain)' : '');
-            } elseif ($metric) {
-                $rawStatus = strtolower($metric->status ?? 'normal');
-                if ($rawStatus === 'outage' || $rawStatus === 'critical' || $metric->uptime_percentage < 98.0) {
-                    $status = 'outage';
-                    $statusLabel = 'Padam / Outage';
-                    $barColor = 'bg-red-500 hover:bg-red-600';
-                } elseif ($rawStatus === 'warning' || $metric->uptime_percentage < 99.9 || $metric->incidents_count > 0 || $metric->downtime_minutes > 0) {
-                    $status = 'warning';
-                    $statusLabel = 'Degradasi / Warning';
-                    $barColor = 'bg-amber-400 hover:bg-amber-500';
-                } else {
-                    $status = 'normal';
-                    $statusLabel = 'Normal 100%';
-                    $barColor = 'bg-emerald-500 hover:bg-emerald-600';
-                }
-                $uptime = (float) $metric->uptime_percentage;
-                $downtimeMin = (int) $metric->downtime_minutes;
-                $notes = $metric->notes ?: 'Operasi Jaringan Normal';
             } elseif ($totalDevices === 0) {
                 $status = 'nodata';
                 $statusLabel = 'Nihil Node';
@@ -632,7 +605,7 @@ class ReportController extends Controller
                 'formatted_date' => $day.' '.$this->months[$selectedMonth].' '.$selectedYear,
                 'uptime_percentage' => number_format($uptime, 2),
                 'downtime_minutes' => $downtimeMin,
-                'incidents_count' => $dayTickets->count() ?: ($metric?->incidents_count ?? 0),
+                'incidents_count' => $dayTickets->count(),
                 'status' => $status,
                 'status_label' => $statusLabel,
                 'bar_color' => $barColor,

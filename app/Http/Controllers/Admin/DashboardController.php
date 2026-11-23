@@ -7,7 +7,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Device;
 use App\Models\MonitoringAlert;
-use App\Models\NetworkSlaMetric;
 use App\Models\Project;
 use App\Models\Ticket;
 use Carbon\Carbon;
@@ -172,11 +171,32 @@ class DashboardController extends Controller
         $today = Carbon::today();
         $startDate = $today->copy()->subDays(29);
 
-        // Ambil data 30 hari dari database
-        $records = NetworkSlaMetric::where('date', '>=', $startDate->toDateString())
-            ->where('date', '<=', $today->toDateString())
-            ->orderBy('date', 'asc')
-            ->get();
+        // Ambil data 30 hari secara dinamis berbasis tiket insiden operasional
+        $tickets = Ticket::whereBetween('reported_at', [$startDate->copy()->startOfDay(), $today->copy()->endOfDay()])->get();
+        $records = collect();
+
+        for ($d = 0; $d < 30; $d++) {
+            $currentDate = $startDate->copy()->addDays($d);
+            $dayTickets = $tickets->filter(fn ($t) => $t->reported_at && $t->reported_at->isSameDay($currentDate));
+            $downtimeMin = 0;
+            foreach ($dayTickets as $dt) {
+                if ($dt->reported_at && $dt->resolved_at) {
+                    $downtimeMin += max(15, (int) $dt->reported_at->diffInMinutes($dt->resolved_at));
+                } else {
+                    $downtimeMin += 30;
+                }
+            }
+            $uptime = max(0.0, round((1440 - min(1440, $downtimeMin)) / 1440 * 100, 2));
+
+            $records->push((object) [
+                'date' => $currentDate->toDateString(),
+                'uptime_percentage' => $uptime,
+                'downtime_minutes' => $downtimeMin,
+                'incidents_count' => $dayTickets->count(),
+                'notes' => $dayTickets->isNotEmpty() ? "Tiket #{$dayTickets->first()->ticket_number}" : 'Operasional Normal',
+                'status' => $uptime < 98.0 ? 'outage' : ($uptime < 99.5 ? 'warning' : 'normal'),
+            ]);
+        }
 
         if ($records->isEmpty()) {
             return [

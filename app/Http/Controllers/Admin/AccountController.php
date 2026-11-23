@@ -33,8 +33,8 @@ class AccountController extends Controller
                     'category' => $c->category ?: 'Mitra Korporat',
                     'package' => $c->package ?: ($c->note ?: 'Dedicated Corporate Fiber'),
                     'address' => $c->address ?: '-',
-                    'latitude' => $c->latitude !== null ? (float) $c->latitude : null,
-                    'longitude' => $c->longitude !== null ? (float) $c->longitude : null,
+                    'latitude' => $c->latitude,
+                    'longitude' => $c->longitude,
                     'default_pic' => ($c->pic_name && $c->pic_name !== '-') ? $c->pic_name : $c->name,
                     'default_email' => $c->email ?: '',
                     'default_phone' => $c->phone ?: '',
@@ -60,8 +60,8 @@ class AccountController extends Controller
                     'category' => $c->category ?: 'Customer Rumahan',
                     'package' => $c->package ?: ($c->note ?: 'Paket Home Fiber Unlimited'),
                     'address' => $c->address ?: '-',
-                    'latitude' => $c->latitude !== null ? (float) $c->latitude : null,
-                    'longitude' => $c->longitude !== null ? (float) $c->longitude : null,
+                    'latitude' => $c->latitude,
+                    'longitude' => $c->longitude,
                     'default_pic' => ($c->pic_name && $c->pic_name !== '-') ? $c->pic_name : $c->name,
                     'default_email' => $c->email ?: '',
                     'default_phone' => $c->phone ?: '',
@@ -136,8 +136,8 @@ class AccountController extends Controller
                 'customer_code' => $custType === 'rumahan' ? 'RUMAHAN' : ($customer?->code ?? 'CUST'),
                 'package' => $customer?->package ?: ($customer?->note ?: 'Dedicated Connection'),
                 'address' => $customer?->address ?: '-',
-                'latitude' => $customer?->latitude !== null ? (float) $customer->latitude : null,
-                'longitude' => $customer?->longitude !== null ? (float) $customer->longitude : null,
+                'latitude' => $customer?->latitude,
+                'longitude' => $customer?->longitude,
                 'name' => $user->name,
                 'username' => $user->username ?: ('user_'.$user->id),
                 'email' => $user->email,
@@ -246,19 +246,20 @@ class AccountController extends Controller
         }
         $resolvedUsername = $candidateUser;
 
-        // Update koordinat atau alamat customer jika diisi pada formulir akun
+        // Update alamat customer jika diisi pada formulir akun
         $customerUpdates = [];
         if (! empty($validated['address']) && empty($customer->address)) {
             $customerUpdates['address'] = $validated['address'];
         }
-        if (isset($validated['latitude']) && $validated['latitude'] !== '') {
-            $customerUpdates['latitude'] = (float) $validated['latitude'];
+        if (array_key_exists('latitude', $validated) && $validated['latitude'] !== null) {
+            $customerUpdates['latitude'] = $validated['latitude'];
         }
-        if (isset($validated['longitude']) && $validated['longitude'] !== '') {
-            $customerUpdates['longitude'] = (float) $validated['longitude'];
+        if (array_key_exists('longitude', $validated) && $validated['longitude'] !== null) {
+            $customerUpdates['longitude'] = $validated['longitude'];
         }
         if (! empty($customerUpdates)) {
             $customer->update($customerUpdates);
+            $customer->refresh();
         }
 
         $accountHolderName = ! empty($validated['name']) ? $validated['name'] : $customer->name;
@@ -301,8 +302,8 @@ class AccountController extends Controller
             'customer_code' => $resolvedType === 'rumahan' ? 'RUMAHAN' : ($customer->code ?? 'CUST'),
             'package' => $customer->package ?: ($customer->note ?: 'Paket Layanan'),
             'address' => $customer->address ?: '-',
-            'latitude' => $customer->latitude !== null ? (float) $customer->latitude : null,
-            'longitude' => $customer->longitude !== null ? (float) $customer->longitude : null,
+            'latitude' => $customer->latitude,
+            'longitude' => $customer->longitude,
             'name' => $user->name,
             'username' => $user->username,
             'email' => $user->email,
@@ -350,8 +351,8 @@ class AccountController extends Controller
             'customer_code' => $custType === 'rumahan' ? 'RUMAHAN' : ($customer?->code ?? 'CUST'),
             'package' => $customer?->package ?: ($customer?->note ?: 'Paket Layanan'),
             'address' => $customer?->address ?: '-',
-            'latitude' => $customer?->latitude !== null ? (float) $customer->latitude : null,
-            'longitude' => $customer?->longitude !== null ? (float) $customer->longitude : null,
+            'latitude' => $customer?->latitude,
+            'longitude' => $customer?->longitude,
             'name' => $user->name,
             'username' => $user->username ?: ('user_'.$user->id),
             'email' => $user->email,
@@ -408,19 +409,20 @@ class AccountController extends Controller
         $resolvedType = $customer->customer_type ?: $customerType;
         $role = $resolvedType === 'rumahan' ? 'customer_residential' : 'customer_representative';
 
-        // Update data customer terkait jika ada perubahan koordinat/alamat
+        // Update data customer terkait jika ada perubahan alamat atau koordinat lokasi
         $custUpdates = [];
         if (! empty($validated['address'])) {
             $custUpdates['address'] = $validated['address'];
         }
-        if (isset($validated['latitude']) && $validated['latitude'] !== '') {
-            $custUpdates['latitude'] = (float) $validated['latitude'];
+        if (array_key_exists('latitude', $validated) && $validated['latitude'] !== null) {
+            $custUpdates['latitude'] = $validated['latitude'];
         }
-        if (isset($validated['longitude']) && $validated['longitude'] !== '') {
-            $custUpdates['longitude'] = (float) $validated['longitude'];
+        if (array_key_exists('longitude', $validated) && $validated['longitude'] !== null) {
+            $custUpdates['longitude'] = $validated['longitude'];
         }
         if (! empty($custUpdates)) {
             $customer->update($custUpdates);
+            $customer->refresh();
         }
 
         $accountHolderName = ! empty($validated['name']) ? $validated['name'] : $customer->name;

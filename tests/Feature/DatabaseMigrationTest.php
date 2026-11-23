@@ -16,7 +16,9 @@ class DatabaseMigrationTest extends TestCase
         $this->assertTrue(Schema::hasTable('tickets'));
         $this->assertTrue(Schema::hasTable('monitoring_alerts'));
         $this->assertTrue(Schema::hasTable('monitoring_devices'));
-        $this->assertTrue(Schema::hasTable('network_sla_metrics'));
+        $this->assertTrue(Schema::hasTable('teknisi'));
+        $this->assertTrue(Schema::hasTable('landing_clients'));
+        $this->assertFalse(Schema::hasTable('network_sla_metrics'));
 
         $this->assertDatabaseHas('users', [
             'email' => 'admin@netfly.id',
