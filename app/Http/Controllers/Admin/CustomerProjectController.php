@@ -100,7 +100,7 @@ class CustomerProjectController extends Controller
 
         $code = $this->generateNextCode('rumahan');
 
-        $customer = Customer::create([
+        $customerData = [
             'customer_type' => 'rumahan',
             'code' => $code,
             'name' => trim($validated['name']),
@@ -111,7 +111,14 @@ class CustomerProjectController extends Controller
             'note' => ! empty($validated['note']) ? trim($validated['note']) : 'Layanan Internet Rumahan NetFly',
             'status' => $validated['status'],
             'category' => 'Customer Rumahan',
-        ]);
+        ];
+        if ($request->filled('latitude')) {
+            $customerData['latitude'] = $request->input('latitude');
+        }
+        if ($request->filled('longitude')) {
+            $customerData['longitude'] = $request->input('longitude');
+        }
+        $customer = Customer::create($customerData);
 
         ActivityLogger::log(
             'kemitraan',
@@ -161,14 +168,21 @@ class CustomerProjectController extends Controller
             'address.required' => 'Alamat customer wajib diisi.',
         ]);
 
-        $customer->update([
+        $updateData = [
             'name' => trim($validated['name']),
             'status' => $validated['status'],
             'email' => trim($validated['email']),
             'phone' => trim($validated['phone']),
             'address' => trim($validated['address']),
             'note' => ! empty($validated['note']) ? trim($validated['note']) : $customer->note,
-        ]);
+        ];
+        if ($request->has('latitude')) {
+            $updateData['latitude'] = $request->input('latitude');
+        }
+        if ($request->has('longitude')) {
+            $updateData['longitude'] = $request->input('longitude');
+        }
+        $customer->update($updateData);
 
         ActivityLogger::log(
             'kemitraan',
@@ -268,7 +282,7 @@ class CustomerProjectController extends Controller
 
         $code = $this->generateNextCode('perusahaan');
 
-        $corporate = Customer::create([
+        $corporateData = [
             'customer_type' => 'perusahaan',
             'code' => $code,
             'name' => trim($validated['name']),
@@ -279,7 +293,14 @@ class CustomerProjectController extends Controller
             'note' => ! empty($validated['note']) ? trim($validated['note']) : 'Kemitraan Jaringan Korporat NetFly',
             'status' => $validated['status'],
             'category' => 'Mitra Korporat',
-        ]);
+        ];
+        if ($request->filled('latitude')) {
+            $corporateData['latitude'] = $request->input('latitude');
+        }
+        if ($request->filled('longitude')) {
+            $corporateData['longitude'] = $request->input('longitude');
+        }
+        $corporate = Customer::create($corporateData);
 
         ActivityLogger::log(
             'kemitraan',
@@ -332,7 +353,7 @@ class CustomerProjectController extends Controller
             'address.required' => 'Alamat kantor wajib diisi.',
         ]);
 
-        $corporate->update([
+        $updateData = [
             'name' => trim($validated['name']),
             'pic_name' => trim($validated['pic_name']),
             'status' => $validated['status'],
@@ -340,7 +361,14 @@ class CustomerProjectController extends Controller
             'phone' => trim($validated['phone']),
             'address' => trim($validated['address']),
             'note' => ! empty($validated['note']) ? trim($validated['note']) : $corporate->note,
-        ]);
+        ];
+        if ($request->has('latitude')) {
+            $updateData['latitude'] = $request->input('latitude');
+        }
+        if ($request->has('longitude')) {
+            $updateData['longitude'] = $request->input('longitude');
+        }
+        $corporate->update($updateData);
 
         ActivityLogger::log(
             'kemitraan',

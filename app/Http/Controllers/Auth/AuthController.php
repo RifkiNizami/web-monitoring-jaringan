@@ -435,19 +435,20 @@ class AuthController extends Controller
                     'status' => ucfirst($d->status ?: 'Tersedia'),
                     'status_state' => $st,
                     'is_online' => $isOnline,
-                    'uptime' => $d->uptime ?: ($isOnline ? 'Online' : 'Offline'),
-                    'rx_rate' => $d->rx_rate ?: '0.0 Mbps',
-                    'tx_rate' => $d->tx_rate ?: '0.0 Mbps',
-                    'ping_ms' => $d->last_ping_ms !== null ? "{$d->last_ping_ms} ms" : '-',
-                    'last_ping_ms' => $d->last_ping_ms ?? null,
-                    'packet_loss' => (string) ($d->packet_loss ?? '0.00').'%',
-                    'cpu_load' => (float) ($d->cpu_load ?? 0.0),
-                    'ram_load' => (float) ($d->ram_load ?? 0.0),
+                    'uptime' => $isOnline ? 'Online' : 'Offline',
+                    'rx_rate' => '0.0 Mbps',
+                    'tx_rate' => '0.0 Mbps',
+                    'ping_ms' => '-',
+                    'last_ping_ms' => null,
+                    'packet_loss' => '0.00%',
+                    'cpu_load' => 0.0,
+                    'ram_load' => 0.0,
                     'rack_location' => $d->rack_location ?: '-',
                 ];
             });
 
-            $allCustomerDevices = $monitoringList->concat($deviceList)->unique('hostname')->values()->all();
+            // Kebijakan sistem: 1 User / Pelanggan = 1 Router Monitoring (Strict single device payload)
+            $allCustomerDevices = $monitoringList->take(1)->concat($deviceList->take(1))->unique('hostname')->take(1)->values()->all();
         }
 
         $activeMonitoringProject = $matchedMonitoringDevices->first()?->project;

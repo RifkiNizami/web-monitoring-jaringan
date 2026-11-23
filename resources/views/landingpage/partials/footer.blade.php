@@ -51,7 +51,7 @@
                             class="text-netfly-blue font-semibold hover:underline">WhatsApp Hotline NOC &rarr;</a></li>
                     <li><a href="mailto:netmediaf@gmail.com" class="hover:text-slate-900 transition-colors">Email:
                             netmediaf@gmail.com</a></li>
-                    <li><span class="text-slate-500">Telepon: (031) 33557377</span></li>
+                    <li><span class="text-slate-500">Telepon: +6281358439094</span></li>
                     <li><span class="text-slate-500">Bantuan: 24 Jam Nonstop</span></li>
                 </ul>
             </div>

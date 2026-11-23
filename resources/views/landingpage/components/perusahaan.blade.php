@@ -84,7 +84,7 @@
                                 Jl. Taman Aloha E1 - 45, Sidoarjo, Jawa Timur (Kawasan Surabaya Hub)
                             </p>
                             <div class="pl-4 text-slate-700 font-semibold text-xs">
-                                Telepon: (031) 33557377 &bull; Hotline: 0813-5843-9094
+                                Telepon:081358439094  &bull; Hotline: 0813-5843-9094
                             </div>
                         </div>
 

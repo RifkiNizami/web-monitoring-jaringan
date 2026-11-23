@@ -213,8 +213,11 @@
                                     >
                                         <option value="">-- Infrastruktur Backbone / Internal NetFly (Tanpa Pelanggan) --</option>
                                         @foreach($customers as $c)
-                                            <option value="{{ $c->id }}" {{ (string) old('customer_id') === (string) $c->id ? 'selected' : '' }}>
-                                                {{ $c->name }} ({{ $c->code ?? 'CUST-'.$c->id }}) — {{ ucfirst($c->customer_type ?? 'Pelanggan') }}
+                                            @php
+                                                $assignedRouter = $c->monitoringDevices->first();
+                                            @endphp
+                                            <option value="{{ $c->id }}" {{ (string) old('customer_id') === (string) $c->id ? 'selected' : '' }} {{ $assignedRouter ? 'disabled' : '' }}>
+                                                {{ $c->name }} ({{ $c->code ?? 'CUST-'.$c->id }}) — {{ ucfirst($c->customer_type ?? 'Pelanggan') }}{{ $assignedRouter ? ' [Sudah Ada Router: '.$assignedRouter->hostname.']' : '' }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -224,7 +227,7 @@
                                         </svg>
                                     </div>
                                 </div>
-                                <p class="mt-1 text-[11px] text-slate-500">Pilih customer pemilik node ini agar router muncul di dashboard monitoring mobile.</p>
+                                <p class="mt-1 text-[11px] text-slate-500">Pilih customer pemilik node ini (Kebijakan sistem: 1 Pelanggan = 1 Router Monitoring).</p>
                             </div>
 
                             <div>

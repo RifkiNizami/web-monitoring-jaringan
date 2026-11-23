@@ -20,7 +20,6 @@ class DatabaseSeeder extends Seeder
             DeviceSeeder::class,
             TicketSeeder::class,
             MonitoringAlertSeeder::class,
-            NetworkSlaMetricSeeder::class,
             TeknisiSeeder::class,
             LandingClientSeeder::class,
         ]);

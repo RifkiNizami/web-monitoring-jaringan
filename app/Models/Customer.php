@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Customer extends Model
 {
@@ -48,6 +49,14 @@ class Customer extends Model
     public function monitoringDevices(): HasMany
     {
         return $this->hasMany(MonitoringDevice::class, 'customer_id');
+    }
+
+    /**
+     * Dedicated Single Monitoring Device (Kebijakan 1 User / Pelanggan = 1 Router)
+     */
+    public function monitoringDevice(): HasOne
+    {
+        return $this->hasOne(MonitoringDevice::class, 'customer_id');
     }
 
     /**

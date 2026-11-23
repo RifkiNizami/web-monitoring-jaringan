@@ -25,15 +25,6 @@ class Device extends Model
         'status_state',
         'photo',
         'rack_location',
-        'snmp_community',
-        'snmp_port',
-        'uptime',
-        'last_ping_ms',
-        'packet_loss',
-        'cpu_load',
-        'ram_load',
-        'rx_rate',
-        'tx_rate',
     ];
 
     protected $casts = [

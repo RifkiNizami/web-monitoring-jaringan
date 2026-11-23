@@ -15,7 +15,7 @@
                 class="animate-hero-desc text-slate-600 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto font-normal">
                 NetFly menghadirkan layanan internet leased line 1:1, jaringan fiber optik antarcabang,
                 dan pemantauan status link secara real-time. Kecepatan simetris tanpa drop di jam kerja sibuk,
-                didukung garansi ketersediaan SLA 99.5% serta pendampingan langsung oleh tim NOC kami.
+                didukung garansi ketersediaan SLA 99.5% serta pendampingan langsung oleh tim kami.
             </p>
 
             <div

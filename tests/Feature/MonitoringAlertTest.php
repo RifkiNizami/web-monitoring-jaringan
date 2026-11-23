@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Http\Controllers\Admin\MonitoringController;
+use App\Models\Customer;
 use App\Models\MonitoringAlert;
 use App\Models\MonitoringDevice;
 use App\Models\User;
@@ -446,6 +447,54 @@ class MonitoringAlertTest extends TestCase
             'type' => 'Perangkat Padam',
             'severity' => 'critical',
             'is_resolved' => false,
+        ]);
+    }
+
+    /**
+     * Memastikan kebijakan 1 User / Pelanggan = 1 Router Monitoring menolak penugasan router kedua ke pelanggan yang sama.
+     */
+    public function test_one_user_one_router_policy_prevents_duplicate_assignment(): void
+    {
+        $customer = Customer::create([
+            'code' => 'CUST-TEST-01',
+            'name' => 'PT Mitra Satu Router',
+            'customer_type' => 'perusahaan',
+            'pic_name' => 'Bambang',
+            'email' => 'mitra1router@test.com',
+            'phone' => '081299990001',
+            'address' => 'Jl. Kebijakan No. 1',
+        ]);
+
+        // 1. Router pertama berhasil didaftarkan
+        $resp1 = $this->actingAs($this->adminUser)->postJson('/monitoring/devices', [
+            'hostname' => 'RTR-TEST-MITRA-01',
+            'unit_type' => 'Generic Router',
+            'ip_address' => '10.10.10.1',
+            'customer_id' => $customer->id,
+            'api_port' => 80,
+            'connection_type' => 'http',
+        ]);
+        $resp1->assertStatus(200);
+        $this->assertDatabaseHas('monitoring_devices', [
+            'hostname' => 'RTR-TEST-MITRA-01',
+            'customer_id' => $customer->id,
+        ]);
+
+        // 2. Router kedua untuk pelanggan yang sama harus DITOLAK (HTTP 422)
+        $resp2 = $this->actingAs($this->adminUser)->postJson('/monitoring/devices', [
+            'hostname' => 'RTR-TEST-MITRA-02',
+            'unit_type' => 'Generic Router',
+            'ip_address' => '10.10.10.2',
+            'customer_id' => $customer->id,
+            'api_port' => 80,
+            'connection_type' => 'http',
+        ]);
+        $resp2->assertStatus(422);
+        $resp2->assertJsonFragment([
+            'success' => false,
+        ]);
+        $this->assertDatabaseMissing('monitoring_devices', [
+            'hostname' => 'RTR-TEST-MITRA-02',
         ]);
     }
 }

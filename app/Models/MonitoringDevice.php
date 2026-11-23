@@ -59,8 +59,6 @@ class MonitoringDevice extends Model
         'tx_mbps',
         'cpu_load',
         'ram_load',
-        'temperature',
-        'voltage',
         'packet_loss',
         'last_ping_ms',
         'connection_type',

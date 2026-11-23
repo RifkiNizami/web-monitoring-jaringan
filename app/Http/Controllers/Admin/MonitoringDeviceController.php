@@ -20,7 +20,7 @@ class MonitoringDeviceController extends Controller
      */
     public function create(): View
     {
-        $customers = Customer::orderBy('name', 'asc')->get();
+        $customers = Customer::with('monitoringDevices')->orderBy('name', 'asc')->get();
         $projects = Project::orderBy('name', 'asc')->get();
 
         return view('admin.monitoring.create', compact('customers', 'projects'));
@@ -69,6 +69,23 @@ class MonitoringDeviceController extends Controller
             $customerId = $customerRecord?->id;
         }
         $customerName = $customerRecord ? $customerRecord->name : (! empty($validated['customer']) ? trim($validated['customer']) : 'Infrastruktur Backbone NetFly');
+
+        // Enforce kebijakan sistem: 1 User / Pelanggan = 1 Router Monitoring
+        if ($customerId) {
+            $existingRouter = MonitoringDevice::where('customer_id', $customerId)->first();
+            if ($existingRouter) {
+                $err = "Customer '{$customerName}' sudah memiliki router monitoring ({$existingRouter->hostname}). Sesuai kebijakan 1 user 1 router, satu pelanggan hanya dapat memiliki 1 router monitoring.";
+                if ($request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $err,
+                        'errors' => ['customer_id' => [$err]],
+                    ], 422);
+                }
+
+                return back()->withInput()->withErrors(['customer_id' => $err]);
+            }
+        }
 
         $projectId = ! empty($validated['project_id']) ? (int) $validated['project_id'] : null;
         $projectRecord = $projectId ? Project::find($projectId) : null;
@@ -226,7 +243,7 @@ class MonitoringDeviceController extends Controller
         }
 
         $device = MonitoringController::formatMonitoringDevice($deviceModel);
-        $customers = Customer::orderBy('name', 'asc')->get();
+        $customers = Customer::with('monitoringDevices')->orderBy('name', 'asc')->get();
         $projects = Project::orderBy('name', 'asc')->get();
 
         return view('admin.monitoring.edit', compact('device', 'customers', 'projects'));
@@ -285,6 +302,25 @@ class MonitoringDeviceController extends Controller
             $customerId = $customerRecord?->id;
         }
         $customerName = $customerRecord ? $customerRecord->name : (! empty($validated['customer']) ? trim($validated['customer']) : ($deviceModel->customer ?: 'Infrastruktur Backbone NetFly'));
+
+        // Enforce kebijakan sistem: 1 User / Pelanggan = 1 Router Monitoring
+        if ($customerId) {
+            $existingRouter = MonitoringDevice::where('customer_id', $customerId)
+                ->where('id', '!=', $id)
+                ->first();
+            if ($existingRouter) {
+                $err = "Customer '{$customerName}' sudah memiliki router monitoring ({$existingRouter->hostname}). Sesuai kebijakan 1 user 1 router, satu pelanggan hanya dapat memiliki 1 router monitoring.";
+                if ($request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $err,
+                        'errors' => ['customer_id' => [$err]],
+                    ], 422);
+                }
+
+                return back()->withInput()->withErrors(['customer_id' => $err]);
+            }
+        }
 
         $projectId = $request->filled('project_id') ? (int) $request->input('project_id') : null;
         $projectRecord = $projectId ? Project::find($projectId) : null;
