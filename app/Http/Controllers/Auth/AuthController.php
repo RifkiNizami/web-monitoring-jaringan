@@ -290,12 +290,22 @@ class AuthController extends Controller
 
         RateLimiter::clear($throttleKey);
 
+        if (in_array($user->role, ['admin', 'admin_konten'], true)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak: Akun administrator hanya dapat digunakan melalui portal web.',
+            ], 403);
+        }
+
         if (isset($user->is_active) && ! $user->is_active) {
             return response()->json([
                 'success' => false,
                 'message' => 'Akun Anda sedang dinonaktifkan. Silakan hubungi Administrator NOC.',
             ], 403);
         }
+
+        $deviceName = trim((string) ($request->input('device_name') ?: ($request->userAgent() ?: 'NetFly-Mobile')));
+        $plainToken = $user->createApiToken($deviceName, 30);
 
         ActivityLogger::log(
             'auth',
@@ -311,40 +321,60 @@ class AuthController extends Controller
             ]
         );
 
-        return $this->buildMobileUserPayloadResponse($user);
+        $response = $this->buildMobileUserPayloadResponse($user);
+        $payload = $response->getData(true);
+        $payload['token'] = $plainToken;
+        $payload['token_type'] = 'Bearer';
+        $payload['expires_in_days'] = 30;
+
+        return response()->json($payload);
     }
 
     /**
-     * API Profile Pengguna & Customer untuk Mobile App NetFly.
+     * API Logout Mobile App NetFly (Cabut Bearer Token aktif).
+     */
+    public function apiLogout(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $currentToken = $request->attributes->get('current_api_token');
+
+        if ($request->boolean('all_devices') && $user) {
+            $user->revokeAllApiTokens();
+        } elseif ($currentToken) {
+            $currentToken->delete();
+        }
+
+        if ($user) {
+            ActivityLogger::log(
+                'auth',
+                'logout',
+                "Pengguna '{$user->name}' keluar dari Aplikasi Mobile NetFly",
+                $user->name,
+                (string) $user->id,
+                ['email' => $user->email, 'role' => $user->role]
+            );
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Berhasil keluar dan sesi token telah dicabut.',
+        ]);
+    }
+
+    /**
+     * API Profile Pengguna & Customer untuk Mobile App NetFly (terautentikasi Bearer Token).
      */
     public function apiProfile(Request $request): JsonResponse
     {
-        $identifier = $request->query('email') ?? $request->query('username');
-        if (! $identifier) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Parameter email atau username wajib disertakan.',
-            ], 400);
-        }
-
-        $user = User::with(['customer.devices', 'customer.monitoringDevices'])
-            ->where('email', $identifier)
-            ->orWhere('username', $identifier)
-            ->first();
-
+        $user = $request->user();
         if (! $user) {
             return response()->json([
                 'success' => false,
-                'message' => 'Pengguna tidak ditemukan dalam database.',
-            ], 404);
+                'message' => 'Autentikasi diperlukan.',
+            ], 401);
         }
 
-        if (in_array($user->role, ['admin', 'admin_konten'], true)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Akses ditolak untuk akun administrator.',
-            ], 403);
-        }
+        $user->load(['customer.devices', 'customer.monitoringDevices']);
 
         return $this->buildMobileUserPayloadResponse($user);
     }
@@ -506,18 +536,25 @@ class AuthController extends Controller
     }
 
     /**
-     * API Ubah Kata Sandi Akun untuk Aplikasi Mobile NetFly.
+     * API Ubah Kata Sandi Akun untuk Aplikasi Mobile NetFly (terautentikasi Bearer Token).
      */
     public function apiChangePassword(Request $request): JsonResponse
     {
-        $identifier = $request->input('email') ?? $request->input('username');
+        $user = $request->user();
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Autentikasi diperlukan.',
+            ], 401);
+        }
+
         $currentPassword = (string) $request->input('current_password', '');
         $newPassword = (string) $request->input('new_password', '');
 
-        if (! $identifier || $currentPassword === '' || $newPassword === '') {
+        if ($currentPassword === '' || $newPassword === '') {
             return response()->json([
                 'success' => false,
-                'message' => 'Identitas akun, kata sandi lama, dan kata sandi baru wajib diisi.',
+                'message' => 'Kata sandi lama dan kata sandi baru wajib diisi.',
             ], 400);
         }
 
@@ -526,24 +563,6 @@ class AuthController extends Controller
                 'success' => false,
                 'message' => 'Kata sandi baru minimal harus terdiri dari 8 karakter.',
             ], 422);
-        }
-
-        $user = User::where('email', $identifier)
-            ->orWhere('username', $identifier)
-            ->first();
-
-        if (! $user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Akun pengguna tidak ditemukan.',
-            ], 404);
-        }
-
-        if (in_array($user->role, ['admin', 'admin_konten'], true)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Perubahan kata sandi akun administrator hanya diperbolehkan melalui portal web.',
-            ], 403);
         }
 
         if (! Hash::check($currentPassword, $user->password)) {
@@ -555,6 +574,12 @@ class AuthController extends Controller
 
         $user->password = Hash::make($newPassword);
         $user->save();
+
+        // Cabut semua token perangkat lain setelah kata sandi berubah
+        $currentToken = $request->attributes->get('current_api_token');
+        if ($currentToken) {
+            $user->apiTokens()->where('id', '!=', $currentToken->id)->delete();
+        }
 
         ActivityLogger::log(
             'auth',
@@ -572,36 +597,19 @@ class AuthController extends Controller
     }
 
     /**
-     * API Update Profil Pengguna (Nama & No. HP) untuk Mobile App NetFly.
+     * API Update Profil Pengguna (Nama & No. HP) untuk Mobile App NetFly (terautentikasi Bearer Token).
      */
     public function apiUpdateProfile(Request $request): JsonResponse
     {
-        $identifier = $request->input('email') ?? $request->input('username') ?? $request->query('email') ?? $request->query('username');
-        if (! $identifier) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Identitas akun (email atau username) wajib disertakan.',
-            ], 400);
-        }
-
-        $user = User::with(['customer.devices', 'customer.monitoringDevices'])
-            ->where('email', $identifier)
-            ->orWhere('username', $identifier)
-            ->first();
-
+        $user = $request->user();
         if (! $user) {
             return response()->json([
                 'success' => false,
-                'message' => 'Pengguna tidak ditemukan dalam database.',
-            ], 404);
+                'message' => 'Autentikasi diperlukan.',
+            ], 401);
         }
 
-        if (in_array($user->role, ['admin', 'admin_konten'], true)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Perubahan profil akun administrator ditolak melalui endpoint mobile.',
-            ], 403);
-        }
+        $user->load(['customer.devices', 'customer.monitoringDevices']);
 
         $validated = $request->validate([
             'name' => 'required|string|min:2|max:255',

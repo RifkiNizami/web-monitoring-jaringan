@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\AdminKonten\KontenAppSettingController;
 use App\Http\Controllers\Api\AnnouncementApiController;
 use App\Http\Controllers\Api\TicketApiController;
 use App\Http\Controllers\Auth\AuthController;
@@ -12,8 +13,21 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
+// Endpoint Publik (Tanpa Bearer Token)
 Route::middleware('throttle:api')->group(function () {
     Route::post('/login', [AuthController::class, 'apiLogin'])->name('api.login');
+    Route::get('/app-info', [KontenAppSettingController::class, 'apiAppInfo'])->name('api.app-info');
+
+    Route::prefix('announcements')->group(function () {
+        Route::get('/', [AnnouncementApiController::class, 'index'])->name('api.announcements.index');
+        Route::get('/{id}', [AnnouncementApiController::class, 'show'])->name('api.announcements.show');
+    });
+});
+
+// Endpoint Terproteksi (Wajib Authorization: Bearer <token>)
+Route::middleware(['throttle:api', 'api.token'])->group(function () {
+    Route::post('/logout', [AuthController::class, 'apiLogout'])->name('api.logout');
+
     Route::get('/user/profile', [AuthController::class, 'apiProfile'])->name('api.user.profile');
     Route::post('/user/profile', [AuthController::class, 'apiUpdateProfile'])->name('api.user.updateProfile');
     Route::put('/user/profile', [AuthController::class, 'apiUpdateProfile'])->name('api.user.updateProfile.put');
@@ -33,10 +47,5 @@ Route::middleware('throttle:api')->group(function () {
         Route::put('/{id}', [TicketApiController::class, 'update'])->name('api.tickets.update');
         Route::post('/{id}', [TicketApiController::class, 'update'])->name('api.tickets.update.post');
         Route::post('/{id}/reply', [TicketApiController::class, 'update'])->name('api.tickets.reply');
-    });
-
-    Route::prefix('announcements')->group(function () {
-        Route::get('/', [AnnouncementApiController::class, 'index'])->name('api.announcements.index');
-        Route::get('/{id}', [AnnouncementApiController::class, 'show'])->name('api.announcements.show');
     });
 });

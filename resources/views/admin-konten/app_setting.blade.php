@@ -116,7 +116,7 @@
                             </div>
                         </div>
 
-                        <form action="{{ route('app-setting.update') }}" method="POST" class="p-6 space-y-5 flex-1 flex flex-col justify-between">
+                        <form action="{{ route('app-setting.update') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-5 flex-1 flex flex-col justify-between">
                             @csrf
                             @method('PUT')
 
@@ -134,13 +134,33 @@
                                         <input type="url"
                                                name="download_url"
                                                id="download_url"
-                                               required
                                                value="{{ old('download_url', $downloadUrl) }}"
                                                placeholder="https://netmediafiberoptik.com/download/netfly-mobile.apk"
                                                class="w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50/70 border border-slate-200 rounded-xl text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all font-mono">
                                     </div>
                                     <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">
                                         Tautan ini digunakan sebagai target barcode dan tombol download langsung di landing page publik.
+                                    </p>
+                                </div>
+
+                                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <label for="apk_file" class="block text-xs font-bold text-slate-700">
+                                            Atau Upload File APK Langsung (.apk)
+                                        </label>
+                                        @if(!empty($hostedApkExists))
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                APK Tersedia ({{ $hostedApkSizeMb }} MB)
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <input type="file"
+                                           name="apk_file"
+                                           id="apk_file"
+                                           accept=".apk,application/vnd.android.package-archive"
+                                           class="block w-full text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-netfly-blue hover:file:bg-blue-100 cursor-pointer">
+                                    <p class="text-[11px] text-slate-500 leading-relaxed">
+                                        Opsional (maks. 150 MB). Jika Anda memilih file <code class="font-mono">.apk</code>, file akan disimpan ke <code class="font-mono">public/download/netfly-mobile.apk</code> dan tautan barcode otomatis diperbarui.
                                     </p>
                                 </div>
 

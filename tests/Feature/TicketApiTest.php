@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\Customer;
 use App\Models\Ticket;
+use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\File;
 use Tests\TestCase;
@@ -11,10 +13,38 @@ class TicketApiTest extends TestCase
 {
     use DatabaseTransactions;
 
+    protected Customer $customer;
+
+    protected User $mobileUser;
+
+    protected string $token;
+
     protected function setUp(): void
     {
         parent::setUp();
         Ticket::where('ticket_number', 'INC-2026-9988')->delete();
+
+        $this->customer = Customer::create([
+            'code' => 'CUST-TICKET-TEST',
+            'customer_type' => 'perusahaan',
+            'name' => 'PT. Shopee International Indonesia',
+            'pic_name' => 'Jessica Tanuwijaya',
+            'email' => 'jessica.ticket@shopee.test',
+            'phone' => '081234500001',
+            'address' => 'Jl. Jenderal Sudirman, Jakarta',
+            'status' => 'Aktif',
+        ]);
+
+        $this->mobileUser = User::factory()->create([
+            'name' => 'Jessica Tanuwijaya',
+            'email' => 'jessica.ticket@shopee.test',
+            'username' => 'jessica_shopee',
+            'role' => 'customer_corporate',
+            'customer_id' => $this->customer->id,
+            'is_active' => true,
+        ]);
+
+        $this->token = $this->mobileUser->createApiToken('Test-Mobile');
     }
 
     protected function tearDown(): void
@@ -25,7 +55,8 @@ class TicketApiTest extends TestCase
 
     public function test_can_list_tickets_via_api(): void
     {
-        $response = $this->getJson('/api/tickets');
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->token)
+            ->getJson('/api/tickets');
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -40,7 +71,6 @@ class TicketApiTest extends TestCase
         $customNumber = 'INC-2026-9988';
         $payload = [
             'ticket_number' => $customNumber,
-            'client_name' => 'PT. Shopee International Indonesia',
             'service_name' => 'Dedicated Internet 500 Mbps',
             'node_code' => 'SW-AGG-BKS-04',
             'priority' => 'High',
@@ -50,6 +80,7 @@ class TicketApiTest extends TestCase
         ];
 
         $response = $this->withHeaders([
+            'Authorization' => 'Bearer '.$this->token,
             'User-Agent' => 'NetFly-Mobile/1.0 (Android)',
             'X-App-Platform' => 'NetFly-Mobile',
         ])->postJson('/api/tickets', $payload);
@@ -74,9 +105,9 @@ class TicketApiTest extends TestCase
         $ticketData = $response->json('data');
         $this->assertEquals($customNumber, $ticketData['ticket_number']);
 
-        // Verifikasi langsung ke database
         $this->assertDatabaseHas('tickets', [
             'ticket_number' => $customNumber,
+            'customer_id' => $this->customer->id,
             'client_name' => 'PT. Shopee International Indonesia',
             'status' => '1. Open (Baru)',
             'priority_level' => 'high',
@@ -85,9 +116,10 @@ class TicketApiTest extends TestCase
 
     public function test_validation_fails_when_subject_is_missing(): void
     {
-        $response = $this->postJson('/api/tickets', [
-            'client_name' => 'PT. Bank Mandiri',
-        ]);
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->token)
+            ->postJson('/api/tickets', [
+                'client_name' => 'PT. Bank Mandiri',
+            ]);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['subject']);
@@ -98,6 +130,7 @@ class TicketApiTest extends TestCase
         $customNumber = 'INC-2026-9988';
         $ticket = Ticket::create([
             'ticket_number' => $customNumber,
+            'customer_id' => $this->customer->id,
             'client_name' => 'PT. Shopee International Indonesia',
             'subject' => 'Kendala Awal',
             'description' => 'Deskripsi kendala awal',
@@ -113,7 +146,8 @@ class TicketApiTest extends TestCase
             'status' => 'In Progress',
         ];
 
-        $response = $this->putJson("/api/tickets/{$customNumber}", $updatePayload);
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->token)
+            ->putJson("/api/tickets/{$customNumber}", $updatePayload);
 
         $response->assertStatus(200)
             ->assertJson([
@@ -133,18 +167,17 @@ class TicketApiTest extends TestCase
     public function test_mobile_app_can_create_ticket_with_optional_photo(): void
     {
         $customNumber = 'INC-2026-9988';
-        // 1x1 transparent PNG as base64 data URI
         $dummyBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
 
         $payload = [
             'ticket_number' => $customNumber,
-            'client_name' => 'PT. Bukalapak Mitra',
             'subject' => 'Kabel Dropcore Putus',
             'description' => 'Terkena pohon tumbang, terlampir foto bukti fisik kabel di tiang.',
             'photo' => $dummyBase64,
         ];
 
-        $response = $this->postJson('/api/tickets', $payload);
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->token)
+            ->postJson('/api/tickets', $payload);
 
         $response->assertStatus(201);
         $data = $response->json('data');
@@ -156,7 +189,6 @@ class TicketApiTest extends TestCase
         $this->assertNotNull($ticket->photo);
         $this->assertFileExists(public_path($ticket->photo));
 
-        // Clean up created test file
         if (File::exists(public_path($ticket->photo))) {
             File::delete(public_path($ticket->photo));
         }

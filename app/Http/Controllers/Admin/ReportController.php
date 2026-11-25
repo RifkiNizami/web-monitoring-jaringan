@@ -98,10 +98,12 @@ class ReportController extends Controller
         $warningDevices = count(array_filter($devices, fn ($d) => ($d['status_state'] ?? '') === 'warning'));
         $offlineDevices = count(array_filter($devices, fn ($d) => ($d['status_state'] ?? '') === 'offline'));
 
-        $targetCustId = $reportData['selectedCustomer'] !== 'all' ? (int) $reportData['selectedCustomer'] : null;
+        $targetCustId = is_numeric($reportData['selectedCustomer'])
+            ? (int) $reportData['selectedCustomer']
+            : ($reportData['selectedCustomer'] === 'none' ? -1 : null);
 
         $alertsQuery = MonitoringAlert::orderBy('id', 'desc');
-        $custAlerts = $targetCustId
+        $custAlerts = $targetCustId !== null
             ? (clone $alertsQuery)->where('customer_id', $targetCustId)->limit(15)->get()
             : $alertsQuery->limit(15)->get();
 
@@ -119,7 +121,7 @@ class ReportController extends Controller
         })->values()->all();
 
         $projectsQuery = Project::orderBy('id', 'desc');
-        $custProjects = $targetCustId
+        $custProjects = $targetCustId !== null
             ? (clone $projectsQuery)->where('customer_id', $targetCustId)->get()
             : $projectsQuery->limit(10)->get();
 
@@ -228,39 +230,56 @@ class ReportController extends Controller
 
         $allDbCustomers = Customer::all();
 
-        // Resolusi pilihan customer dari parameter URL (bisa berupa ID angka, slug code, atau slug nama)
-        $matchedCustomer = null;
-        if ($rawCustomer !== 'all' && trim($rawCustomer) !== '') {
-            $cleanQuery = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '', $rawCustomer));
+        // Isolasi tenant ketat untuk API Mobile: kunci cakupan laporan hanya ke customer milik Bearer Token
+        $apiUser = $request->is('api/*') ? $request->user() : null;
+        if ($apiUser) {
+            $boundCustomerId = $apiUser->customer_id ?? $apiUser->customer?->id;
+            $matchedCustomer = $boundCustomerId ? $allDbCustomers->firstWhere('id', (int) $boundCustomerId) : null;
 
-            $matchedCustomer = $allDbCustomers->first(function ($c) use ($rawCustomer, $cleanQuery) {
-                if ((string) $c->id === (string) $rawCustomer) {
-                    return true;
-                }
-                if (empty($cleanQuery)) {
-                    return false;
-                }
-                $cCodeClean = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '', $c->code ?? $c->customer_code ?? ''));
-                if (! empty($cCodeClean) && ($cCodeClean === $cleanQuery || str_contains($cCodeClean, $cleanQuery) || str_contains($cleanQuery, $cCodeClean))) {
-                    return true;
-                }
-                $cNameClean = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '', $c->name ?? ''));
-                if (! empty($cNameClean) && ($cNameClean === $cleanQuery || str_contains($cNameClean, $cleanQuery) || str_contains($cleanQuery, $cNameClean))) {
-                    return true;
-                }
-
-                return false;
-            });
-        }
-
-        if ($matchedCustomer) {
-            $selectedCustomer = (string) $matchedCustomer->id;
-            $targetCustomerId = (int) $matchedCustomer->id;
-            $evaluatedPartner = $matchedCustomer->name;
+            if ($matchedCustomer) {
+                $selectedCustomer = (string) $matchedCustomer->id;
+                $targetCustomerId = (int) $matchedCustomer->id;
+                $evaluatedPartner = $matchedCustomer->name;
+            } else {
+                $selectedCustomer = 'none';
+                $targetCustomerId = -1;
+                $evaluatedPartner = $apiUser->name;
+            }
         } else {
-            $selectedCustomer = 'all';
-            $targetCustomerId = null;
-            $evaluatedPartner = 'Semua Mitra Enterprise NetFly';
+            // Resolusi pilihan customer dari parameter URL (khusus portal web admin)
+            $matchedCustomer = null;
+            if ($rawCustomer !== 'all' && trim($rawCustomer) !== '') {
+                $cleanQuery = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '', $rawCustomer));
+
+                $matchedCustomer = $allDbCustomers->first(function ($c) use ($rawCustomer, $cleanQuery) {
+                    if ((string) $c->id === (string) $rawCustomer) {
+                        return true;
+                    }
+                    if (empty($cleanQuery)) {
+                        return false;
+                    }
+                    $cCodeClean = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '', $c->code ?? $c->customer_code ?? ''));
+                    if (! empty($cCodeClean) && ($cCodeClean === $cleanQuery || str_contains($cCodeClean, $cleanQuery) || str_contains($cleanQuery, $cCodeClean))) {
+                        return true;
+                    }
+                    $cNameClean = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '', $c->name ?? ''));
+                    if (! empty($cNameClean) && ($cNameClean === $cleanQuery || str_contains($cNameClean, $cleanQuery) || str_contains($cleanQuery, $cNameClean))) {
+                        return true;
+                    }
+
+                    return false;
+                });
+            }
+
+            if ($matchedCustomer) {
+                $selectedCustomer = (string) $matchedCustomer->id;
+                $targetCustomerId = (int) $matchedCustomer->id;
+                $evaluatedPartner = $matchedCustomer->name;
+            } else {
+                $selectedCustomer = 'all';
+                $targetCustomerId = null;
+                $evaluatedPartner = 'Semua Mitra Enterprise NetFly';
+            }
         }
 
         $currentMonth = (int) now()->month;
@@ -643,7 +662,7 @@ class ReportController extends Controller
 
         // Nomor Registrasi Dokumen Resmi
         $docPrefix = 'CONS';
-        if ($selectedCustomer !== 'all' && $targetCustomerId) {
+        if ($selectedCustomer !== 'all' && $targetCustomerId && $targetCustomerId > 0) {
             $docPrefix = sprintf('C%03d', $targetCustomerId);
         }
 

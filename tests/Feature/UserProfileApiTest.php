@@ -11,7 +11,17 @@ class UserProfileApiTest extends TestCase
 {
     use DatabaseTransactions;
 
-    public function test_can_get_user_profile_via_api(): void
+    public function test_unauthenticated_profile_request_is_rejected(): void
+    {
+        $response = $this->getJson('/api/user/profile');
+
+        $response->assertStatus(401)
+            ->assertJson([
+                'success' => false,
+            ]);
+    }
+
+    public function test_can_get_user_profile_via_api_with_bearer_token(): void
     {
         $user = User::factory()->create([
             'name' => 'Budi Santoso',
@@ -19,9 +29,13 @@ class UserProfileApiTest extends TestCase
             'username' => 'buditest',
             'phone' => '081234567890',
             'role' => 'customer_corporate',
+            'is_active' => true,
         ]);
 
-        $response = $this->getJson('/api/user/profile?email='.urlencode($user->email));
+        $token = $user->createApiToken('Test-Mobile');
+
+        $response = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/user/profile');
 
         $response->assertStatus(200)
             ->assertJson([
@@ -36,16 +50,6 @@ class UserProfileApiTest extends TestCase
             ]);
     }
 
-    public function test_user_profile_requires_identifier(): void
-    {
-        $response = $this->getJson('/api/user/profile');
-
-        $response->assertStatus(400)
-            ->assertJson([
-                'success' => false,
-            ]);
-    }
-
     public function test_can_update_user_profile_via_api(): void
     {
         $user = User::factory()->create([
@@ -54,13 +58,16 @@ class UserProfileApiTest extends TestCase
             'username' => 'updatetest',
             'phone' => '0811111111',
             'role' => 'customer_corporate',
+            'is_active' => true,
         ]);
 
-        $response = $this->postJson('/api/user/profile', [
-            'email' => $user->email,
-            'name' => 'Nama Baru PIC',
-            'phone' => '082222222222',
-        ]);
+        $token = $user->createApiToken('Test-Mobile');
+
+        $response = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/user/profile', [
+                'name' => 'Nama Baru PIC',
+                'phone' => '082222222222',
+            ]);
 
         $response->assertStatus(200)
             ->assertJson([
@@ -85,12 +92,16 @@ class UserProfileApiTest extends TestCase
         $user = User::factory()->create([
             'email' => 'validasi.test@netfly.net.id',
             'name' => 'User Validasi',
+            'role' => 'customer_corporate',
+            'is_active' => true,
         ]);
 
-        $response = $this->postJson('/api/user/profile', [
-            'email' => $user->email,
-            'name' => 'A', // min 2 characters
-        ]);
+        $token = $user->createApiToken('Test-Mobile');
+
+        $response = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/user/profile', [
+                'name' => 'A', // min 2 characters
+            ]);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['name']);
@@ -116,13 +127,16 @@ class UserProfileApiTest extends TestCase
             'phone' => '0833333333',
             'customer_id' => $customer->id,
             'role' => 'customer_corporate',
+            'is_active' => true,
         ]);
 
-        $response = $this->postJson('/api/user/profile', [
-            'username' => $user->username,
-            'name' => 'PIC Baru Ditunjuk',
-            'phone' => '089999999999',
-        ]);
+        $token = $user->createApiToken('Test-Mobile');
+
+        $response = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/user/profile', [
+                'name' => 'PIC Baru Ditunjuk',
+                'phone' => '089999999999',
+            ]);
 
         $response->assertStatus(200);
 

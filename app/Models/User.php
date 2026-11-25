@@ -80,6 +80,30 @@ class User extends Authenticatable
     }
 
     /**
+     * Relationship with API Bearer Tokens
+     */
+    public function apiTokens(): HasMany
+    {
+        return $this->hasMany(ApiToken::class);
+    }
+
+    /**
+     * Buat Bearer Token baru untuk aplikasi mobile.
+     */
+    public function createApiToken(string $name = 'NetFly-Mobile', int $ttlDays = 30): string
+    {
+        return ApiToken::issueFor($this, $name, $ttlDays)['plain_text_token'];
+    }
+
+    /**
+     * Cabut seluruh Bearer Token milik pengguna ini.
+     */
+    public function revokeAllApiTokens(): int
+    {
+        return $this->apiTokens()->delete();
+    }
+
+    /**
      * Role checking helpers
      */
     public function isAdmin(): bool

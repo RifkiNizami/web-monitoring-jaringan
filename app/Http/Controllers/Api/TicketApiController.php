@@ -14,23 +14,36 @@ use Illuminate\Support\Str;
 class TicketApiController extends Controller
 {
     /**
-     * Ambil daftar tiket (dapat difilter berdasarkan customer_id, nama klien, atau kata kunci).
+     * Ambil daftar tiket milik pelanggan yang terautentikasi Bearer Token.
      */
     public function index(Request $request): JsonResponse
     {
+        $authUser = $request->user();
+        $authCustomer = $authUser?->customer;
+        $authCustomerId = $authUser?->customer_id ?? $authCustomer?->id;
+
         $query = Ticket::query()->orderBy('id', 'desc');
 
-        if ($request->filled('customer_id')) {
-            $query->where('customer_id', (int) $request->query('customer_id'));
-        } elseif ($request->filled('client_name')) {
-            $client = trim($request->query('client_name'));
-            $cleanClient = trim(preg_replace('/^(PT\.?|CV\.?|Dinas)\s+/i', '', $client));
-            $query->where(function ($q) use ($client, $cleanClient) {
-                $q->where('client_name', 'like', "%{$client}%");
-                if (! empty($cleanClient)) {
-                    $q->orWhere('client_name', 'like', "%{$cleanClient}%");
+        // Isolasi tenant ketat: hanya tiket milik customer yang login
+        if ($authCustomerId) {
+            $custName = trim((string) ($authCustomer?->name ?? ''));
+            $query->where(function ($q) use ($authCustomerId, $custName) {
+                $q->where('customer_id', (int) $authCustomerId);
+                if ($custName !== '') {
+                    $q->orWhere(function ($legacy) use ($custName) {
+                        $legacy->whereNull('customer_id')
+                            ->whereRaw('LOWER(TRIM(client_name)) = ?', [strtolower($custName)]);
+                    });
                 }
             });
+        } else {
+            $userName = trim((string) ($authUser?->name ?? ''));
+            if ($userName !== '') {
+                $query->whereNull('customer_id')
+                    ->whereRaw('LOWER(TRIM(client_name)) = ?', [strtolower($userName)]);
+            } else {
+                $query->whereRaw('1 = 0');
+            }
         }
 
         if ($request->filled('search')) {
@@ -86,8 +99,13 @@ class TicketApiController extends Controller
             default => 'P3 - MEDIUM',
         };
 
-        $clientName = trim($validated['client_name'] ?? 'Pelanggan Mobile NetFly');
-        $projectName = trim($validated['project_name'] ?? $validated['service_name'] ?? 'Layanan Pelanggan');
+        $authUser = $request->user();
+        $authCustomer = $authUser?->customer;
+        $customerId = $authUser?->customer_id ?? $authCustomer?->id;
+
+        $defaultClientName = $authCustomer?->name ?: ($authUser?->name ?: 'Pelanggan Mobile NetFly');
+        $clientName = $authCustomer?->name ?: trim($validated['client_name'] ?? $defaultClientName);
+        $projectName = trim($validated['project_name'] ?? $validated['service_name'] ?? ($authCustomer?->package ?: 'Layanan Pelanggan'));
         $category = ! empty($validated['category']) ? trim($validated['category']) : null;
         $subject = trim($validated['subject']);
         if ($category && ! str_contains(strtolower($subject), strtolower($category))) {
@@ -95,15 +113,6 @@ class TicketApiController extends Controller
         }
 
         $description = trim($validated['description'] ?? 'Tiket dilaporkan melalui Aplikasi NetFly Mobile.');
-
-        // Hubungkan customer_id dari parameter atau lookup nama customer jika belum terisi
-        $customerId = $validated['customer_id'] ?? null;
-        if (! $customerId && ! empty($clientName)) {
-            $cleanName = trim(preg_replace('/^(PT\.?|CV\.?|Dinas)\s+/i', '', $clientName));
-            $customerId = Customer::where('name', 'like', "%{$cleanName}%")
-                ->orWhere('name', 'like', "%{$clientName}%")
-                ->value('id');
-        }
 
         // Gunakan ticket_number dari mobile jika valid dan belum terpakai, atau generate nomor baru
         $ticketNumber = null;
@@ -180,9 +189,39 @@ class TicketApiController extends Controller
     }
 
     /**
-     * Detail tiket tunggal.
+     * Verifikasi kepemilikan tiket terhadap akun customer yang login via Bearer Token.
      */
-    public function show(string $id): JsonResponse
+    protected function isOwnedByAuthenticatedUser(Ticket $ticket, Request $request): bool
+    {
+        $authUser = $request->user();
+        if (! $authUser) {
+            return false;
+        }
+
+        $authCustomer = $authUser->customer;
+        $authCustomerId = $authUser->customer_id ?? $authCustomer?->id;
+
+        if ($authCustomerId && $ticket->customer_id !== null) {
+            return (int) $ticket->customer_id === (int) $authCustomerId;
+        }
+
+        if ($ticket->customer_id === null) {
+            $ticketClient = strtolower(trim((string) $ticket->client_name));
+            $allowedNames = array_filter([
+                strtolower(trim((string) ($authCustomer?->name ?? ''))),
+                strtolower(trim((string) ($authUser->name ?? ''))),
+            ]);
+
+            return $ticketClient !== '' && in_array($ticketClient, $allowedNames, true);
+        }
+
+        return false;
+    }
+
+    /**
+     * Detail tiket tunggal (khusus pemilik tiket).
+     */
+    public function show(Request $request, string $id): JsonResponse
     {
         $ticket = Ticket::where('ticket_number', $id)
             ->orWhere('id', is_numeric($id) ? (int) $id : 0)
@@ -195,6 +234,13 @@ class TicketApiController extends Controller
             ], 404);
         }
 
+        if (! $this->isOwnedByAuthenticatedUser($ticket, $request)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak: Tiket ini bukan milik akun pelanggan Anda.',
+            ], 403);
+        }
+
         return response()->json([
             'success' => true,
             'data' => $ticket,
@@ -202,7 +248,7 @@ class TicketApiController extends Controller
     }
 
     /**
-     * Update detail tiket atau tambahkan respon / pesan penanganan tiket dari mobile.
+     * Update detail tiket atau tambahkan respon / pesan penanganan tiket dari mobile (khusus pemilik tiket).
      */
     public function update(Request $request, string $id): JsonResponse
     {
@@ -215,6 +261,13 @@ class TicketApiController extends Controller
                 'success' => false,
                 'message' => "Tiket {$id} tidak ditemukan.",
             ], 404);
+        }
+
+        if (! $this->isOwnedByAuthenticatedUser($ticket, $request)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak: Anda tidak berhak memperbarui tiket milik pelanggan lain.',
+            ], 403);
         }
 
         $validated = $request->validate([
