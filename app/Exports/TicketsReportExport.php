@@ -42,7 +42,7 @@ class TicketsReportExport implements FromCollection, WithColumnWidths, WithHeadi
     public function headings(): array
     {
         return [
-            'No',
+            'ID',
             'Nomor Tiket',
             'Subjek / Ringkasan Gangguan',
             'Prioritas',
@@ -55,13 +55,10 @@ class TicketsReportExport implements FromCollection, WithColumnWidths, WithHeadi
 
     public function map(mixed $row): array
     {
-        static $number = 0;
-        $number++;
-
         $ticket = is_array($row) ? $row : (array) $row;
 
         return [
-            $number,
+            $ticket['id'] ?? '-',
             $ticket['ticket_number'] ?? '-',
             $ticket['full_subject'] ?? ($ticket['subject'] ?? '-'),
             $ticket['priority'] ?? 'P2 - High',

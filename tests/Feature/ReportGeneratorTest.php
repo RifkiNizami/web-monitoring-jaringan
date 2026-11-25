@@ -289,4 +289,22 @@ class ReportGeneratorTest extends TestCase
         $this->assertStringContainsString('attachment', $response->headers->get('content-disposition'));
         $this->assertStringContainsString('.xlsx', $response->headers->get('content-disposition'));
     }
+
+    /**
+     * Uji proteksi keamanan route import excel (wajib auth role admin).
+     */
+    public function test_guest_cannot_import_excel(): void
+    {
+        $response = $this->post(route('reports.importExcel'));
+        $response->assertRedirect(route('login'));
+    }
+
+    /**
+     * Uji validasi file unggahan impor laporan Excel.
+     */
+    public function test_import_excel_requires_valid_file(): void
+    {
+        $response = $this->actingAs($this->adminUser)->post(route('reports.importExcel'), []);
+        $response->assertSessionHasErrors(['file']);
+    }
 }
