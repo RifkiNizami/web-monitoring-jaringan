@@ -64,7 +64,7 @@
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h1 class="text-xl lg:text-2xl font-extrabold text-slate-900 tracking-tight">
-                            Selamat Datang, Di dashboard Admin
+                            Selamat Datang di Dashboard Admin
                         </h1>
                         <p class="text-xs text-slate-500 mt-1">
                             Ringkasan ketersediaan transmisi, status gateway, dan performa 30 hari terakhir.
@@ -72,12 +72,12 @@
                     </div>
 
                     <div>
-                        <button class="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-sm active:scale-95 transition-all cursor-pointer">
+                        <a href="{{ route('tickets.create') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-sm active:scale-95 transition-all cursor-pointer">
                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4" />
                             </svg>
                             <span>Buat Tiket</span>
-                        </button>
+                        </a>
                     </div>
                 </div>
 
@@ -197,7 +197,7 @@
                                         Peta Sebaran Customer Terdaftar
                                     </h3>
                                     <span id="dashboardMapCountBadge" class="px-2 py-0.5 text-[10px] font-semibold text-blue-700 bg-blue-50 rounded-full border border-blue-200/60">
-                                        {{ count($customerAccounts) }} Titik Lokasi
+                                        {{ $mappedCustomerCount ?? count($customerAccounts) }} Titik Lokasi
                                     </span>
                                 </div>
                                 <p class="text-xs text-slate-400 mt-0.5">
@@ -341,7 +341,7 @@
                     <!-- Map Footer Subrow -->
                     <div class="p-3 bg-white border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-[11px] text-slate-500">
                         <div class="flex items-center gap-3">
-                            <span class="text-slate-400">Total Terpetakan: <b class="text-slate-800">{{ count($customerAccounts) }} Titik</b></span>
+                            <span class="text-slate-400">Total Terpetakan: <b class="text-slate-800">{{ $mappedCustomerCount ?? count($customerAccounts) }} Titik</b></span>
                             <span class="text-slate-300">•</span>
                             <span class="text-slate-400">Proyeksi: <b class="text-slate-700">WGS84 / EPSG:3857</b></span>
                             <span class="text-slate-300">•</span>
@@ -363,7 +363,7 @@
                                     Widget Antrean Tiket
                                 </h3>
                                 <span class="px-2 py-0.5 text-[10px] font-semibold text-slate-600 bg-slate-100 rounded-full border border-slate-200">
-                                    {{ count($tickets) }} Membutuhkan Penanganan
+                                    {{ $activeTicketsCount ?? count($tickets) }} Membutuhkan Penanganan
                                 </span>
                             </div>
                             <p class="text-xs text-slate-400 mt-0.5">
@@ -422,7 +422,7 @@
                                             {{ $ticket['duration'] }}
                                         </td>
                                         <td class="py-3.5 px-5 text-right">
-                                            <a href="{{ route('tickets.index') }}" class="inline-block px-3 py-1 {{ $ticket['action_type'] === 'primary' ? 'bg-slate-900 hover:bg-slate-800 text-white' : 'border border-slate-300 hover:bg-slate-50 text-slate-700' }} text-xs font-semibold rounded-md shadow-2xs transition-colors cursor-pointer">
+                                            <a href="{{ route('tickets.edit', $ticket['id']) }}" class="inline-block px-3 py-1 {{ $ticket['action_type'] === 'primary' ? 'bg-slate-900 hover:bg-slate-800 text-white' : 'border border-slate-300 hover:bg-slate-50 text-slate-700' }} text-xs font-semibold rounded-md shadow-2xs transition-colors cursor-pointer">
                                                 {{ $ticket['action_label'] }}
                                             </a>
                                         </td>
@@ -486,6 +486,16 @@
                 const customerData = @json($customerAccounts);
                 const bounds = [];
 
+                function escapeHtml(value) {
+                    return String(value ?? '').replace(/[&<>"']/g, ch => ({
+                        '&': '&amp;',
+                        '<': '&lt;',
+                        '>': '&gt;',
+                        '"': '&quot;',
+                        "'": '&#39;',
+                    }[ch]));
+                }
+
                 function createPinIcon(type) {
                     const isHome = type === 'rumahan';
                     const bgColor = isHome ? '#059669' : '#2563eb';
@@ -524,15 +534,15 @@
                                 <span style="display:inline-block;padding:2px 7px;border-radius:4px;font-size:9.5px;font-weight:800;${badgeStyle}">${badgeType}</span>
                                 <span style="font-size:10px;">${statusLabel}</span>
                             </div>
-                            <div style="font-size:12.5px;font-weight:800;color:#0f172a;">${acc.customer_name}</div>
+                            <div style="font-size:12.5px;font-weight:800;color:#0f172a;">${escapeHtml(acc.customer_name)}</div>
                             <div style="font-size:11px;color:#334155;margin-top:3px;">
-                                PIC: <b>${acc.name || '-'}</b> (${acc.username || '-'})
+                                PIC: <b>${escapeHtml(acc.name || '-')}</b> (${escapeHtml(acc.username || '-')})
                             </div>
                             <div style="font-size:10.5px;color:#2563eb;font-weight:700;margin-top:2px;">
-                                ${acc.package || '-'}
+                                ${escapeHtml(acc.package || '-')}
                             </div>
                             <div style="font-size:10px;color:#64748b;margin-top:4px;">
-                                ${acc.address || '-'}
+                                ${escapeHtml(acc.address || '-')}
                             </div>
                             <div style="font-size:10px;font-family:monospace;color:#475569;margin-top:5px;padding-top:4px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;">
                                 <span>${lat.toFixed(6)}, ${lng.toFixed(6)}</span>

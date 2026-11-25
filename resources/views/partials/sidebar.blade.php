@@ -42,7 +42,7 @@
         $isAdminBiasa = ($userRole === 'admin');
         $activeAnnouncementCount = \App\Models\Announcement::where('status', 'aktif')->count();
         $totalLandingClients = \App\Models\LandingClient::count();
-        $activeTicketCount = \App\Models\Ticket::whereNotIn('status', ['Resolved', 'Closed', 'Selesai'])->count();
+        $activeTicketCount = \App\Models\Ticket::whereNotIn('status_type', ['resolved', 'closed'])->count();
     @endphp
 
     <!-- 2. Menu Navigation (Middle scrollable area ONLY - flex-1 min-h-0 overflow-y-auto overflow-x-hidden) -->

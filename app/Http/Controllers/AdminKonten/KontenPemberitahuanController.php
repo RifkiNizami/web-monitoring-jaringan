@@ -111,6 +111,10 @@ class KontenPemberitahuanController extends Controller
      */
     public function store(Request $request)
     {
+        if (Auth::user()->role !== 'admin_konten') {
+            abort(403, 'Akses dibatasi hanya untuk Admin Konten.');
+        }
+
         $request->validate([
             'title' => 'required|string|max:255',
             'category' => 'required|in:maintenance,gangguan,pembaruan,info',
@@ -162,6 +166,10 @@ class KontenPemberitahuanController extends Controller
      */
     public function update(Request $request, $id)
     {
+        if (Auth::user()->role !== 'admin_konten') {
+            abort(403, 'Akses dibatasi hanya untuk Admin Konten.');
+        }
+
         $announcement = Announcement::findOrFail($id);
 
         $request->validate([
@@ -212,6 +220,10 @@ class KontenPemberitahuanController extends Controller
      */
     public function destroy(Request $request, $id)
     {
+        if (Auth::user()->role !== 'admin_konten') {
+            abort(403, 'Akses dibatasi hanya untuk Admin Konten.');
+        }
+
         $announcement = Announcement::findOrFail($id);
         $title = $announcement->title;
         $announcementId = (string) $announcement->id;
@@ -237,6 +249,10 @@ class KontenPemberitahuanController extends Controller
      */
     public function toggleStatus(Request $request, $id)
     {
+        if (Auth::user()->role !== 'admin_konten') {
+            abort(403, 'Akses dibatasi hanya untuk Admin Konten.');
+        }
+
         $announcement = Announcement::findOrFail($id);
         $announcement->status = ($announcement->status === 'aktif') ? 'selesai' : 'aktif';
         $announcement->save();

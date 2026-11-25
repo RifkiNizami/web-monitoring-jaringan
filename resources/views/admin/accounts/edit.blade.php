@@ -116,7 +116,6 @@
                                 <button
                                     type="button"
                                     id="btnSelectTypePerusahaan"
-                                    onclick="window.switchCustomerType && window.switchCustomerType('perusahaan')"
                                     class="type-toggle-btn flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-xs font-bold transition-all cursor-pointer {{ old('customer_type', $account['customer_type'] ?? 'perusahaan') === 'rumahan' ? 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50' : 'bg-blue-600 text-white border border-blue-600 shadow-xs' }}"
                                 >
                                     <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -127,7 +126,6 @@
                                 <button
                                     type="button"
                                     id="btnSelectTypeRumahan"
-                                    onclick="window.switchCustomerType && window.switchCustomerType('rumahan')"
                                     class="type-toggle-btn flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-xs font-bold transition-all cursor-pointer {{ old('customer_type', $account['customer_type'] ?? 'perusahaan') === 'rumahan' ? 'bg-blue-600 text-white border border-blue-600 shadow-xs' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50' }}"
                                 >
                                     <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -285,6 +283,7 @@
 
                             <!-- Opsi Status Akun -->
                             <div class="pt-1">
+                                <input type="hidden" name="is_active" value="0">
                                 <label class="flex items-center gap-2.5 cursor-pointer text-xs font-medium text-slate-700">
                                     <input type="checkbox" name="is_active" value="1" {{ old('is_active', $account['is_active'] ? '1' : '0') === '1' ? 'checked' : '' }} class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
                                     <span>Status akun aktif (dapat login ke sistem)</span>

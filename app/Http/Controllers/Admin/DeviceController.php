@@ -73,6 +73,13 @@ class DeviceController extends Controller
             ? $device->status_state
             : self::resolveStatusState($status);
 
+        $photoUrl = null;
+        if (! empty($device->photo)) {
+            $photoUrl = Str::startsWith($device->photo, ['http://', 'https://'])
+                ? $device->photo
+                : asset($device->photo);
+        }
+
         return [
             'id' => $device->id,
             'hostname' => $device->hostname,
@@ -82,8 +89,31 @@ class DeviceController extends Controller
             'quantity' => (int) ($device->quantity ?? 0),
             'status' => $status,
             'status_state' => $statusState,
-            'photo' => $device->photo,
+            'photo' => $photoUrl,
         ];
+    }
+
+    /**
+     * Hapus file foto inventaris lama dari direktori public/uploads/devices jika ada.
+     */
+    protected static function deletePhotoFile(?string $photo): void
+    {
+        if (empty($photo)) {
+            return;
+        }
+
+        $relativePath = $photo;
+        if (Str::startsWith($photo, ['http://', 'https://'])) {
+            $parsedPath = parse_url($photo, PHP_URL_PATH);
+            $relativePath = is_string($parsedPath) ? ltrim($parsedPath, '/') : '';
+        }
+
+        if (Str::startsWith($relativePath, 'uploads/devices/')) {
+            $fullPath = public_path($relativePath);
+            if (File::exists($fullPath)) {
+                @File::delete($fullPath);
+            }
+        }
     }
 
     /**
@@ -180,17 +210,20 @@ class DeviceController extends Controller
             }
 
             $file->move($destination, $filename);
-            $photoUrl = asset('uploads/devices/'.$filename);
+            $photoUrl = 'uploads/devices/'.$filename;
         }
+
+        $quantity = (int) $validated['quantity'];
+        $resolvedStatus = $quantity === 0 ? 'Habis' : $validated['status'];
 
         $deviceModel = Device::create([
             'hostname' => strtoupper(trim($validated['hostname'])),
             'type' => $validated['type'],
             'brand_model' => trim($validated['brand_model']),
             'serial_number' => strtoupper(trim($validated['serial_number'])),
-            'quantity' => (int) $validated['quantity'],
-            'status' => $validated['status'],
-            'status_state' => self::resolveStatusState($validated['status']),
+            'quantity' => $quantity,
+            'status' => $resolvedStatus,
+            'status_state' => self::resolveStatusState($resolvedStatus),
             'photo' => $photoUrl,
         ]);
 
@@ -303,17 +336,21 @@ class DeviceController extends Controller
             }
 
             $file->move($destination, $filename);
-            $photoUrl = asset('uploads/devices/'.$filename);
+            self::deletePhotoFile($deviceModel->photo);
+            $photoUrl = 'uploads/devices/'.$filename;
         }
+
+        $quantity = (int) $validated['quantity'];
+        $resolvedStatus = $quantity === 0 ? 'Habis' : $validated['status'];
 
         $deviceModel->update([
             'hostname' => strtoupper(trim($validated['hostname'])),
             'type' => $validated['type'],
             'brand_model' => trim($validated['brand_model']),
             'serial_number' => strtoupper(trim($validated['serial_number'])),
-            'quantity' => (int) $validated['quantity'],
-            'status' => $validated['status'],
-            'status_state' => self::resolveStatusState($validated['status']),
+            'quantity' => $quantity,
+            'status' => $resolvedStatus,
+            'status_state' => self::resolveStatusState($resolvedStatus),
             'photo' => $photoUrl,
         ]);
 
@@ -364,6 +401,7 @@ class DeviceController extends Controller
             $type = $deviceModel->type;
             $brandModel = $deviceModel->brand_model;
 
+            self::deletePhotoFile($deviceModel->photo);
             $deviceModel->delete();
 
             ActivityLogger::log(

@@ -68,6 +68,10 @@ class MonitoringDevice extends Model
         'interfaces',
     ];
 
+    protected $hidden = [
+        'api_password',
+    ];
+
     protected $casts = [
         'customer_id' => 'integer',
         'project_id' => 'integer',

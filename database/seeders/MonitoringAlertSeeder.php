@@ -13,8 +13,6 @@ class MonitoringAlertSeeder extends Seeder
      */
     public function run(): void
     {
-        // Bersihkan data telemetri dan alert lama agar monitoring bersih tanpa data dummy
-        MonitoringAlert::query()->delete();
-        MonitoringDevice::query()->delete();
+        // Non-destruktif: perangkat monitoring dan alert dihasilkan dari konfigurasi & poller aktual.
     }
 }

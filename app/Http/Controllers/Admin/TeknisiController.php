@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Teknisi;
+use App\Services\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -56,6 +57,15 @@ class TeknisiController extends Controller
 
         $teknisi = Teknisi::create($validated);
 
+        ActivityLogger::log(
+            'teknisi',
+            'create',
+            "Menambahkan teknisi lapangan '{$teknisi->nama}'",
+            $teknisi->nama,
+            (string) $teknisi->id,
+            ['nomor_hp' => $teknisi->nomor_hp]
+        );
+
         return redirect()->route('teknisi.index')->with('success', "Teknisi '{$teknisi->nama}' berhasil ditambahkan ke database.");
     }
 
@@ -88,6 +98,15 @@ class TeknisiController extends Controller
 
         $teknisi->update($validated);
 
+        ActivityLogger::log(
+            'teknisi',
+            'update',
+            "Memperbarui data teknisi '{$teknisi->nama}'",
+            $teknisi->nama,
+            (string) $teknisi->id,
+            ['nomor_hp' => $teknisi->nomor_hp]
+        );
+
         return redirect()->route('teknisi.index')->with('success', "Data teknisi '{$teknisi->nama}' berhasil diperbarui.");
     }
 
@@ -98,7 +117,17 @@ class TeknisiController extends Controller
     {
         $teknisi = Teknisi::findOrFail($id);
         $nama = $teknisi->nama;
+        $teknisiId = (string) $teknisi->id;
         $teknisi->delete();
+
+        ActivityLogger::log(
+            'teknisi',
+            'delete',
+            "Menghapus teknisi '{$nama}' dari database",
+            $nama,
+            $teknisiId,
+            ['nama' => $nama]
+        );
 
         return redirect()->route('teknisi.index')->with('success', "Teknisi '{$nama}' berhasil dihapus dari sistem.");
     }

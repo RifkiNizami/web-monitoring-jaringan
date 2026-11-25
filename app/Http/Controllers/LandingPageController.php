@@ -50,7 +50,7 @@ class LandingPageController extends Controller
             [
                 'icon' => 'layout-dashboard',
                 'title' => 'Centralized Dashboard',
-                'description' => 'Semua informasi jaringan dan perangkat terintergrasi penuh dalam satu dashboard yang intuitif.',
+                'description' => 'Semua informasi jaringan dan perangkat terintegrasi penuh dalam satu dashboard yang intuitif.',
             ],
         ];
 
@@ -86,7 +86,7 @@ class LandingPageController extends Controller
             'Data monitoring dan laporan terstruktur secara otomatis.',
         ];
 
-        $mobileAppDownloadUrl = app_setting('mobile_app_download_url', 'https://netfly.id/download/netfly-mobile.apk');
+        $mobileAppDownloadUrl = app_setting('mobile_app_download_url', 'https://netmediafiberoptik.com/download/netfly-mobile.apk');
 
         return view('landingpage.index', compact('stats', 'features', 'steps', 'benefits', 'clients', 'mobileAppDownloadUrl'));
     }

@@ -25,13 +25,13 @@ class DashboardController extends Controller
             return app(KontenDashboardController::class)->index();
         }
 
-        // 1. Data Uptime SLA 30 Hari Terakhir (Dihitung Dinamis dari Database)
-        $uptimeStats = $this->getUptimeSlaStats();
-
-        // 2. Metrik Utama Live Database
+        // 1. Metrik Utama Live Database
         $totalCustomers = Customer::count();
         $activeCustomers = Customer::whereIn('status', ['Active', 'Aktif', 'Trial / PoC'])->count();
         $corporateCustomers = Customer::where('customer_type', 'perusahaan')->count();
+        $activeCorporateCustomers = Customer::where('customer_type', 'perusahaan')
+            ->whereIn('status', ['Active', 'Aktif', 'Trial / PoC'])
+            ->count();
         $residentialCustomers = Customer::where('customer_type', 'rumahan')->count();
 
         $activeProjects = Project::whereIn('status', ['Planning', 'In Progress', 'In Review', 'Berjalan', 'Instalasi'])->count();
@@ -50,13 +50,20 @@ class DashboardController extends Controller
                 'footer_left' => "{$corporateCustomers} B2B • {$residentialCustomers} Rumahan",
                 'footer_right' => ($totalCustomers > 0 ? round(($activeCustomers / $totalCustomers) * 100, 1) : 0).'% Aktif',
             ],
-            'project_active' => [
+            'project_active' => $totalProjects > 0 ? [
                 'title' => 'PROJECT AKTIF',
                 'badge' => 'On Track',
                 'value' => number_format($activeProjects),
                 'subvalue' => 'Instalasi & SLA',
                 'footer_left' => 'Total Portofolio',
                 'footer_right' => $totalProjects.' Total Proyek',
+            ] : [
+                'title' => 'MITRA KORPORAT (B2B)',
+                'badge' => 'Enterprise',
+                'value' => number_format($activeCorporateCustomers),
+                'subvalue' => "/ {$corporateCustomers} perusahaan",
+                'footer_left' => 'Status Kemitraan',
+                'footer_right' => ($corporateCustomers > 0 ? round(($activeCorporateCustomers / $corporateCustomers) * 100, 1) : 0).'% Aktif',
             ],
             'device_online' => [
                 'title' => 'PERANGKAT TERSEDIA',
@@ -95,7 +102,7 @@ class DashboardController extends Controller
                 'badge' => $badgeLabel,
                 'badge_type' => $badgeType,
                 'host' => $alert->host,
-                'customer' => $alert->customer_name ?? ($alert->customer?->company_name ?? 'Infrastruktur Internal'),
+                'customer' => $alert->customer_name ?? ($alert->customer?->name ?? 'Infrastruktur Internal'),
                 'type' => $alert->type,
                 'desc' => $alert->message,
                 'is_resolved' => (bool) $alert->is_resolved,
@@ -107,8 +114,13 @@ class DashboardController extends Controller
             ];
         })->toArray();
 
-        // 4. Tiket Komplain Klien Terbaru dari Database
-        $dbTickets = Ticket::with('customer')->latest()->take(5)->get();
+        // 4. Tiket Komplain Klien Aktif Terbaru dari Database
+        $activeTicketsCount = Ticket::whereNotIn('status_type', ['resolved', 'closed'])->count();
+        $dbTickets = Ticket::with('customer')
+            ->whereNotIn('status_type', ['resolved', 'closed'])
+            ->latest()
+            ->take(5)
+            ->get();
         $tickets = $dbTickets->map(function ($t) {
             $priorityLevel = $t->priority_level ?? match (true) {
                 str_contains(strtolower($t->priority ?? ''), 'critical') || str_contains(strtolower($t->priority ?? ''), 'p1') => 'critical',
@@ -158,8 +170,12 @@ class DashboardController extends Controller
 
         // 5. Data Sebaran Akun Customer dari Account Management
         $customerAccounts = app(AccountController::class)->getActiveAccounts();
+        $mappedCustomerCount = count(array_filter(
+            $customerAccounts,
+            fn ($acc) => is_numeric($acc['latitude'] ?? null) && is_numeric($acc['longitude'] ?? null)
+        ));
 
-        return view('admin.dashboard', compact('metrics', 'alerts', 'tickets', 'uptimeStats', 'customerAccounts'));
+        return view('admin.dashboard', compact('metrics', 'alerts', 'tickets', 'activeTicketsCount', 'customerAccounts', 'mappedCustomerCount'));
     }
 
     /**

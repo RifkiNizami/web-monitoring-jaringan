@@ -84,7 +84,7 @@
                                 Jl. Taman Aloha E1 - 45, Sidoarjo, Jawa Timur (Kawasan Surabaya Hub)
                             </p>
                             <div class="pl-4 text-slate-700 font-semibold text-xs">
-                                Telepon:081358439094  &bull; Hotline: 0813-5843-9094
+                                Telepon:081358439094
                             </div>
                         </div>
 
@@ -95,7 +95,7 @@
                             </div>
                             <div class="flex justify-between items-center text-slate-600">
                                 <span>Situs Resmi:</span>
-                                <span class="text-netfly-blue font-bold">www.netfly.co.id</span>
+                                <span class="text-netfly-blue font-bold">www.netmediafiberoptik.com</span>
                             </div>
                         </div>
 

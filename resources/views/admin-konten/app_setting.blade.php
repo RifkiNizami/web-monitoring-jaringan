@@ -136,7 +136,7 @@
                                                id="download_url"
                                                required
                                                value="{{ old('download_url', $downloadUrl) }}"
-                                               placeholder="https://netfly.id/download/netfly-mobile.apk"
+                                               placeholder="https://netmediafiberoptik.com/download/netfly-mobile.apk"
                                                class="w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50/70 border border-slate-200 rounded-xl text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all font-mono">
                                     </div>
                                     <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">

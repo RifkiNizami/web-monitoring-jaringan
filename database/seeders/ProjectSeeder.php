@@ -12,7 +12,6 @@ class ProjectSeeder extends Seeder
      */
     public function run(): void
     {
-        // Bersihkan data project agar bersih tanpa dummy
-        Project::query()->delete();
+        // Non-destruktif: data proyek dikelola melalui modul CRUD tanpa menghapus data produksi.
     }
 }

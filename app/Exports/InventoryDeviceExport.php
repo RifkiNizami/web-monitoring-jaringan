@@ -17,11 +17,11 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 class InventoryDeviceExport implements FromCollection, WithColumnWidths, WithHeadings, WithMapping, WithStyles
 {
     /**
-     * Mengambil koleksi data Device dari database Eloquent
+     * Mengambil koleksi data inventaris perangkat dari database Eloquent
      */
     public function collection(): Collection
     {
-        return Device::with(['customer', 'project'])->get();
+        return Device::orderBy('id', 'asc')->get();
     }
 
     /**
@@ -31,19 +31,12 @@ class InventoryDeviceExport implements FromCollection, WithColumnWidths, WithHea
     {
         return [
             'No',
-            'Hostname',
+            'Hostname / Kode Unit',
             'Tipe Perangkat',
-            'IP Address',
-            'MAC Address',
-            'Pelanggan (Customer)',
-            'Project Jaringan',
-            'Lokasi Rak',
-            'Status Operasional',
-            'Uptime',
-            'Latensi (ms)',
-            'Packet Loss (%)',
-            'CPU Load (%)',
-            'RAM Load (%)',
+            'Merk / Model',
+            'Serial Number',
+            'Stok (Unit)',
+            'Status Inventaris',
             'Tanggal Registrasi',
         ];
     }
@@ -60,17 +53,10 @@ class InventoryDeviceExport implements FromCollection, WithColumnWidths, WithHea
             $no,
             $device->hostname ?? '-',
             $device->type ?? '-',
-            $device->ip_address ?? '-',
-            $device->mac_address ?? '-',
-            $device->customer->name ?? '-',
-            $device->project->name ?? '-',
-            $device->rack_location ?? '-',
+            $device->brand_model ?? '-',
+            $device->serial_number ?? '-',
+            (int) ($device->quantity ?? 0),
             $device->status ?? '-',
-            $device->uptime ?? '-',
-            ($device->last_ping_ms ?? 0).' ms',
-            number_format((float) ($device->packet_loss ?? 0), 2).'%',
-            number_format((float) ($device->cpu_load ?? 0), 1).'%',
-            number_format((float) ($device->ram_load ?? 0), 1).'%',
             $device->created_at ? $device->created_at->format('d/m/Y H:i') : '-',
         ];
     }
@@ -82,20 +68,13 @@ class InventoryDeviceExport implements FromCollection, WithColumnWidths, WithHea
     {
         return [
             'A' => 6,   // No
-            'B' => 26,  // Hostname
-            'C' => 16,  // Tipe
-            'D' => 18,  // IP Address
-            'E' => 20,  // MAC Address
-            'F' => 32,  // Customer
-            'G' => 32,  // Project
-            'H' => 22,  // Lokasi Rak
-            'I' => 24,  // Status
-            'J' => 18,  // Uptime
-            'K' => 14,  // Latensi
-            'L' => 16,  // Packet Loss
-            'M' => 14,  // CPU
-            'N' => 14,  // RAM
-            'O' => 20,  // Tanggal
+            'B' => 28,  // Hostname
+            'C' => 18,  // Tipe
+            'D' => 32,  // Merk / Model
+            'E' => 24,  // Serial Number
+            'F' => 14,  // Stok
+            'G' => 20,  // Status
+            'H' => 20,  // Tanggal
         ];
     }
 
@@ -106,19 +85,18 @@ class InventoryDeviceExport implements FromCollection, WithColumnWidths, WithHea
     {
         $lastRow = max(Device::count() + 1, 2);
 
-        $sheet->getStyle('A1:O1')->getFont()->setBold(true)->setSize(11)->getColor()->setARGB('FFFFFFFF');
-        $sheet->getStyle('A1:O1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FF1E293B'); // Slate 800
-        $sheet->getStyle('A1:O1')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+        $sheet->getStyle('A1:H1')->getFont()->setBold(true)->setSize(11)->getColor()->setARGB('FFFFFFFF');
+        $sheet->getStyle('A1:H1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FF1E293B'); // Slate 800
+        $sheet->getStyle('A1:H1')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
         $sheet->getRowDimension(1)->setRowHeight(28);
 
         // Alignment kolom numerik dan kode
         $sheet->getStyle('A1:A'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('C2:E'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('K2:N'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('O2:O'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('C2:C'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('E2:H'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
         // Border grid
-        $sheet->getStyle('A1:O'.$lastRow)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)->getColor()->setARGB('FFE2E8F0');
+        $sheet->getStyle('A1:H'.$lastRow)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)->getColor()->setARGB('FFE2E8F0');
 
         return [
             1 => [

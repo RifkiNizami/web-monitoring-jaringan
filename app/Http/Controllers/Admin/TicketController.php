@@ -33,8 +33,8 @@ class TicketController extends Controller
             '5. Closed (Ditutup)',
         ];
 
-        // 3. Ambil data antrean tiket dari database
-        $dbTickets = Ticket::orderBy('id', 'asc')->get();
+        // 3. Ambil data antrean tiket dari database (terbaru di atas)
+        $dbTickets = Ticket::orderBy('id', 'desc')->get();
 
         $tickets = $dbTickets->map(function ($ticket) {
             $reportedAt = $ticket->reported_at ?? $ticket->created_at;
@@ -129,7 +129,7 @@ class TicketController extends Controller
             'description' => ['nullable', 'string'],
             'assigned_technician' => ['nullable', 'string', 'max:150'],
             'status' => ['nullable', 'string', 'max:100'],
-            'status_note' => ['nullable', 'string', 'max:255'],
+            'status_note' => ['nullable', 'string', 'max:2000'],
             'photo' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:5120'],
             'remove_photo' => ['nullable', 'boolean'],
         ]);
@@ -159,6 +159,10 @@ class TicketController extends Controller
 
         if (isset($validated['client_name']) && filled($validated['client_name'])) {
             $ticket->client_name = trim($validated['client_name']);
+            $matchedCustomerId = Customer::whereRaw('LOWER(TRIM(name)) = ?', [strtolower($ticket->client_name)])->value('id');
+            if ($matchedCustomerId) {
+                $ticket->customer_id = $matchedCustomerId;
+            }
         }
 
         if (isset($validated['project_name']) && filled($validated['project_name'])) {
@@ -298,9 +302,10 @@ class TicketController extends Controller
             $photoPath = 'uploads/tickets/'.$filename;
         }
 
-        $priorityLevel = match (strtolower($validated['priority'])) {
-            'critical', 'p1' => 'critical',
-            'high', 'p2' => 'high',
+        $rawPriority = strtolower($validated['priority']);
+        $priorityLevel = match (true) {
+            str_contains($rawPriority, 'critical') || str_contains($rawPriority, 'p1') => 'critical',
+            str_contains($rawPriority, 'high') || str_contains($rawPriority, 'p2') => 'high',
             default => 'medium',
         };
 
@@ -321,9 +326,15 @@ class TicketController extends Controller
             $ticketNumber = 'INC-'.date('Y').'-'.str_pad((string) $nextId, 4, '0', STR_PAD_LEFT);
         }
 
+        $clientName = trim($validated['client_name']);
+        $customerId = $request->filled('customer_id')
+            ? (int) $request->input('customer_id')
+            : Customer::whereRaw('LOWER(TRIM(name)) = ?', [strtolower($clientName)])->value('id');
+
         $ticket = Ticket::create([
             'ticket_number' => $ticketNumber,
-            'client_name' => $validated['client_name'],
+            'customer_id' => $customerId,
+            'client_name' => $clientName,
             'project_name' => $validated['project_name'],
             'node_code' => $validated['node_code'] ?? null,
             'priority' => $priorityFormatted,
@@ -372,24 +383,38 @@ class TicketController extends Controller
     public function destroy(Request $request, string $id): RedirectResponse|JsonResponse
     {
         $ticket = Ticket::where('ticket_number', $id)->orWhere('id', $id)->first();
-        if ($ticket) {
-            $ticketNumber = $ticket->ticket_number;
-            $ticketDbId = (string) $ticket->id;
-            $ticket->delete();
-
-            ActivityLogger::log(
-                'tiket',
-                'delete',
-                "Menghapus tiket '{$ticketNumber}'",
-                $ticketNumber,
-                $ticketDbId,
-                ['ticket_number' => $ticketNumber]
-            );
-
-            $msg = "Tiket '{$ticketNumber}' berhasil dihapus dari antrean.";
-        } else {
+        if (! $ticket) {
             $msg = "Tiket '{$id}' tidak ditemukan.";
+
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $msg], 404);
+            }
+
+            return redirect()->route('tickets.index')->with('error', $msg);
         }
+
+        $ticketNumber = $ticket->ticket_number;
+        $ticketDbId = (string) $ticket->id;
+
+        if ($ticket->photo && str_starts_with($ticket->photo, 'uploads/tickets/')) {
+            $photoFile = public_path($ticket->photo);
+            if (File::exists($photoFile)) {
+                @File::delete($photoFile);
+            }
+        }
+
+        $ticket->delete();
+
+        ActivityLogger::log(
+            'tiket',
+            'delete',
+            "Menghapus tiket '{$ticketNumber}'",
+            $ticketNumber,
+            $ticketDbId,
+            ['ticket_number' => $ticketNumber]
+        );
+
+        $msg = "Tiket '{$ticketNumber}' berhasil dihapus dari antrean.";
 
         if ($request->wantsJson()) {
             return response()->json(['success' => true, 'message' => $msg]);

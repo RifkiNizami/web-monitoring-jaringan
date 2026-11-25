@@ -109,7 +109,7 @@ class DevicesReportExport implements FromCollection, WithColumnWidths, WithHeadi
      */
     public function styles(Worksheet $sheet): ?array
     {
-        $lastRow = $this->devices->count() + 1; // +1 untuk baris judul (row 1)
+        $lastRow = max($this->devices->count() + 1, 2); // +1 untuk baris judul (minimal 2 agar range valid)
 
         // Styling baris 1 (Header/Baris Judul)
         $sheet->getStyle('A1:K1')->getFont()->setBold(true)->setSize(11)->getColor()->setARGB('FFFFFFFF');

@@ -12,8 +12,6 @@ class AnnouncementSeeder extends Seeder
      */
     public function run(): void
     {
-        // Data dummy pengumuman telah dibersihkan.
-        // Data pemberitahuan dikelola secara mandiri oleh Admin Konten melalui modul CRUD.
-        Announcement::truncate();
+        // Non-destruktif: data pemberitahuan dikelola secara mandiri oleh Admin Konten melalui modul CRUD.
     }
 }

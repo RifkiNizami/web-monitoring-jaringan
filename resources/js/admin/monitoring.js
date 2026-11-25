@@ -38,7 +38,10 @@ export function initAdminMonitoring() {
                     ? '<svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>'
                     : '<svg class="w-4 h-4 text-white shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
 
-            toast.innerHTML = `${icon}<span>${message}</span>`;
+            toast.innerHTML = icon;
+            const messageSpan = document.createElement('span');
+            messageSpan.textContent = String(message ?? '');
+            toast.appendChild(messageSpan);
             container.appendChild(toast);
 
             requestAnimationFrame(() => {
@@ -225,6 +228,7 @@ export function initAdminMonitoring() {
             const alertItem = document.getElementById(`alert-item-${alertId}`);
 
             // Visual loading state
+            const originalText = this.textContent;
             this.disabled = true;
             this.textContent = 'Memproses...';
 
@@ -237,9 +241,14 @@ export function initAdminMonitoring() {
                 },
                 body: JSON.stringify({ resolved: true }),
             })
-                .then(res => res.json())
-                .catch(() => ({ success: true }))
-                .finally(() => {
+                .then(async res => {
+                    const data = await res.json().catch(() => ({}));
+                    if (!res.ok || !data.success) {
+                        throw new Error(data.message || 'Gagal menyelesaikan peringatan.');
+                    }
+                    return data;
+                })
+                .then(() => {
                     if (actionContainer) {
                         actionContainer.innerHTML = `
                             <span class="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-400">
@@ -263,6 +272,11 @@ export function initAdminMonitoring() {
 
                     updateUnresolvedIndicator(unresolvedCount - 1);
                     window.showToast(`Peringatan '${alertType}' berhasil diselesaikan!`, 'success');
+                })
+                .catch(err => {
+                    this.disabled = false;
+                    this.textContent = originalText;
+                    window.showToast(err?.message || 'Gagal menghubungi server untuk menyelesaikan peringatan.', 'error');
                 });
         });
     });
@@ -432,7 +446,13 @@ export function initAdminMonitoring() {
                 Accept: 'application/json',
             },
         })
-            .then(res => res.json())
+            .then(async res => {
+                const result = await res.json().catch(() => ({}));
+                if (!res.ok || !result.success) {
+                    throw new Error(result.message || `Gagal menjalankan polling perangkat (HTTP ${res.status}).`);
+                }
+                return result;
+            })
             .then(result => {
                 const data = result.data || {};
                 renderPingResults(data, hostname, ip);
@@ -445,25 +465,16 @@ export function initAdminMonitoring() {
                     setTimeout(() => card.classList.remove('ring-2', 'ring-blue-200'), 1500);
                 }
 
-                window.showToast(`Hasil polling ICMP untuk ${hostname}: ${data.rtt_avg || 12} ms`, 'success');
+                const lossVal = Number(data.loss ?? 0);
+                if (lossVal >= 100) {
+                    window.showToast(`Perangkat ${hostname} tidak merespons (Timeout / 100% packet loss).`, 'error');
+                } else {
+                    const avgDisplay = Number.isFinite(Number(data.rtt_avg)) ? Number(data.rtt_avg) : 0;
+                    window.showToast(`Hasil polling untuk ${hostname}: ${avgDisplay} ms (Loss ${lossVal}%)`, 'success');
+                }
             })
-            .catch(() => {
-                // Fallback simulation if offline
-                const fallbackData = {
-                    hostname: hostname,
-                    ip: ip,
-                    rtt_avg: 14.2,
-                    rtt_min: 12.0,
-                    rtt_max: 18.5,
-                    transmitted: 4,
-                    received: 4,
-                    loss: 0.0,
-                    snmp_status: 'SNMPv2-MIB::sysUpTime.0 = OK (Uptime 14 days)',
-                    quality: 'Normal / Stable',
-                };
-                renderPingResults(fallbackData, hostname, ip);
-                if (pingModal) pingModal.classList.remove('hidden');
-                window.showToast(`Hasil polling ICMP untuk ${hostname}: 14.2 ms`, 'success');
+            .catch(err => {
+                window.showToast(err?.message || `Gagal menghubungi server untuk polling ${hostname}.`, 'error');
             })
             .finally(() => {
                 if (triggerBtn) {
@@ -474,25 +485,36 @@ export function initAdminMonitoring() {
     }
 
     function renderPingResults(data, hostname, ip) {
+        const lossVal = Number(data.loss ?? 0);
+        const isTimeout = lossVal >= 100;
+        const rttAvg = Number.isFinite(Number(data.rtt_avg)) ? Number(data.rtt_avg) : 0;
+
         if (modalHostname) modalHostname.textContent = hostname;
         if (modalIp) modalIp.textContent = ip;
-        if (modalRttAvg) modalRttAvg.textContent = `${data.rtt_avg} ms`;
+        if (modalRttAvg) modalRttAvg.textContent = isTimeout ? 'Timeout' : `${rttAvg} ms`;
         if (modalLoss) {
-            modalLoss.textContent = `${data.loss}%`;
-            modalLoss.className = data.loss > 5.0 ? 'text-base font-extrabold text-rose-600 font-mono mt-0.5' : 'text-base font-extrabold text-emerald-600 font-mono mt-0.5';
+            modalLoss.textContent = `${lossVal}%`;
+            modalLoss.className = lossVal > 5.0 ? 'text-base font-extrabold text-rose-600 font-mono mt-0.5' : 'text-base font-extrabold text-emerald-600 font-mono mt-0.5';
         }
-        if (modalQuality) modalQuality.textContent = data.quality || 'Normal';
+        if (modalQuality) modalQuality.textContent = data.quality || (isTimeout ? 'Offline / Timeout' : 'Normal');
 
-        const r1 = Math.round((data.rtt_avg - 2) * 10) / 10;
-        const r2 = Math.round((data.rtt_avg + 1) * 10) / 10;
-        const r3 = Math.round((data.rtt_avg) * 10) / 10;
-        const r4 = Math.round((data.rtt_avg - 1) * 10) / 10;
+        if (isTimeout) {
+            if (rawLine1) rawLine1.textContent = `Request timeout for icmp_seq=1 (${ip})`;
+            if (rawLine2) rawLine2.textContent = `Request timeout for icmp_seq=2 (${ip})`;
+            if (rawLine3) rawLine3.textContent = `Request timeout for icmp_seq=3 (${ip})`;
+            if (rawLine4) rawLine4.textContent = `Request timeout for icmp_seq=4 (${ip})`;
+        } else {
+            const r1 = Math.max(0.1, Math.round((rttAvg - 0.5) * 10) / 10);
+            const r2 = Math.max(0.1, Math.round((rttAvg + 0.4) * 10) / 10);
+            const r3 = Math.max(0.1, Math.round(rttAvg * 10) / 10);
+            const r4 = Math.max(0.1, Math.round((rttAvg + 0.1) * 10) / 10);
 
-        if (rawLine1) rawLine1.textContent = `64 bytes from ${ip}: icmp_seq=1 ttl=64 time=${r1} ms`;
-        if (rawLine2) rawLine2.textContent = `64 bytes from ${ip}: icmp_seq=2 ttl=64 time=${r2} ms`;
-        if (rawLine3) rawLine3.textContent = `64 bytes from ${ip}: icmp_seq=3 ttl=64 time=${r3} ms`;
-        if (rawLine4) rawLine4.textContent = `64 bytes from ${ip}: icmp_seq=4 ttl=64 time=${r4} ms`;
-        if (rawSnmp) rawSnmp.textContent = data.snmp_status || 'SNMPv2-MIB::sysUpTime.0 = OK';
+            if (rawLine1) rawLine1.textContent = `64 bytes from ${ip}: icmp_seq=1 ttl=64 time=${r1} ms`;
+            if (rawLine2) rawLine2.textContent = `64 bytes from ${ip}: icmp_seq=2 ttl=64 time=${r2} ms`;
+            if (rawLine3) rawLine3.textContent = `64 bytes from ${ip}: icmp_seq=3 ttl=64 time=${r3} ms`;
+            if (rawLine4) rawLine4.textContent = `64 bytes from ${ip}: icmp_seq=4 ttl=64 time=${r4} ms`;
+        }
+        if (rawSnmp) rawSnmp.textContent = data.snmp_status || (isTimeout ? 'Target tidak dapat dijangkau' : 'Status Link: OK');
     }
 
     // Attach click listener to "Tes ping" menu buttons

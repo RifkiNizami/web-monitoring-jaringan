@@ -426,7 +426,7 @@ class AccountController extends Controller
         }
 
         $accountHolderName = ! empty($validated['name']) ? $validated['name'] : $customer->name;
-        $isActive = $request->boolean('is_active');
+        $isActive = $request->has('is_active') ? $request->boolean('is_active') : (bool) $user->is_active;
 
         $userUpdates = [
             'name' => $accountHolderName,
