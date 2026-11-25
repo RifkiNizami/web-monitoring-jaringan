@@ -91,6 +91,8 @@ class CustomerProjectController extends Controller
             'phone' => 'required|string|max:50',
             'address' => 'required|string|max:300',
             'note' => 'nullable|string|max:300',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
         ], [
             'name.required' => 'Nama customer rumahan wajib diisi.',
             'email.required' => 'Email customer wajib diisi.',
@@ -161,6 +163,8 @@ class CustomerProjectController extends Controller
             'phone' => 'required|string|max:50',
             'address' => 'required|string|max:300',
             'note' => 'nullable|string|max:300',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
         ], [
             'name.required' => 'Nama customer rumahan wajib diisi.',
             'email.required' => 'Email customer wajib diisi.',
@@ -235,19 +239,6 @@ class CustomerProjectController extends Controller
             ]
         );
 
-        // Sinkronisasi: Hapus juga akun terkait dari session 'customer_accounts' jika ada
-        $sessionAccounts = session('customer_accounts', null);
-        if (is_array($sessionAccounts)) {
-            $targetNameLower = strtolower(trim($customerName));
-            $sessionAccounts = array_values(array_filter($sessionAccounts, function ($acc) use ($id, $targetNameLower) {
-                $isSameRumahanId = (($acc['customer_type'] ?? '') === 'rumahan') && ((string) ($acc['customer_id'] ?? '') === (string) $id);
-                $isSameName = strtolower(trim($acc['customer_name'] ?? '')) === $targetNameLower;
-
-                return ! ($isSameRumahanId || $isSameName);
-            }));
-            session(['customer_accounts' => $sessionAccounts]);
-        }
-
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
@@ -272,6 +263,8 @@ class CustomerProjectController extends Controller
             'phone' => 'required|string|max:50',
             'address' => 'required|string|max:300',
             'note' => 'nullable|string|max:300',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
         ], [
             'name.required' => 'Nama perusahaan / PT wajib diisi.',
             'pic_name.required' => 'Nama PIC penanggung jawab wajib diisi.',
@@ -345,6 +338,8 @@ class CustomerProjectController extends Controller
             'phone' => 'required|string|max:50',
             'address' => 'required|string|max:300',
             'note' => 'nullable|string|max:300',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
         ], [
             'name.required' => 'Nama perusahaan / PT wajib diisi.',
             'pic_name.required' => 'Nama PIC penanggung jawab wajib diisi.',
@@ -421,19 +416,6 @@ class CustomerProjectController extends Controller
                 'type' => 'perusahaan',
             ]
         );
-
-        // Sinkronisasi: Hapus juga akun terkait dari session 'customer_accounts' jika ada
-        $sessionAccounts = session('customer_accounts', null);
-        if (is_array($sessionAccounts)) {
-            $targetNameLower = strtolower(trim($companyName));
-            $sessionAccounts = array_values(array_filter($sessionAccounts, function ($acc) use ($id, $targetNameLower) {
-                $isSameCorpId = (($acc['customer_type'] ?? 'perusahaan') === 'perusahaan') && ((string) ($acc['customer_id'] ?? '') === (string) $id);
-                $isSameName = strtolower(trim($acc['customer_name'] ?? '')) === $targetNameLower;
-
-                return ! ($isSameCorpId || $isSameName);
-            }));
-            session(['customer_accounts' => $sessionAccounts]);
-        }
 
         if ($request->wantsJson()) {
             return response()->json([

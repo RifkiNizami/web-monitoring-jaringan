@@ -144,7 +144,7 @@ export function initAdminMonitoringDetail() {
         } catch (e) {}
     }
 
-    // Buat Chart.js instance baru
+    // Buat Chart.js instance baru (Dual Y-Axis: kiri untuk Throughput Mbps, kanan untuk Latensi ms)
     activeChartInstance = new Chart(canvas, {
         type: 'line',
         data: {
@@ -153,6 +153,7 @@ export function initAdminMonitoringDetail() {
                 {
                     label: 'Latensi (ms)',
                     data: [],
+                    yAxisID: 'y1',
                     borderColor: '#f59e0b',
                     backgroundColor: 'rgba(245, 158, 11, 0.08)',
                     borderWidth: 2,
@@ -164,6 +165,7 @@ export function initAdminMonitoringDetail() {
                 {
                     label: 'Rx (Mbps)',
                     data: [],
+                    yAxisID: 'y',
                     borderColor: '#2563eb',
                     backgroundColor: 'rgba(37, 99, 235, 0.08)',
                     borderWidth: 2,
@@ -175,6 +177,7 @@ export function initAdminMonitoringDetail() {
                 {
                     label: 'Tx (Mbps)',
                     data: [],
+                    yAxisID: 'y',
                     borderColor: '#10b981',
                     backgroundColor: 'rgba(16, 185, 129, 0.08)',
                     borderWidth: 2,
@@ -196,10 +199,22 @@ export function initAdminMonitoringDetail() {
                     ticks: { maxTicksLimit: 8, font: { size: 10 }, color: '#94a3b8' },
                 },
                 y: {
+                    type: 'linear',
+                    position: 'left',
                     beginAtZero: true,
                     grid: { color: '#f1f5f9' },
                     border: { display: false },
-                    ticks: { font: { size: 10 }, color: '#94a3b8' },
+                    title: { display: true, text: 'Mbps', font: { size: 10 }, color: '#64748b' },
+                    ticks: { font: { size: 10 }, color: '#64748b' },
+                },
+                y1: {
+                    type: 'linear',
+                    position: 'right',
+                    beginAtZero: true,
+                    grid: { drawOnChartArea: false },
+                    border: { display: false },
+                    title: { display: true, text: 'ms', font: { size: 10 }, color: '#d97706' },
+                    ticks: { font: { size: 10 }, color: '#d97706' },
                 },
             },
             plugins: {
@@ -263,12 +278,24 @@ export function initAdminMonitoringDetail() {
             const json = await res.json();
             if (!json.success) return;
 
+            const parseRateToMbps = raw => {
+                const str = String(raw ?? '0').trim();
+                const match = str.match(/([\d.]+)\s*([TtGgMmKk])?bps?/i);
+                if (!match) return parseFloat(str) || 0;
+                const val = parseFloat(match[1]) || 0;
+                const unit = (match[2] || 'M').toUpperCase();
+                if (unit === 'T') return Math.round(val * 1000000 * 100) / 100;
+                if (unit === 'G') return Math.round(val * 1000 * 100) / 100;
+                if (unit === 'K') return Math.round((val / 1000) * 1000) / 1000;
+                return val;
+            };
+
             const m = json.metrics || {};
             const cpuVal = Number(m.cpu_load ?? 0);
             const ramVal = Number(m.ram_load ?? 0);
             const pingVal = m.latency_ms !== null && m.latency_ms !== undefined ? Number(m.latency_ms) : Number(m.ping_ms ?? 0);
-            const rxNum = parseFloat(String(m.rx_mbps ?? '0')) || 0;
-            const txNum = parseFloat(String(m.tx_mbps ?? '0')) || 0;
+            const rxNum = parseRateToMbps(m.rx_mbps);
+            const txNum = parseRateToMbps(m.tx_mbps);
 
             setMetric('cpu', cpuVal, cpuVal);
             setMetric('ram', ramVal, ramVal);

@@ -28,7 +28,7 @@ class AnnouncementApiController extends Controller
             $query->where('category', $request->query('category'));
         }
 
-        $limit = min((int) ($request->query('limit', 20)), 50);
+        $limit = max(1, min((int) ($request->query('limit', 20)), 50));
         $announcements = $query->limit($limit)->get();
 
         $formatted = $announcements->map(function ($item) {
@@ -74,6 +74,7 @@ class AnnouncementApiController extends Controller
     {
         $cleanId = preg_replace('/[^0-9]/', '', $id);
         $announcement = Announcement::with('creator')
+            ->whereIn('status', ['aktif', 'selesai'])
             ->where('id', is_numeric($cleanId) && ! empty($cleanId) ? (int) $cleanId : 0)
             ->first();
 

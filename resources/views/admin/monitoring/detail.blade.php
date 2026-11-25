@@ -17,9 +17,11 @@
 
     @php
         // Nilai numerik untuk grafik & indikator (aman terhadap null / undefined index)
-        $rxValue = (float) filter_var($device['rx_mbps'] ?? '0', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-        $txValue = (float) filter_var($device['tx_mbps'] ?? '0', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-        $tempValue = (int) filter_var($device['temperature'] ?? '0', FILTER_SANITIZE_NUMBER_INT);
+        $rxValue = \App\Http\Controllers\Admin\MonitoringController::parseRateToMbps($device['rx_mbps'] ?? '0');
+        $txValue = \App\Http\Controllers\Admin\MonitoringController::parseRateToMbps($device['tx_mbps'] ?? '0');
+        $rawTemp = $device['temperature'] ?? null;
+        $hasTemp = is_string($rawTemp) && preg_match('/-?\d+(\.\d+)?/', $rawTemp, $tempMatch);
+        $tempValue = $hasTemp ? (int) round((float) $tempMatch[0]) : null;
         $cpuLoad = (float) ($device['cpu_load'] ?? 0.0);
         $ramLoad = (float) ($device['ram_load'] ?? 0.0);
         $pingMs = array_key_exists('latency_ms', $device) && $device['latency_ms'] !== null
@@ -80,11 +82,11 @@
             [
                 'key' => 'temp',
                 'label' => 'Suhu board',
-                'value' => $tempValue,
-                'unit' => '°C',
-                'bar' => min(100, round($tempValue / 90 * 100)),
-                'level' => $levelOf((float) $tempValue, 'temp'),
-                'hint' => 'Tegangan PSU ' . ($device['voltage'] ?? '-'),
+                'value' => $hasTemp ? $tempValue : 'N/A',
+                'unit' => $hasTemp ? '°C' : '',
+                'bar' => $hasTemp ? min(100, max(0, round($tempValue / 90 * 100))) : 0,
+                'level' => $hasTemp ? $levelOf((float) $tempValue, 'temp') : 'normal',
+                'hint' => $hasTemp ? ('Tegangan PSU ' . ($device['voltage'] ?? '-')) : 'Sensor suhu tidak tersedia',
             ],
         ];
 
@@ -353,7 +355,14 @@
                         </div>
                         <div class="divide-y divide-slate-100">
                             @foreach ($alerts as $item)
-                                <div class="px-5 py-3.5 border-l-[3px] {{ $item['severity'] === 'warning' ? 'border-amber-500' : 'border-blue-500' }}">
+                                @php
+                                    $logBorderClass = match ($item['severity'] ?? 'info') {
+                                        'critical' => 'border-rose-500',
+                                        'warning' => 'border-amber-500',
+                                        default => 'border-blue-500',
+                                    };
+                                @endphp
+                                <div class="px-5 py-3.5 border-l-[3px] {{ $logBorderClass }}">
                                     <div class="flex items-center justify-between gap-2">
                                         <p class="text-xs font-semibold text-slate-900">{{ $item['title'] }}</p>
                                         <span class="text-[11px] text-slate-400 whitespace-nowrap tabular-nums">{{ $item['time'] }}</span>
@@ -367,7 +376,7 @@
 
                 <!-- FOOTER -->
                 <footer class="pt-4 pb-6 text-center text-xs text-slate-400">
-                    <p>© 2026 PT Netmedia Fiberoptik Lancarmulya • Network Operation Center</p>
+                    <p>© {{ date('Y') }} PT Netmedia Fiberoptik Lancarmulya • Network Operation Center</p>
                 </footer>
 
             </main>

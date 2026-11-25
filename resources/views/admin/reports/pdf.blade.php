@@ -387,7 +387,14 @@
             <td class="meta-val">{{ $formattedPeriod }}</td>
             <td class="meta-label">Status SLA Kontrak</td>
             <td class="meta-val">
-                <span class="badge-sla" style="float: none; display: inline-block;">{{ strtoupper($slaStatusLabel) }}</span>
+                @php
+                    $slaBadgeInlineStyle = match ($slaStatusColor ?? 'emerald') {
+                        'amber' => 'background:#fffbeb;color:#b45309;border:1px solid #fde68a;',
+                        'slate' => 'background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;',
+                        default => 'background:#ecfdf5;color:#047857;border:1px solid #a7f3d0;',
+                    };
+                @endphp
+                <span class="badge-sla" style="float: none; display: inline-block; {{ $slaBadgeInlineStyle }}">{{ strtoupper($slaStatusLabel) }}</span>
             </td>
         </tr>
         <tr>
@@ -438,7 +445,7 @@
             <td class="kpi-cell">
                 <div class="kpi-title">Cakupan Evaluasi</div>
                 <div class="kpi-value-lg" style="font-size: 10pt; line-height: 1.2; height: 26px; overflow: hidden;">
-                    {{ $selectedCustomer === 'all' ? 'Seluruh Mitra NetFly' : substr($evaluatedPartner, 0, 24) . '...' }}
+                    {{ $selectedCustomer === 'all' ? 'Seluruh Mitra NetFly' : \Illuminate\Support\Str::limit($evaluatedPartner, 24) }}
                 </div>
                 <div class="kpi-sub">Periode: {{ $formattedPeriod }}</div>
                 <div class="kpi-sub text-blue">Status Kontrak: Aktif</div>

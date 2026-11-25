@@ -1,6 +1,6 @@
 <!-- Modal Barcode / QR Code Unduh Aplikasi Mobile -->
 <div id="downloadAppModal"
-     data-download-url="{{ $mobileAppDownloadUrl ?? app_setting('mobile_app_download_url', 'https://netfly.id/download/netfly-mobile.apk') }}"
+     data-download-url="{{ $mobileAppDownloadUrl ?? app_setting('mobile_app_download_url', 'https://netmediafiberoptik.com/download/netfly-mobile.apk') }}"
      class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden transition-opacity duration-200"
      role="dialog"
      aria-modal="true"
@@ -58,7 +58,7 @@
                 <input id="downloadAppUrlInput"
                        type="text"
                        readonly
-                       value="{{ $mobileAppDownloadUrl ?? app_setting('mobile_app_download_url', 'https://netfly.id/download/netfly-mobile.apk') }}"
+                       value="{{ $mobileAppDownloadUrl ?? app_setting('mobile_app_download_url', 'https://netmediafiberoptik.com/download/netfly-mobile.apk') }}"
                        class="flex-1 min-w-0 px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-700 font-mono focus:outline-none select-all">
                 <button type="button"
                         id="copyAppLinkBtn"
@@ -81,7 +81,7 @@
 
         <!-- Direct Action Buttons -->
         <div class="mt-5 pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center gap-2.5">
-            <a href="{{ $mobileAppDownloadUrl ?? app_setting('mobile_app_download_url', 'https://netfly.id/download/netfly-mobile.apk') }}"
+            <a href="{{ $mobileAppDownloadUrl ?? app_setting('mobile_app_download_url', 'https://netmediafiberoptik.com/download/netfly-mobile.apk') }}"
                target="_blank"
                rel="noopener noreferrer"
                class="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-netfly-blue hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors">

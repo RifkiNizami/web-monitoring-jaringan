@@ -95,19 +95,23 @@ class KontenKlienController extends Controller
      */
     public function store(Request $request)
     {
+        if (Auth::user()->role !== 'admin_konten') {
+            abort(403, 'Akses dibatasi hanya untuk Admin Konten.');
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'category' => 'required|string|max:100',
             'location' => 'required|string|max:100',
             'order' => 'nullable|integer|min:0',
             'website_url' => 'nullable|url|max:255',
-            'logo' => 'nullable|image|mimes:png,jpg,jpeg,svg,webp|max:3072',
+            'logo' => 'nullable|image|mimes:png,jpg,jpeg,webp|max:3072',
             'is_active' => 'nullable',
         ], [
             'name.required' => 'Nama instansi/klien wajib diisi.',
             'category.required' => 'Kategori industri wajib diisi.',
             'location.required' => 'Lokasi/Kota wajib diisi.',
-            'logo.image' => 'File logo harus berupa gambar yang valid (PNG, JPG, SVG, WebP).',
+            'logo.image' => 'File logo harus berupa gambar yang valid (PNG, JPG, WebP).',
             'logo.max' => 'Ukuran file logo maksimal 3 MB.',
         ]);
 
@@ -115,7 +119,7 @@ class KontenKlienController extends Controller
         if ($request->hasFile('logo')) {
             $file = $request->file('logo');
             $ext = strtolower($file->guessExtension() ?: $file->getClientOriginalExtension());
-            if (! in_array($ext, ['png', 'jpg', 'jpeg', 'svg', 'webp'], true)) {
+            if (! in_array($ext, ['png', 'jpg', 'jpeg', 'webp'], true)) {
                 $ext = 'png';
             }
             $filename = 'client_'.time().'_'.Str::slug($request->name).'.'.$ext;
@@ -164,6 +168,10 @@ class KontenKlienController extends Controller
      */
     public function update(Request $request, $id)
     {
+        if (Auth::user()->role !== 'admin_konten') {
+            abort(403, 'Akses dibatasi hanya untuk Admin Konten.');
+        }
+
         $client = LandingClient::findOrFail($id);
 
         $request->validate([
@@ -172,13 +180,13 @@ class KontenKlienController extends Controller
             'location' => 'required|string|max:100',
             'order' => 'nullable|integer|min:0',
             'website_url' => 'nullable|url|max:255',
-            'logo' => 'nullable|image|mimes:png,jpg,jpeg,svg,webp|max:3072',
+            'logo' => 'nullable|image|mimes:png,jpg,jpeg,webp|max:3072',
             'is_active' => 'nullable',
         ], [
             'name.required' => 'Nama instansi/klien wajib diisi.',
             'category.required' => 'Kategori industri wajib diisi.',
             'location.required' => 'Lokasi/Kota wajib diisi.',
-            'logo.image' => 'File logo harus berupa gambar yang valid.',
+            'logo.image' => 'File logo harus berupa gambar yang valid (PNG, JPG, WebP).',
         ]);
 
         $data = [
@@ -193,7 +201,7 @@ class KontenKlienController extends Controller
         if ($request->hasFile('logo')) {
             $file = $request->file('logo');
             $ext = strtolower($file->guessExtension() ?: $file->getClientOriginalExtension());
-            if (! in_array($ext, ['png', 'jpg', 'jpeg', 'svg', 'webp'], true)) {
+            if (! in_array($ext, ['png', 'jpg', 'jpeg', 'webp'], true)) {
                 $ext = 'png';
             }
             $filename = 'client_'.time().'_'.Str::slug($request->name).'.'.$ext;
@@ -241,6 +249,10 @@ class KontenKlienController extends Controller
      */
     public function destroy(Request $request, $id)
     {
+        if (Auth::user()->role !== 'admin_konten') {
+            abort(403, 'Akses dibatasi hanya untuk Admin Konten.');
+        }
+
         $client = LandingClient::findOrFail($id);
         $clientName = $client->name;
 
@@ -274,6 +286,10 @@ class KontenKlienController extends Controller
      */
     public function toggleStatus(Request $request, $id)
     {
+        if (Auth::user()->role !== 'admin_konten') {
+            abort(403, 'Akses dibatasi hanya untuk Admin Konten.');
+        }
+
         $client = LandingClient::findOrFail($id);
         $client->is_active = ! $client->is_active;
         $client->save();

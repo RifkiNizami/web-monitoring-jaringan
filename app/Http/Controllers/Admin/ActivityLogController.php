@@ -88,8 +88,11 @@ class ActivityLogController extends Controller
             'inventaris' => 'Inventaris Perangkat',
             'monitoring' => 'Monitoring Telemetri',
             'tiket' => 'Tiket Insiden',
+            'kemitraan' => 'Customer & Kemitraan',
+            'teknisi' => 'Manajemen Teknisi',
             'akun' => 'Manajemen Akun',
             'konten' => 'Konten & Publikasi',
+            'app_settings' => 'Pengaturan Aplikasi',
             'auth' => 'Autentikasi & Keamanan',
         ];
 
@@ -101,6 +104,7 @@ class ActivityLogController extends Controller
             'login' => 'Login (Masuk)',
             'logout' => 'Logout (Keluar)',
             'login_failed' => 'Login Gagal',
+            'password_change' => 'Ubah Kata Sandi',
         ];
 
         $users = User::select('id', 'name', 'role')->orderBy('name')->get();

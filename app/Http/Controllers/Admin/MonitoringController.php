@@ -46,6 +46,32 @@ class MonitoringController extends Controller
     }
 
     /**
+     * Konversi string rate bandwidth (Kbps/Mbps/Gbps/bps) menjadi nilai float dalam satuan Mbps.
+     */
+    public static function parseRateToMbps(?string $rate): float
+    {
+        if (empty($rate)) {
+            return 0.0;
+        }
+
+        $trimmed = trim($rate);
+        if (preg_match('/([\d.]+)\s*([TtGgMmKk])?bps?/i', $trimmed, $matches)) {
+            $val = (float) $matches[1];
+            $unit = strtolower($matches[2] ?? 'm');
+
+            return match ($unit) {
+                't' => $val * 1000000.0,
+                'g' => $val * 1000.0,
+                'k' => $val / 1000.0,
+                '' => $val / 1000000.0,
+                default => $val,
+            };
+        }
+
+        return (float) filter_var($trimmed, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+    }
+
+    /**
      * Format instance Model MonitoringDevice menjadi struktur array standar.
      */
     public static function formatMonitoringDevice(MonitoringDevice $device): array
@@ -80,7 +106,7 @@ class MonitoringController extends Controller
             'connection_type' => $device->connection_type ?: ($isNonMikrotik ? 'http' : 'lan'),
             'api_port' => (int) ($device->api_port ?? ($isNonMikrotik ? 80 : 8728)),
             'api_username' => $device->api_username ?? ($isNonMikrotik ? '' : 'admin'),
-            'api_password' => $device->api_password ?? '',
+            'has_api_password' => ! empty($device->api_password),
             'is_non_mikrotik' => $isNonMikrotik,
             'interfaces' => is_array($device->interfaces) && count($device->interfaces) > 0 ? $device->interfaces : [
                 ['name' => $isNonMikrotik ? 'eth0' : 'ether1', 'status' => 'up', 'speed' => $isNonMikrotik ? '100 Mbps' : '1 Gbps', 'rx' => '0 Mbps', 'tx' => '0 Mbps'],
@@ -381,10 +407,8 @@ class MonitoringController extends Controller
         $totalInbound = 0.0;
         $totalOutbound = 0.0;
         foreach ($telemetryDevices as $dev) {
-            $rx = (float) filter_var($dev['rx_mbps'] ?? '0', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-            $tx = (float) filter_var($dev['tx_mbps'] ?? '0', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-            $totalInbound += $rx;
-            $totalOutbound += $tx;
+            $totalInbound += self::parseRateToMbps($dev['rx_mbps'] ?? '0');
+            $totalOutbound += self::parseRateToMbps($dev['tx_mbps'] ?? '0');
         }
 
         // 4 Summary Metrics
@@ -589,7 +613,14 @@ class MonitoringController extends Controller
     public function pollDevice(Request $request, int $id): JsonResponse
     {
         $deviceModel = MonitoringDevice::find($id);
-        $device = $deviceModel ? self::formatMonitoringDevice($deviceModel) : null;
+        if (! $deviceModel) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Perangkat monitoring tidak ditemukan.',
+            ], 404);
+        }
+
+        $device = self::formatMonitoringDevice($deviceModel);
 
         $hostname = $device['hostname'] ?? ('Node Perangkat #'.$id);
         $ip = $device['ip_address'] ?? '127.0.0.1';
@@ -641,15 +672,16 @@ class MonitoringController extends Controller
             }
         }
 
+        $isOffline = $status === 'offline';
         $data = [
             'hostname' => $hostname,
             'ip' => $ip,
-            'rtt_avg' => $ping,
-            'rtt_min' => max(0.0, $ping - 1.0),
-            'rtt_max' => $ping + 1.5,
+            'rtt_avg' => $isOffline ? 0.0 : $ping,
+            'rtt_min' => $isOffline ? 0.0 : max(0.0, round($ping - 1.0, 1)),
+            'rtt_max' => $isOffline ? 0.0 : round($ping + 1.5, 1),
             'transmitted' => 4,
-            'received' => $status === 'offline' ? 0 : 4,
-            'loss' => $status === 'offline' ? 100.0 : ($device['packet_loss'] ?? 0.0),
+            'received' => $isOffline ? 0 : 4,
+            'loss' => $isOffline ? 100.0 : ($device['packet_loss'] ?? 0.0),
             'snmp_status' => $snmpStatus,
             'quality' => $quality,
         ];

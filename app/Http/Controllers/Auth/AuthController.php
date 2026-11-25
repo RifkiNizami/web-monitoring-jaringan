@@ -255,12 +255,24 @@ class AuthController extends Controller
             ], 422);
         }
 
+        $throttleKey = 'api-login:'.Str::transliterate(Str::lower($identifier).'|'.$request->ip());
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+
+            return response()->json([
+                'success' => false,
+                'message' => "Terlalu banyak percobaan login. Silakan coba lagi dalam {$seconds} detik.",
+            ], 429);
+        }
+
         $user = User::with(['customer.devices', 'customer.monitoringDevices'])
             ->where('email', $identifier)
             ->orWhere('username', $identifier)
             ->first();
 
         if (! $user || ! Hash::check($password, $user->password)) {
+            RateLimiter::hit($throttleKey, 60);
+
             ActivityLogger::log(
                 'auth',
                 'login_failed',
@@ -275,6 +287,8 @@ class AuthController extends Controller
                 'message' => 'Email atau kata sandi yang Anda masukkan salah.',
             ], 422);
         }
+
+        RateLimiter::clear($throttleKey);
 
         if (isset($user->is_active) && ! $user->is_active) {
             return response()->json([
@@ -325,6 +339,13 @@ class AuthController extends Controller
             ], 404);
         }
 
+        if (in_array($user->role, ['admin', 'admin_konten'], true)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak untuk akun administrator.',
+            ], 403);
+        }
+
         return $this->buildMobileUserPayloadResponse($user);
     }
 
@@ -368,8 +389,8 @@ class AuthController extends Controller
             })->orderBy('id', 'asc')->get();
 
             foreach ($matchedMonitoringDevices as $mNode) {
-                // Sinkronkan foreign key customer_id secara permanen jika sebelumnya hanya terhubung lewat nama
-                if ($customer && (int) $mNode->customer_id !== (int) $customer->id) {
+                // Sinkronkan foreign key customer_id hanya jika belum terikat ke customer lain
+                if ($customer && empty($mNode->customer_id)) {
                     $mNode->update(['customer_id' => $customer->id]);
                 }
             }
@@ -518,6 +539,13 @@ class AuthController extends Controller
             ], 404);
         }
 
+        if (in_array($user->role, ['admin', 'admin_konten'], true)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Perubahan kata sandi akun administrator hanya diperbolehkan melalui portal web.',
+            ], 403);
+        }
+
         if (! Hash::check($currentPassword, $user->password)) {
             return response()->json([
                 'success' => false,
@@ -566,6 +594,13 @@ class AuthController extends Controller
                 'success' => false,
                 'message' => 'Pengguna tidak ditemukan dalam database.',
             ], 404);
+        }
+
+        if (in_array($user->role, ['admin', 'admin_konten'], true)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Perubahan profil akun administrator ditolak melalui endpoint mobile.',
+            ], 403);
         }
 
         $validated = $request->validate([

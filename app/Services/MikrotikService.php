@@ -575,31 +575,23 @@ class MikrotikService
     }
 
     /**
-     * Konversi bits-per-second (dan delta byte) menjadi string Mbps yang responsif.
+     * Konversi bits-per-second menjadi string throughput akurat (Mbps / Kbps) tanpa inflasi.
      */
     public static function formatBpsToMbps(float $bps, float $deltaBytes = 0.0, float $totalBytes = 0.0): string
     {
+        if ($bps <= 0) {
+            return '0.0 Mbps';
+        }
+
         $mbps = $bps / 1000000.0;
 
-        // Jika terdapat trafik data (>= 0.05 Mbps), tampilkan nilai Mbps sebenarnya
-        if ($mbps >= 0.05) {
+        if ($mbps >= 0.01) {
             return number_format($mbps, 2, '.', '').' Mbps';
         }
 
-        // Jika trafik kecil (control/API/ICMP di bawah 50 Kbps namun ada aliran paket aktif),
-        // konversi Kbps secara proporsional agar RX dan TX bergerak dinamis sesuai beban paket nyata
-        if ($bps > 0 || $deltaBytes > 0) {
-            $kbps = max(0.5, $bps / 1000.0);
-            $scaled = min(0.48, max(0.02, round(0.02 + ($kbps / 60.0), 2)));
+        $kbps = $bps / 1000.0;
 
-            return number_format($scaled, 2, '.', '').' Mbps';
-        }
-
-        if ($totalBytes > 0) {
-            return '0.02 Mbps';
-        }
-
-        return '0.0 Mbps';
+        return number_format($kbps, 1, '.', '').' Kbps';
     }
 
     /**
@@ -624,8 +616,8 @@ class MikrotikService
                 'latency_ms' => $check['latency_ms'],
                 'cpu_load' => 0.0,
                 'ram_load' => 0.0,
-                'rx_mbps' => '0.05 Mbps',
-                'tx_mbps' => '0.04 Mbps',
+                'rx_mbps' => '0.0 Mbps',
+                'tx_mbps' => '0.0 Mbps',
                 'uptime' => $check['uptime'],
             ];
         }

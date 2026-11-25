@@ -94,6 +94,6 @@ class User extends Authenticatable
 
     public function isCustomer(): bool
     {
-        return $this->role === 'customer_representative';
+        return in_array($this->role, ['customer_representative', 'customer_residential', 'customer_corporate'], true);
     }
 }

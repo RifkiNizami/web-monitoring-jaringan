@@ -71,58 +71,7 @@ class TicketApiController extends Controller
             'photo_base64' => ['nullable', 'string'],
         ]);
 
-        $photoPath = null;
-        if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
-            $file = $request->file('photo');
-            $ext = strtolower($file->guessExtension() ?: $file->getClientOriginalExtension());
-            if (! in_array($ext, ['jpg', 'jpeg', 'png', 'webp'], true)) {
-                $ext = 'jpg';
-            }
-            $filename = 'ticket_'.time().'_'.Str::random(8).'.'.$ext;
-            $destination = public_path('uploads/tickets');
-            if (! File::exists($destination)) {
-                File::makeDirectory($destination, 0755, true);
-            }
-            $file->move($destination, $filename);
-            $photoPath = 'uploads/tickets/'.$filename;
-        } elseif ($request->filled('photo') || $request->filled('photo_base64')) {
-            $rawPhoto = (string) ($request->input('photo') ?: $request->input('photo_base64'));
-            if (! empty($rawPhoto)) {
-                if (str_starts_with($rawPhoto, 'data:image')) {
-                    $ext = 'jpg';
-                    if (preg_match('/^data:image\/(\w+);base64,/', $rawPhoto, $typeMatch)) {
-                        $candidateExt = strtolower($typeMatch[1]);
-                        if (in_array($candidateExt, ['jpg', 'jpeg', 'png', 'webp'], true)) {
-                            $ext = $candidateExt;
-                        }
-                    }
-                    $base64Data = substr($rawPhoto, strpos($rawPhoto, ',') + 1);
-                    $decoded = base64_decode($base64Data);
-                    if ($decoded !== false) {
-                        $filename = 'ticket_'.time().'_'.Str::random(8).'.'.$ext;
-                        $destination = public_path('uploads/tickets');
-                        if (! File::exists($destination)) {
-                            File::makeDirectory($destination, 0755, true);
-                        }
-                        File::put($destination.'/'.$filename, $decoded);
-                        $photoPath = 'uploads/tickets/'.$filename;
-                    }
-                } elseif (strlen($rawPhoto) > 100 && ! str_contains($rawPhoto, ' ')) {
-                    $decoded = base64_decode($rawPhoto, true);
-                    if ($decoded !== false) {
-                        $filename = 'ticket_'.time().'_'.Str::random(8).'.jpg';
-                        $destination = public_path('uploads/tickets');
-                        if (! File::exists($destination)) {
-                            File::makeDirectory($destination, 0755, true);
-                        }
-                        File::put($destination.'/'.$filename, $decoded);
-                        $photoPath = 'uploads/tickets/'.$filename;
-                    }
-                } elseif (strlen($rawPhoto) < 255 && ! str_contains($rawPhoto, "\n")) {
-                    $photoPath = $rawPhoto;
-                }
-            }
-        }
+        $photoPath = $this->handleUploadedPhoto($request);
 
         $rawPriority = strtolower($validated['priority'] ?? 'medium');
         $priorityLevel = match (true) {
@@ -279,41 +228,25 @@ class TicketApiController extends Controller
             'photo_base64' => ['nullable', 'string'],
         ]);
 
-        if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
-            $file = $request->file('photo');
-            $ext = strtolower($file->guessExtension() ?: $file->getClientOriginalExtension());
-            if (! in_array($ext, ['jpg', 'jpeg', 'png', 'webp'], true)) {
-                $ext = 'jpg';
-            }
-            $filename = 'ticket_'.time().'_'.Str::random(8).'.'.$ext;
-            $destination = public_path('uploads/tickets');
-            if (! File::exists($destination)) {
-                File::makeDirectory($destination, 0755, true);
-            }
-            $file->move($destination, $filename);
-            $ticket->photo = 'uploads/tickets/'.$filename;
-        } elseif ($request->filled('photo') || $request->filled('photo_base64')) {
-            $rawPhoto = (string) ($request->input('photo') ?: $request->input('photo_base64'));
-            if (! empty($rawPhoto) && str_starts_with($rawPhoto, 'data:image')) {
-                $ext = 'jpg';
-                if (preg_match('/^data:image\/(\w+);base64,/', $rawPhoto, $typeMatch)) {
-                    $candidateExt = strtolower($typeMatch[1]);
-                    if (in_array($candidateExt, ['jpg', 'jpeg', 'png', 'webp'], true)) {
-                        $ext = $candidateExt;
-                    }
-                }
-                $base64Data = substr($rawPhoto, strpos($rawPhoto, ',') + 1);
-                $decoded = base64_decode($base64Data);
-                if ($decoded !== false) {
-                    $filename = 'ticket_'.time().'_'.Str::random(8).'.'.$ext;
-                    $destination = public_path('uploads/tickets');
-                    if (! File::exists($destination)) {
-                        File::makeDirectory($destination, 0755, true);
-                    }
-                    File::put($destination.'/'.$filename, $decoded);
-                    $ticket->photo = 'uploads/tickets/'.$filename;
-                }
-            }
+        $newPhotoPath = $this->handleUploadedPhoto($request);
+        if ($newPhotoPath !== null) {
+            $ticket->photo = $newPhotoPath;
+        }
+
+        if (! empty($validated['priority'])) {
+            $rawPriority = strtolower($validated['priority']);
+            $priorityLevel = match (true) {
+                str_contains($rawPriority, 'critical') || str_contains($rawPriority, 'p1') => 'critical',
+                str_contains($rawPriority, 'high') || str_contains($rawPriority, 'p2') => 'high',
+                default => 'medium',
+            };
+            $ticket->priority_level = $priorityLevel;
+            $ticket->priority = match ($priorityLevel) {
+                'critical' => 'P1 - CRITICAL',
+                'high' => 'P2 - HIGH',
+                default => 'P3 - MEDIUM',
+            };
+            $ticket->is_tech_warning = in_array($priorityLevel, ['high', 'critical'], true);
         }
 
         if (! empty($validated['subject'])) {
@@ -387,5 +320,76 @@ class TicketApiController extends Controller
             'message' => "Tiket {$ticket->ticket_number} berhasil diperbarui.",
             'data' => $ticket,
         ]);
+    }
+
+    /**
+     * Validasi dan simpan foto lampiran tiket (multipart file atau base64 gambar yang valid).
+     */
+    protected function handleUploadedPhoto(Request $request): ?string
+    {
+        if ($request->hasFile('photo')) {
+            $request->validate([
+                'photo' => ['file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            ], [
+                'photo.image' => 'Lampiran foto harus berupa file gambar yang valid (JPG, PNG, atau WebP).',
+                'photo.mimes' => 'Format foto hanya mendukung JPG, JPEG, PNG, atau WebP.',
+                'photo.max' => 'Ukuran lampiran foto maksimal 5 MB.',
+            ]);
+
+            $file = $request->file('photo');
+            if ($file && $file->isValid()) {
+                $ext = strtolower($file->guessExtension() ?: $file->getClientOriginalExtension());
+                if (! in_array($ext, ['jpg', 'jpeg', 'png', 'webp'], true)) {
+                    $ext = 'jpg';
+                }
+                $filename = 'ticket_'.time().'_'.Str::random(8).'.'.$ext;
+                $destination = public_path('uploads/tickets');
+                if (! File::exists($destination)) {
+                    File::makeDirectory($destination, 0755, true);
+                }
+                $file->move($destination, $filename);
+
+                return 'uploads/tickets/'.$filename;
+            }
+        } elseif ($request->filled('photo') || $request->filled('photo_base64')) {
+            $rawPhoto = trim((string) ($request->input('photo') ?: $request->input('photo_base64')));
+            if ($rawPhoto === '') {
+                return null;
+            }
+
+            $base64Data = null;
+            if (str_starts_with($rawPhoto, 'data:image/') && str_contains($rawPhoto, ';base64,')) {
+                $base64Data = substr($rawPhoto, strpos($rawPhoto, ',') + 1);
+            } elseif (strlen($rawPhoto) > 100 && ! str_contains($rawPhoto, ' ')) {
+                $base64Data = $rawPhoto;
+            }
+
+            if ($base64Data !== null) {
+                $decoded = base64_decode($base64Data, true);
+                if ($decoded !== false && strlen($decoded) > 0 && strlen($decoded) <= 5 * 1024 * 1024) {
+                    $imageInfo = @getimagesizefromstring($decoded);
+                    $mime = is_array($imageInfo) ? ($imageInfo['mime'] ?? '') : '';
+                    $ext = match ($mime) {
+                        'image/jpeg' => 'jpg',
+                        'image/png' => 'png',
+                        'image/webp' => 'webp',
+                        default => null,
+                    };
+
+                    if ($ext !== null) {
+                        $filename = 'ticket_'.time().'_'.Str::random(8).'.'.$ext;
+                        $destination = public_path('uploads/tickets');
+                        if (! File::exists($destination)) {
+                            File::makeDirectory($destination, 0755, true);
+                        }
+                        File::put($destination.'/'.$filename, $decoded);
+
+                        return 'uploads/tickets/'.$filename;
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 }

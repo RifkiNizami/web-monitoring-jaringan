@@ -12,7 +12,6 @@ class CustomerSeeder extends Seeder
      */
     public function run(): void
     {
-        // Bersihkan data customer agar bersih tanpa dummy
-        Customer::query()->delete();
+        // Non-destruktif: data customer dikelola melalui modul CRUD tanpa menghapus data produksi.
     }
 }

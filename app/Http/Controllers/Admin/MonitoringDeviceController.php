@@ -541,7 +541,7 @@ class MonitoringDeviceController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Konfigurasi IP & Kredensial API MikroTik berhasil diperbarui.',
-            'data' => $validated,
+            'data' => collect($validated)->except('api_password')->all(),
         ]);
     }
 }

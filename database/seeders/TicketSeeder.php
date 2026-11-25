@@ -12,7 +12,6 @@ class TicketSeeder extends Seeder
      */
     public function run(): void
     {
-        // Bersihkan data antrean tiket agar bersih tanpa dummy
-        Ticket::query()->delete();
+        // Non-destruktif: data antrean tiket dikelola melalui modul tiket & aplikasi mobile.
     }
 }

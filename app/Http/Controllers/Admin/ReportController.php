@@ -92,15 +92,6 @@ class ReportController extends Controller
         $reportData = $this->resolveReportData($request);
 
         $devices = $reportData['devices'];
-        // Jika untuk customer spesifik belum ada perangkat ber-customer_id, tampilkan perangkat monitoring aktif di web
-        if (empty($devices)) {
-            $allData = $this->resolveReportData(new Request([
-                'customer' => 'all',
-                'month' => $reportData['selectedMonth'],
-                'year' => $reportData['selectedYear'],
-            ]));
-            $devices = $allData['devices'];
-        }
 
         $totalDevices = count($devices);
         $normalDevices = count(array_filter($devices, fn ($d) => ($d['status_state'] ?? '') === 'online'));
@@ -285,8 +276,9 @@ class ReportController extends Controller
             $selectedYear = $currentYear;
         }
 
-        // 1. TARIK DATA PERANGKAT DINAMIS DARI DATABASE (Model Device)
-        $dbDevices = Device::with('customer')->orderBy('id', 'asc')->get();
+        // 1. TARIK DATA PERANGKAT TERASSIGN KE CUSTOMER DARI DATABASE (Model Device)
+        // Stok gudang tanpa customer_id tidak ikut mencemari perhitungan SLA operasional
+        $dbDevices = Device::with('customer')->whereNotNull('customer_id')->orderBy('id', 'asc')->get();
         $allDevices = [];
 
         foreach ($dbDevices as $d) {
@@ -423,7 +415,7 @@ class ReportController extends Controller
                     $cName = strtolower($c->name ?? '');
                     $cCode = strtolower($c->code ?? $c->customer_code ?? '');
 
-                    return (! empty($cName) && (str_contains($clientLower, $cName) || str_contains($cName, $clientLower) || str_contains($subjLower, $cName)))
+                    return (! empty($cName) && (str_contains($clientLower, $cName) || (strlen($clientLower) >= 3 && str_contains($cName, $clientLower)) || str_contains($subjLower, $cName)))
                         || (! empty($cCode) && (str_contains($clientLower, $cCode) || str_contains($subjLower, $cCode)));
                 });
             }
@@ -433,16 +425,18 @@ class ReportController extends Controller
 
             $stLower = strtolower($t->status ?? '');
             $statusType = match (true) {
+                str_contains($stLower, 'closed') || str_contains($stLower, 'ditutup') => 'closed',
+                str_contains($stLower, 'resolved') || str_contains($stLower, 'selesai') => 'resolved',
                 str_contains($stLower, 'progress') => 'in_progress',
                 str_contains($stLower, 'assigned') => 'assigned',
-                str_contains($stLower, 'resolved') || str_contains($stLower, 'selesai') => 'resolved',
                 default => 'open',
             };
 
             $statusText = match ($statusType) {
+                'closed' => 'Closed',
+                'resolved' => 'Resolved',
                 'in_progress' => 'In Progress',
                 'assigned' => 'Assigned',
-                'resolved' => 'Resolved',
                 default => 'Open',
             };
 
@@ -665,7 +659,7 @@ class ReportController extends Controller
 
         // Resolusi Pejabat Penerbit / Penandatangan Laporan (Semi-Dinamis Enterprise)
         $currentUser = auth()->user();
-        $defaultIssuerName = $currentUser ? $currentUser->name : 'DIMAS PRASETYO, M.Kom.';
+        $defaultIssuerName = $currentUser ? $currentUser->name : 'Administrator NOC NetFly';
         $defaultIssuerRole = $currentUser
             ? ($currentUser->role === 'admin' ? 'Network Operations Lead • NetFly NOC Division' : 'Technical Operations Specialist • NetFly Division')
             : 'Network Operations Lead • NetFly NOC Division';

@@ -18,7 +18,7 @@ class KontenAppSettingController extends Controller
     public function index(): View
     {
         $setting = AppSetting::where('key', 'mobile_app_download_url')->first();
-        $downloadUrl = $setting?->value ?? 'https://netfly.id/download/netfly-mobile.apk';
+        $downloadUrl = $setting?->value ?? 'https://netmediafiberoptik.com/download/netfly-mobile.apk';
         $lastUpdated = $setting?->updated_at;
 
         return view('admin-konten.app_setting', compact('downloadUrl', 'lastUpdated', 'setting'));
@@ -33,7 +33,7 @@ class KontenAppSettingController extends Controller
             'download_url' => ['required', 'url', 'max:2048'],
         ], [
             'download_url.required' => 'Tautan unduh aplikasi mobile wajib diisi.',
-            'download_url.url' => 'Format tautan unduh harus berupa URL yang valid (contoh: https://netfly.id/download/app.apk).',
+            'download_url.url' => 'Format tautan unduh harus berupa URL yang valid (contoh: https://netmediafiberoptik.com/download/netfly-mobile.apk).',
             'download_url.max' => 'Panjang tautan maksimal 2048 karakter.',
         ]);
 
