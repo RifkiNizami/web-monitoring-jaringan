@@ -100,77 +100,21 @@ class MonitoringDeviceController extends Controller
         $apiPassword = (string) ($validated['api_password'] ?? '');
 
         $status = $validated['status'] ?? 'online';
-        $cpu = 0.0;
-        $ram = 0.0;
-        $rxMbps = '0.0 Mbps';
-        $txMbps = '0.0 Mbps';
-        $uptime = $isNonMikrotik ? "HTTP/TCP Port {$port} Siap Pantau" : 'Siap Pantau';
-        $latency = $status === 'offline' ? null : 0;
         $model = ! empty($validated['model']) ? trim($validated['model']) : ($validated['unit_type'].' Node');
-        $interfaces = [
-            ['name' => $isNonMikrotik ? 'eth0' : 'ether1', 'status' => 'up', 'speed' => $isNonMikrotik ? '100 Mbps' : '1 Gbps', 'rx' => '0 Mbps', 'tx' => '0 Mbps'],
-        ];
-        $connectNotice = '';
 
-        // Pengecekan koneksi perangkat secara real-time saat pendaftaran (Kondisi A vs Kondisi B)
-        if (! empty($validated['ip_address']) && ! app()->runningUnitTests()) {
-            $mikrotikService = new MikrotikService;
-            $ip = trim($validated['ip_address']);
-
-            if ($isNonMikrotik) {
-                // Kondisi B: Non-MikroTik / TOTOLINK HTTP & Ping (Port 80/8080 atau Access Point / Generic Router)
-                $check = $mikrotikService->checkHttpSocket($ip, $port, 2);
-
-                if ($check['online']) {
-                    $status = 'online';
-                    $cpu = 0.0;
-                    $ram = 0.0;
-                    $uptime = $check['uptime'];
-                    $latency = $check['latency_ms'];
-                    $interfaces = $check['interfaces'];
-                    $connectNotice = " — Berhasil terhubung via HTTP/TCP Port {$port} ({$latency} ms).";
-                } else {
-                    $status = 'offline';
-                    $cpu = 0.0;
-                    $ram = 0.0;
-                    $uptime = 'Offline (Timeout)';
-                    $latency = null;
-                    $connectNotice = " — Perangkat disimpan (Port {$port} tidak merespons dalam 2 detik).";
-                }
-            } elseif (! empty($apiUsername)) {
-                // Kondisi A: MikroTik RouterOS API (Port 8728 / 8729)
-                $telemetry = $mikrotikService->getDeviceTelemetry(
-                    $ip,
-                    $apiUsername,
-                    $apiPassword,
-                    $port,
-                    2,
-                    $validated['unit_type']
-                );
-
-                if ($telemetry) {
-                    $status = 'online';
-                    $cpu = $telemetry['resource']['cpu_load'];
-                    $ram = $telemetry['resource']['ram_load'];
-                    $rxMbps = $telemetry['rx_mbps'] ?? '0.01 Mbps';
-                    $txMbps = $telemetry['tx_mbps'] ?? '0.01 Mbps';
-                    $uptime = $telemetry['resource']['uptime'];
-                    $latency = (int) $telemetry['latency_ms'];
-                    if (empty($validated['model'])) {
-                        $model = $telemetry['resource']['board_name'].' (v'.$telemetry['resource']['version'].')';
-                    }
-                    if (! empty($telemetry['interfaces'])) {
-                        $interfaces = $telemetry['interfaces'];
-                    }
-                    $connectNotice = " — Berhasil terhubung ke {$telemetry['resource']['board_name']} (RouterOS v{$telemetry['resource']['version']}).";
-                } else {
-                    $status = 'offline';
-                    $latency = null;
-                    $uptime = 'Gagal Konek (Timeout)';
-                    $connectNotice = " — Perangkat disimpan (Belum dapat terhubung ke port API {$port}: ".($mikrotikService->getLastError() ?: 'Periksa IP/Kredensial').').';
-                }
-            }
-        }
+        // Inisialisasi metrik telemetri dummy secara langsung sesuai status yang dipilih (tanpa blokir koneksi fisik)
+        $dummy = MonitoringController::generateInitialDummyMetrics($status, $isNonMikrotik, $port);
+        $cpu = $dummy['cpu_load'];
+        $ram = $dummy['ram_load'];
+        $rxMbps = $dummy['rx_mbps'];
+        $txMbps = $dummy['tx_mbps'];
+        $uptime = $dummy['uptime'];
+        $latency = $dummy['last_ping_ms'];
+        $packetLoss = $dummy['packet_loss'];
+        $interfaces = $dummy['interfaces'];
+        $connectNotice = $status === 'offline'
+            ? ' — Disimpan dalam status Offline.'
+            : ' — Aktif dengan simulasi telemetri dinamis (Online).';
 
         $deviceModel = MonitoringDevice::create([
             'customer_id' => $customerId,
@@ -189,9 +133,7 @@ class MonitoringDeviceController extends Controller
             'tx_mbps' => $txMbps,
             'cpu_load' => $cpu,
             'ram_load' => $ram,
-            'temperature' => '-',
-            'voltage' => '-',
-            'packet_loss' => $status === 'offline' ? 100.0 : 0.0,
+            'packet_loss' => $packetLoss,
             'last_ping_ms' => $latency,
             'connection_type' => $validated['connection_type'] ?? ($isNonMikrotik ? 'http' : 'lan'),
             'api_port' => $port,
@@ -360,53 +302,33 @@ class MonitoringDeviceController extends Controller
         }
 
         $connectNotice = '';
-        if (! empty($ip) && ! app()->runningUnitTests()) {
-            $mikrotikService = new MikrotikService;
+        if ($status === 'offline') {
+            $updates['cpu_load'] = 0.0;
+            $updates['ram_load'] = 0.0;
+            $updates['rx_mbps'] = '0.0 Mbps';
+            $updates['tx_mbps'] = '0.0 Mbps';
+            $updates['uptime'] = 'Offline';
+            $updates['last_ping_ms'] = null;
+            $updates['packet_loss'] = 100.0;
+            $connectNotice = ' — Status diperbarui menjadi Offline';
+        } else {
+            $needsHydration = $deviceModel->status === 'offline'
+                || ((float) $deviceModel->cpu_load <= 0.0 && MonitoringController::parseRateToMbps($deviceModel->rx_mbps) <= 0.0);
 
-            if ($isNonMikrotik) {
-                // Kondisi B: Non-MikroTik / TOTOLINK HTTP & Ping
-                $check = $mikrotikService->checkHttpSocket($ip, $port, 2);
-
-                if ($check['online']) {
-                    $status = 'online';
-                    $updates['cpu_load'] = 0.0;
-                    $updates['ram_load'] = 0.0;
-                    $updates['uptime'] = $check['uptime'];
-                    $updates['last_ping_ms'] = $check['latency_ms'];
-                    $updates['packet_loss'] = 0.0;
-                    $updates['interfaces'] = $check['interfaces'];
-                    $connectNotice = " — Terhubung via HTTP/TCP Port {$port} ({$check['latency_ms']} ms)";
-                } else {
-                    $status = 'offline';
-                    $updates['cpu_load'] = 0.0;
-                    $updates['ram_load'] = 0.0;
-                    $updates['uptime'] = 'Offline (Timeout)';
-                    $updates['last_ping_ms'] = null;
-                    $updates['packet_loss'] = 100.0;
-                    $connectNotice = " — Peringatan: Port {$port} tidak merespons dalam 2 detik";
-                }
-            } elseif (! empty($username)) {
-                // Kondisi A: MikroTik RouterOS API
-                $telemetry = $mikrotikService->getDeviceTelemetry($ip, $username, (string) $password, $port, 2, $validated['unit_type']);
-
-                if ($telemetry) {
-                    $status = 'online';
-                    $updates['cpu_load'] = $telemetry['resource']['cpu_load'];
-                    $updates['ram_load'] = $telemetry['resource']['ram_load'];
-                    $updates['uptime'] = $telemetry['resource']['uptime'];
-                    $updates['last_ping_ms'] = (int) $telemetry['latency_ms'];
-                    $updates['packet_loss'] = 0.0;
-                    if (! empty($telemetry['interfaces'])) {
-                        $updates['interfaces'] = $telemetry['interfaces'];
-                    }
-                    $connectNotice = " — Terhubung ke {$telemetry['resource']['board_name']} (RouterOS v{$telemetry['resource']['version']})";
-                } else {
-                    $status = 'offline';
-                    $updates['last_ping_ms'] = null;
-                    $updates['packet_loss'] = 100.0;
-                    $connectNotice = ' — Peringatan: '.($mikrotikService->getLastError() ?: 'Koneksi API gagal');
+            if ($needsHydration) {
+                $dummy = MonitoringController::generateInitialDummyMetrics($status, $isNonMikrotik, $port);
+                $updates['cpu_load'] = $dummy['cpu_load'];
+                $updates['ram_load'] = $dummy['ram_load'];
+                $updates['rx_mbps'] = $dummy['rx_mbps'];
+                $updates['tx_mbps'] = $dummy['tx_mbps'];
+                $updates['uptime'] = $dummy['uptime'];
+                $updates['last_ping_ms'] = $dummy['last_ping_ms'];
+                $updates['packet_loss'] = $dummy['packet_loss'];
+                if (empty($deviceModel->interfaces)) {
+                    $updates['interfaces'] = $dummy['interfaces'];
                 }
             }
+            $connectNotice = ' — Simulasi telemetri dinamis aktif ('.strtoupper($status).')';
         }
 
         $updates['status'] = $status;

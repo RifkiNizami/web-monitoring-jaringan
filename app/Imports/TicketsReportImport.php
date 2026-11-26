@@ -13,9 +13,28 @@ use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 class TicketsReportImport implements ToCollection, WithHeadingRow
 {
     public int $importedCount = 0;
+
     public int $updatedCount = 0;
+
     public array $errors = [];
 
+    protected ?int $defaultCustomerId = null;
+
+    protected ?int $defaultMonth = null;
+
+    protected ?int $defaultYear = null;
+
+    public function __construct(?int $defaultCustomerId = null, ?int $defaultMonth = null, ?int $defaultYear = null)
+    {
+        $this->defaultCustomerId = $defaultCustomerId;
+        $this->defaultMonth = $defaultMonth;
+        $this->defaultYear = $defaultYear;
+    }
+
+    // [PANDUAN UBAH IMPORT EXCEL - TIKET]
+    // - Nama key $row['...'] otomatis hasil snake_case dari judul header baris 1 Excel
+    // - Urutan pencocokan tiket eksisting: 1) ID -> 2) Nomor Tiket (jika cocok = update, jika tidak = create baru)
+    // - Normalisasi prioritas, status penanganan, dan parsing tanggal Bahasa Indonesia dikelola di dalam loop ini
     public function collection(Collection $rows): void
     {
         $allCustomers = Customer::all();
@@ -124,8 +143,15 @@ class TicketsReportImport implements ToCollection, WithHeadingRow
                     $ticketNumber = 'INC-' . date('Y') . '-' . strtoupper(substr(uniqid(), -6));
                 }
 
+                $defaultReportedAt = ($this->defaultYear && $this->defaultMonth)
+                    ? Carbon::create($this->defaultYear, $this->defaultMonth, min((int) now()->day, Carbon::create($this->defaultYear, $this->defaultMonth, 1)->daysInMonth), now()->hour, now()->minute)
+                    : now();
+                $defaultCust = $this->defaultCustomerId ? $allCustomers->firstWhere('id', $this->defaultCustomerId) : null;
+
                 Ticket::create([
                     'ticket_number' => $ticketNumber,
+                    'customer_id' => $this->defaultCustomerId,
+                    'client_name' => $defaultCust?->name,
                     'subject' => ! empty($subject) && $subject !== '-' ? $subject : 'Gangguan Jaringan Dilaporkan',
                     'description' => 'Tiket diimpor dari file Laporan Excel NetFly.',
                     'priority' => $priority ?: 'P3 - MEDIUM',
@@ -133,7 +159,7 @@ class TicketsReportImport implements ToCollection, WithHeadingRow
                     'assigned_technician' => (! empty($technician) && $technician !== '-') ? $technician : null,
                     'status' => $normalizedStatus,
                     'status_type' => $statusType,
-                    'reported_at' => $reportedAt ?: now(),
+                    'reported_at' => $reportedAt ?: $defaultReportedAt,
                     'resolved_at' => $statusType === 'resolved' ? now() : null,
                 ]);
                 $this->importedCount++;

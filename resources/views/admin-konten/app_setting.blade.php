@@ -116,6 +116,7 @@
                             </div>
                         </div>
 
+                        {{-- [PANDUAN UBAH BARCODE ADMIN KONTEN] Form input URL & upload .apk (route: app-setting.update) --}}
                         <form action="{{ route('app-setting.update') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-5 flex-1 flex flex-col justify-between">
                             @csrf
                             @method('PUT')

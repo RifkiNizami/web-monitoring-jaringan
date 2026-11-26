@@ -30,6 +30,8 @@ export function initAdminReports() {
     }
 
     // Sinkronisasi dinamis URL tombol ekspor & pratinjau dengan memelihara path absolut subfolder
+    // [PANDUAN UBAH TOMBOL EXPORT PDF & EXCEL]
+    // Jika menambah filter baru di halaman /reports, tambahkan parameter query-nya pada pdfUrl, previewUrl, dan excelUrl di sini
     function syncExportUrls() {
         if (!customerSelect || !monthSelect || !yearSelect) return;
         const cust = customerSelect.value;

@@ -153,9 +153,12 @@
                   data-device-id="{{ $device['id'] }}"
                   data-endpoint="{{ route('monitoring.telemetry', $device['id']) }}"
                   data-thresholds="{{ json_encode($thresholds) }}"
+                  data-base-cpu="{{ $cpuLoad }}"
+                  data-base-ram="{{ $ramLoad }}"
                   data-base-ping="{{ $pingMs }}"
                   data-base-rx="{{ $rxValue }}"
                   data-base-tx="{{ $txValue }}"
+                  data-base-packet-loss="{{ $packetLoss }}"
                   data-status="{{ $device['status'] ?? 'offline' }}"
                   class="p-6 lg:p-8 space-y-6">
 
@@ -234,6 +237,7 @@
                                 <div
                                     id="metric-{{ $metric['key'] }}-bar"
                                     class="h-full rounded-full transition-all duration-500 {{ $barClass[$metric['level']] }}"
+                                    style="width: {{ min(100, max(0, (float) $metric['bar'])) }}%"
                                     data-progress-width="{{ $metric['bar'] }}"
                                 ></div>
                             </div>
@@ -263,41 +267,100 @@
                             <p class="text-xs text-slate-500 mt-0.5">Pemantauan waktu respons Latensi (ms) serta transmisi download (Rx) dan upload (Tx)</p>
                         </div>
 
-                        <div class="flex flex-wrap items-center gap-3">
-                            <div class="flex items-center gap-4 text-xs">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="w-2.5 h-2.5 rounded-sm bg-amber-500"></span>
-                                    <span class="text-slate-500">Latensi</span>
-                                    <span id="currentPingValue" class="font-semibold text-slate-900 tabular-nums">{{ $pingMs }} ms</span>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <span class="w-2.5 h-2.5 rounded-sm bg-blue-600"></span>
-                                    <span class="text-slate-500">Rx</span>
-                                    <span id="currentRxValue" class="font-semibold text-slate-900 tabular-nums">{{ $rxValue }} Mbps</span>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <span class="w-2.5 h-2.5 rounded-sm bg-emerald-500"></span>
-                                    <span class="text-slate-500">Tx</span>
-                                    <span id="currentTxValue" class="font-semibold text-slate-900 tabular-nums">{{ $txValue }} Mbps</span>
-                                </div>
+                        <div class="flex flex-wrap items-center gap-4 text-xs">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-sm bg-amber-500"></span>
+                                <span class="text-slate-500">Latensi</span>
+                                <span id="currentPingValue" class="font-semibold text-slate-900 tabular-nums">{{ $pingMs }} ms</span>
                             </div>
-
-                            <div class="inline-flex p-1 bg-slate-100 rounded-lg" role="tablist" aria-label="Rentang waktu grafik">
-                                @foreach (['1m' => 20, '5m' => 100, '15m' => 300] as $rangeLabel => $points)
-                                    <button
-                                        type="button"
-                                        role="tab"
-                                        data-points="{{ $points }}"
-                                        aria-selected="{{ $loop->first ? 'true' : 'false' }}"
-                                        class="range-tab px-2.5 py-1 text-[11px] font-medium rounded-md transition cursor-pointer {{ $loop->first ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800' }}"
-                                    >
-                                        {{ $rangeLabel }}
-                                    </button>
-                                @endforeach
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-sm bg-blue-600"></span>
+                                <span class="text-slate-500">Rx</span>
+                                <span id="currentRxValue" class="font-semibold text-slate-900 tabular-nums">{{ $rxValue }} Mbps</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-sm bg-emerald-500"></span>
+                                <span class="text-slate-500">Tx</span>
+                                <span id="currentTxValue" class="font-semibold text-slate-900 tabular-nums">{{ $txValue }} Mbps</span>
                             </div>
                         </div>
                     </div>
 
+                    {{-- [PANDUAN UBAH CHART] Toolbar tombol ganti tipe grafik & rentang waktu --}}
+                    {{-- - Ubah warna/teks/ikon tombol di #btnCycleChartType atau .chart-type-btn (data-chart-type="line|bar|pie") --}}
+                    {{-- - Ubah opsi rentang waktu pada array ['1m' => 20, '5m' => 100, '15m' => 300] di #chartRangeWrapper --}}
+                    <!-- TOOLBAR KONTROL GRAFIK: Tombol Ganti Chart (Garis, Batang, Pie) & Rentang Waktu -->
+                    <div class="mt-4 pt-3.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex flex-wrap items-center gap-2.5">
+                            <button
+                                id="btnCycleChartType"
+                                type="button"
+                                title="Klik untuk mengganti jenis grafik (Garis → Batang → Pie)"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs active:scale-95 transition cursor-pointer"
+                            >
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                                </svg>
+                                <span>Ganti Grafik: <strong id="activeChartTypeLabel">Garis</strong></span>
+                            </button>
+
+                            <div class="inline-flex p-1 bg-slate-100 border border-slate-200/80 rounded-lg" role="group" aria-label="Pilih tipe grafik">
+                                <button
+                                    type="button"
+                                    data-chart-type="line"
+                                    aria-pressed="true"
+                                    title="Tampilkan grafik garis"
+                                    class="chart-type-btn inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition cursor-pointer bg-blue-600 text-white shadow-sm"
+                                >
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 17l6-6 4 4 8-8" />
+                                    </svg>
+                                    <span>Garis</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    data-chart-type="bar"
+                                    aria-pressed="false"
+                                    title="Tampilkan grafik batang"
+                                    class="chart-type-btn inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition cursor-pointer text-slate-600 hover:text-slate-900"
+                                >
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6m6 0h6m-6 0V9a2 2 0 012-2h2a2 2 0 012 2v10m0 0h2a2 2 0 002-2v-4a2 2 0 00-2-2h-2" />
+                                    </svg>
+                                    <span>Batang</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    data-chart-type="pie"
+                                    aria-pressed="false"
+                                    title="Tampilkan grafik pie"
+                                    class="chart-type-btn inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition cursor-pointer text-slate-600 hover:text-slate-900"
+                                >
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                                    </svg>
+                                    <span>Pie</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="chartRangeWrapper" class="inline-flex p-1 bg-slate-100 rounded-lg" role="tablist" aria-label="Rentang waktu grafik">
+                            @foreach (['1m' => 20, '5m' => 100, '15m' => 300] as $rangeLabel => $points)
+                                <button
+                                    type="button"
+                                    role="tab"
+                                    data-points="{{ $points }}"
+                                    aria-selected="{{ $loop->first ? 'true' : 'false' }}"
+                                    class="range-tab px-2.5 py-1 text-[11px] font-medium rounded-md transition cursor-pointer {{ $loop->first ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800' }}"
+                                >
+                                    {{ $rangeLabel }}
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- [PANDUAN UBAH CHART] Tinggi area grafik dikontrol oleh class "h-72" (misal ganti ke "h-96" agar lebih tinggi) --}}
                     <div class="mt-4 w-full h-72 relative">
                         <canvas id="liveTrafficChart" aria-label="Grafik telemetri dan latensi real-time" role="img"></canvas>
                     </div>

@@ -15,13 +15,19 @@ class FullReportImport implements Import, WithMultipleSheets, SkipsUnknownSheets
     protected TicketsReportImport $ticketsImport;
     protected array $actualSheets = [];
 
-    public function __construct(array $actualSheets = [])
-    {
-        $this->devicesImport = new DevicesReportImport();
-        $this->ticketsImport = new TicketsReportImport();
+    public function __construct(
+        array $actualSheets = [],
+        ?int $defaultCustomerId = null,
+        ?int $defaultMonth = null,
+        ?int $defaultYear = null
+    ) {
+        $this->devicesImport = new DevicesReportImport($defaultCustomerId);
+        $this->ticketsImport = new TicketsReportImport($defaultCustomerId, $defaultMonth, $defaultYear);
         $this->actualSheets = $actualSheets;
     }
 
+    // [PANDUAN UBAH IMPORT EXCEL - MAPPING SHEET]
+    // Tambah atau ubah kata kunci deteksi nama sheet Excel di sini (default: sheet 'Daftar Perangkat' & 'Riwayat Tiket & Insiden')
     public function sheets(): array
     {
         $map = [];

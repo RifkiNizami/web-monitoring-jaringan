@@ -59,6 +59,12 @@ class KontenAppSettingController extends Controller
 
     /**
      * Perbarui link unduh aplikasi mobile (via URL langsung atau upload file .apk).
+     *
+     * [PANDUAN UBAH BARCODE / APK ADMIN KONTEN]
+     * - Ubah hak akses role pada pengecekan Auth::user()?->role !== 'admin_konten'
+     * - Ubah batas ukuran upload APK pada aturan validasi 'max:153600' (150 MB dalam KB)
+     * - Ubah lokasi/nama file APK tersimpan pada public_path('download') & 'netfly-mobile.apk'
+     * - URL final disimpan ke tabel app_settings dengan key 'mobile_app_download_url'
      */
     public function update(Request $request): RedirectResponse
     {

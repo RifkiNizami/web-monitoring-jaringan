@@ -18,6 +18,9 @@ export function initDownloadModal() {
     const downloadUrl = modal.getAttribute('data-download-url') || 'https://netfly.id/download/netfly-mobile.apk';
 
     // Fungsi Render QR Code ke Canvas
+    // [PANDUAN UBAH QR CODE LANDING PAGE]
+    // - downloadUrl diambil otomatis dari atribut data-download-url pada #downloadAppModal (database app_settings)
+    // - Ubah width (ukuran px), margin, color.dark/light, atau errorCorrectionLevel di opsi QRCode.toCanvas()
     function renderQr() {
         if (!qrCanvas) return;
         QRCode.toCanvas(

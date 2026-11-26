@@ -44,6 +44,9 @@ class DevicesReportExport implements FromCollection, WithColumnWidths, WithHeadi
 
     /**
      * Definisi Judul Kolom (Headings)
+     *
+     * [PANDUAN UBAH EXPORT EXCEL - PERANGKAT]
+     * - Jika menambah/mengubah urutan kolom di headings(), sesuaikan juga array di map(), columnWidths(), dan range style 'A1:K1' di styles()
      */
     public function headings(): array
     {

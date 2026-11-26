@@ -39,6 +39,10 @@ class TicketsReportExport implements FromCollection, WithColumnWidths, WithHeadi
         return $this->tickets;
     }
 
+    /**
+     * [PANDUAN UBAH EXPORT EXCEL - TIKET]
+     * - Jika menambah/mengubah urutan kolom di headings(), sesuaikan juga array di map(), columnWidths(), dan range style 'A1:H1' di styles()
+     */
     public function headings(): array
     {
         return [

@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Laporan Kinerja SLA - {{ $evaluatedPartner }} ({{ $formattedPeriod }})</title>
+    {{-- [PANDUAN UBAH DESAIN PDF] --}}
+    {{-- - @page: ubah margin & ukuran kertas (A4 portrait / landscape) --}}
+    {{-- - Kop surat: ubah logo, nama PT, alamat, kontak pada .letterhead-table (baris ~342) --}}
+    {{-- - KPI & Tabel: ubah kolom tabel perangkat (Section 1), tabel tiket (Section 2), tanda tangan & stempel (Section 3), serta footer (.page-footer) --}}
     <style>
         @page {
             margin: 15mm 15mm 18mm 15mm;

@@ -19,6 +19,11 @@ export function initAdminAppSetting() {
             testBtn.href = url;
         }
 
+        // [PANDUAN UBAH QR CODE ADMIN KONTEN]
+        // - width: ukuran QR dalam pixel (default 200)
+        // - margin: jarak tepi putih di sekitar QR
+        // - color.dark / color.light: warna kotak QR & latar belakang
+        // - errorCorrectionLevel: tingkat koreksi kerusakan ('L' | 'M' | 'Q' | 'H')
         QRCode.toCanvas(
             canvas,
             url,

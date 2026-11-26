@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             CustomerSeeder::class,
             ProjectSeeder::class,
             DeviceSeeder::class,
+            MonitoringDeviceSeeder::class,
             TicketSeeder::class,
             MonitoringAlertSeeder::class,
             TeknisiSeeder::class,
@@ -26,11 +27,11 @@ class DatabaseSeeder extends Seeder
 
         // 2. Admin utama (NOC & Manajemen Sistem)
         User::firstOrCreate(
-            ['email' => 'admin@netfly.id'],
+            ['email' => 'admin@gmail.com'],
             [
                 'name' => 'Administrator',
                 'username' => 'admin',
-                'password' => Hash::make('1uKt5Bye0EWNFWEi'),
+                'password' => Hash::make('admin'),
                 'role' => 'admin',
                 'is_active' => true,
                 'phone' => '0811-9988-7766',
@@ -43,7 +44,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Admin Konten',
                 'username' => 'adminkonten',
-                'password' => Hash::make('fuxLMw7D7bWUrNnm'),
+                'password' => Hash::make('admin'),
                 'role' => 'admin_konten',
                 'is_active' => true,
                 'phone' => '0812-9900-1122',

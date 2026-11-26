@@ -169,6 +169,12 @@ class ReportController extends Controller
 
     /**
      * Ekspor laporan kinerja SLA ke dokumen PDF resmi berstempel digital.
+     *
+     * [PANDUAN UBAH EXPORT PDF]
+     * - Template desain/kop surat/tabel PDF: resources/views/admin/reports/pdf.blade.php
+     * - Ubah ukuran & orientasi kertas di ->setPaper('a4', 'portrait') (bisa diganti 'landscape' atau 'letter')
+     * - Ubah pola nama file unduhan di variabel $filename
+     * - Parameter ?preview=1 membuka PDF langsung di tab browser ($pdf->stream), tanpa itu langsung download ($pdf->download)
      */
     public function exportPdf(Request $request): Response
     {
@@ -200,6 +206,10 @@ class ReportController extends Controller
 
     /**
      * Ekspor data laporan lengkap (perangkat & tiket) ke format spreadsheet Excel (.xlsx).
+     *
+     * [PANDUAN UBAH EXPORT EXCEL]
+     * - Struktur sheet diatur di App\Exports\FullReportExport (DevicesReportExport & TicketsReportExport)
+     * - Ubah nama file hasil unduhan pada variabel $filename di bawah
      */
     public function exportExcel(Request $request): Response
     {
@@ -223,6 +233,11 @@ class ReportController extends Controller
 
     /**
      * Impor kembali data laporan Excel yang telah diedit secara manual.
+     *
+     * [PANDUAN UBAH IMPORT EXCEL]
+     * - Ubah format file yang diizinkan ('mimes:xlsx,xls,csv') atau batas ukuran ('max:10240' = 10 MB) pada $request->validate()
+     * - Pemetaan nama sheet berada di App\Imports\FullReportImport
+     * - Logika pemetaan kolom Perangkat & Tiket berada di DevicesReportImport & TicketsReportImport
      */
     public function importExcel(Request $request): \Illuminate\Http\RedirectResponse
     {
@@ -248,7 +263,11 @@ class ReportController extends Controller
                 // Abaikan jika bukan format xlsx standar
             }
 
-            $import = new FullReportImport($actualSheetNames);
+            $defaultCustomerId = is_numeric($request->input('customer')) ? (int) $request->input('customer') : null;
+            $defaultMonth = is_numeric($request->input('month')) ? (int) $request->input('month') : null;
+            $defaultYear = is_numeric($request->input('year')) ? (int) $request->input('year') : null;
+
+            $import = new FullReportImport($actualSheetNames, $defaultCustomerId, $defaultMonth, $defaultYear);
             Excel::import($import, $uploadedFile);
 
             $devicesImport = $import->getDevicesImport();

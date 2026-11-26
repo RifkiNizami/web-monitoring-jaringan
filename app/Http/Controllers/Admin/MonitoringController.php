@@ -174,6 +174,222 @@ class MonitoringController extends Controller
     }
 
     /**
+     * Hasilkan metrik telemetri dummy awal yang realistis berdasarkan status perangkat.
+     */
+    public static function generateInitialDummyMetrics(string $status = 'online', bool $isNonMikrotik = false, int $port = 8728): array
+    {
+        if ($status === 'offline') {
+            return [
+                'status' => 'offline',
+                'status_label' => 'OFFLINE',
+                'cpu_load' => 0.0,
+                'ram_load' => 0.0,
+                'rx_mbps' => '0.0 Mbps',
+                'tx_mbps' => '0.0 Mbps',
+                'last_ping_ms' => null,
+                'packet_loss' => 100.0,
+                'uptime' => 'Offline',
+                'interfaces' => [
+                    [
+                        'name' => $isNonMikrotik ? 'eth0' : 'ether1-wan',
+                        'type' => 'ether',
+                        'status' => 'down',
+                        'speed' => $isNonMikrotik ? '100 Mbps' : '1 Gbps',
+                        'rx' => '0.0 Mbps',
+                        'tx' => '0.0 Mbps',
+                        'rx_mbps' => 0.0,
+                        'tx_mbps' => 0.0,
+                    ],
+                ],
+            ];
+        }
+
+        $isWarning = $status === 'warning';
+        $cpu = $isWarning ? round(mt_rand(720, 840) / 10, 1) : round(mt_rand(180, 460) / 10, 1);
+        $ram = $isWarning ? round(mt_rand(760, 860) / 10, 1) : round(mt_rand(320, 620) / 10, 1);
+        $rx = round(mt_rand(480, 1850) / 10, 1);
+        $tx = round(max(12.0, $rx * (mt_rand(45, 72) / 100)), 1);
+        $latency = $isWarning ? mt_rand(34, 72) : mt_rand(4, 18);
+        $packetLoss = $isWarning ? round(mt_rand(15, 75) / 10, 1) : 0.0;
+        $days = mt_rand(3, 65);
+        $hours = mt_rand(1, 23);
+        $mins = mt_rand(1, 59);
+
+        $rxMain = round($rx * 0.65, 1);
+        $txMain = round($tx * 0.65, 1);
+        $rxSub = round(max(1.0, $rx - $rxMain), 1);
+        $txSub = round(max(0.5, $tx - $txMain), 1);
+
+        $interfaces = $isNonMikrotik
+            ? [
+                [
+                    'name' => 'eth0-uplink',
+                    'type' => 'ether',
+                    'status' => 'up',
+                    'speed' => '100 Mbps',
+                    'rx' => "{$rxMain} Mbps",
+                    'tx' => "{$txMain} Mbps",
+                    'rx_mbps' => $rxMain,
+                    'tx_mbps' => $txMain,
+                ],
+                [
+                    'name' => 'wlan0-ap',
+                    'type' => 'wlan',
+                    'status' => 'up',
+                    'speed' => '300 Mbps',
+                    'rx' => "{$rxSub} Mbps",
+                    'tx' => "{$txSub} Mbps",
+                    'rx_mbps' => $rxSub,
+                    'tx_mbps' => $txSub,
+                ],
+            ]
+            : [
+                [
+                    'name' => 'sfp-sfpplus1-wan',
+                    'type' => 'ether',
+                    'status' => 'up',
+                    'speed' => '10 Gbps',
+                    'rx' => "{$rxMain} Mbps",
+                    'tx' => "{$txMain} Mbps",
+                    'rx_mbps' => $rxMain,
+                    'tx_mbps' => $txMain,
+                ],
+                [
+                    'name' => 'ether1-core-lan',
+                    'type' => 'ether',
+                    'status' => 'up',
+                    'speed' => '1 Gbps',
+                    'rx' => "{$rxSub} Mbps",
+                    'tx' => "{$txSub} Mbps",
+                    'rx_mbps' => $rxSub,
+                    'tx_mbps' => $txSub,
+                ],
+            ];
+
+        return [
+            'status' => $status,
+            'status_label' => strtoupper($status),
+            'cpu_load' => $cpu,
+            'ram_load' => $ram,
+            'rx_mbps' => number_format($rx, 1, '.', '').' Mbps',
+            'tx_mbps' => number_format($tx, 1, '.', '').' Mbps',
+            'last_ping_ms' => $latency,
+            'packet_loss' => $packetLoss,
+            'uptime' => $isNonMikrotik ? "HTTP/TCP Port {$port} Aktif ({$days}h {$hours}j)" : "{$days}h {$hours}j {$mins}m",
+            'interfaces' => $interfaces,
+        ];
+    }
+
+    /**
+     * Simulasikan pembaruan telemetri dinamis (random-walk dummy) tanpa memerlukan koneksi perangkat fisik.
+     */
+    public static function simulateTelemetryTick(MonitoringDevice $node): array
+    {
+        $status = strtolower((string) ($node->status ?: 'online'));
+        $isNonMikrotik = MikrotikService::isNonMikrotik($node->unit_type, $node->api_port);
+        $port = (int) ($node->api_port ?? ($isNonMikrotik ? 80 : 8728));
+
+        if ($status === 'offline') {
+            $node->update([
+                'status' => 'offline',
+                'status_label' => 'OFFLINE',
+                'cpu_load' => 0.0,
+                'ram_load' => 0.0,
+                'rx_mbps' => '0.0 Mbps',
+                'tx_mbps' => '0.0 Mbps',
+                'last_ping_ms' => null,
+                'packet_loss' => 100.0,
+            ]);
+
+            return self::formatMonitoringDevice($node->fresh());
+        }
+
+        $isWarning = $status === 'warning';
+        $currentCpu = (float) ($node->cpu_load ?? 0.0);
+        $currentRam = (float) ($node->ram_load ?? 0.0);
+        $currentRx = self::parseRateToMbps($node->rx_mbps);
+        $currentTx = self::parseRateToMbps($node->tx_mbps);
+        $currentPing = $node->last_ping_ms !== null ? (int) $node->last_ping_ms : 0;
+        $currentLoss = (float) ($node->packet_loss ?? 0.0);
+
+        // Jika metrik awal masih 0, inisialisasi baseline realistis terlebih dahulu
+        if ($currentRx <= 0.0 && $currentTx <= 0.0 && $currentCpu <= 0.0) {
+            $initial = self::generateInitialDummyMetrics($status, $isNonMikrotik, $port);
+            $node->update($initial);
+
+            return self::formatMonitoringDevice($node->fresh());
+        }
+
+        // [PANDUAN UBAH DATA DUMMY CHART - BACKEND]
+        // Atur batas minimum & maksimum fluktuasi acak (random-walk) untuk CPU, RAM, Rx, Tx, Ping, dan Packet Loss di sini.
+        $cpuMin = $isWarning ? 70.0 : 12.0;
+        $cpuMax = $isWarning ? 88.0 : 66.0;
+        $ramMin = $isWarning ? 75.0 : 24.0;
+        $ramMax = $isWarning ? 90.0 : 72.0;
+        $pingMin = $isWarning ? 32 : 3;
+        $pingMax = $isWarning ? 82 : 28;
+
+        $nextCpu = round(max($cpuMin, min($cpuMax, $currentCpu + (mt_rand(-45, 45) / 10))), 1);
+        $nextRam = round(max($ramMin, min($ramMax, $currentRam + (mt_rand(-25, 25) / 10))), 1);
+        $nextRx = round(max(12.0, min(280.0, $currentRx + (mt_rand(-160, 160) / 10))), 1);   // Bandwidth Download (Mbps): min 12, max 280
+        $nextTx = round(max(6.0, min(180.0, $currentTx + (mt_rand(-110, 110) / 10))), 1);    // Bandwidth Upload (Mbps): min 6, max 180
+        $nextPing = max($pingMin, min($pingMax, ($currentPing > 0 ? $currentPing : ($isWarning ? 45 : 10)) + mt_rand(-3, 3)));
+        $nextLoss = $isWarning
+            ? round(max(1.0, min(12.0, ($currentLoss > 0 ? $currentLoss : 3.5) + (mt_rand(-10, 10) / 10))), 1)
+            : (mt_rand(1, 10) === 1 ? 0.1 : 0.0);
+
+        // Perbarui juga trafik dummy pada interface yang statusnya "up"
+        $interfaces = is_array($node->interfaces) ? $node->interfaces : [];
+        if (! empty($interfaces)) {
+            $upIndexes = [];
+            foreach ($interfaces as $idx => $iface) {
+                if (($iface['status'] ?? 'up') === 'up') {
+                    $upIndexes[] = $idx;
+                }
+            }
+            $upCount = count($upIndexes);
+            if ($upCount > 0) {
+                $weights = [];
+                $weightSum = 0;
+                foreach ($upIndexes as $pos => $idx) {
+                    $w = max(1, $upCount - $pos);
+                    $weights[$idx] = $w;
+                    $weightSum += $w;
+                }
+                foreach ($upIndexes as $idx) {
+                    $ratio = $weights[$idx] / $weightSum;
+                    $ifRx = round(max(0.5, $nextRx * $ratio + (mt_rand(-15, 15) / 10)), 1);
+                    $ifTx = round(max(0.3, $nextTx * $ratio + (mt_rand(-10, 10) / 10)), 1);
+                    $interfaces[$idx]['rx'] = number_format($ifRx, 1, '.', '').' Mbps';
+                    $interfaces[$idx]['tx'] = number_format($ifTx, 1, '.', '').' Mbps';
+                    $interfaces[$idx]['rx_mbps'] = $ifRx;
+                    $interfaces[$idx]['tx_mbps'] = $ifTx;
+                }
+            }
+        }
+
+        $uptime = $node->uptime;
+        if (empty($uptime) || stripos($uptime, 'offline') !== false || stripos($uptime, 'gagal') !== false) {
+            $uptime = $isNonMikrotik ? "HTTP/TCP Port {$port} Aktif" : '14h 06j 22m';
+        }
+
+        $node->update([
+            'status' => $status,
+            'status_label' => strtoupper($status),
+            'cpu_load' => $nextCpu,
+            'ram_load' => $nextRam,
+            'rx_mbps' => number_format($nextRx, 1, '.', '').' Mbps',
+            'tx_mbps' => number_format($nextTx, 1, '.', '').' Mbps',
+            'last_ping_ms' => $nextPing,
+            'packet_loss' => $nextLoss,
+            'uptime' => $uptime,
+            'interfaces' => ! empty($interfaces) ? $interfaces : $node->interfaces,
+        ]);
+
+        return self::formatMonitoringDevice($node->fresh());
+    }
+
+    /**
      * Jalankan polling telemetri individual pada satu node (Kondisi A vs Kondisi B).
      */
     public static function pollSingleNode(MonitoringDevice $node, MikrotikService $mikrotikService): void
@@ -501,7 +717,7 @@ class MonitoringController extends Controller
     }
 
     /**
-     * API Telemetri Stream (Polling per 3-5 detik dari browser frontend)
+     * API Telemetri Stream (Polling per 2.5-3 detik dari browser frontend dengan data dummy dinamis)
      */
     public function telemetryStream(int $id): JsonResponse
     {
@@ -511,13 +727,12 @@ class MonitoringController extends Controller
             return response()->json(['error' => 'Device not found'], 404);
         }
 
-        // Ambil data telemetri langsung (Kondisi A: MikroTik RouterOS API, Kondisi B: Non-MikroTik HTTP/TCP Socket)
-        if (! empty($deviceModel->ip_address) && ! app()->runningUnitTests()) {
-            $mikrotikService = new MikrotikService;
-            self::pollSingleNode($deviceModel, $mikrotikService);
+        // Jalankan simulasi telemetri dinamis (dummy) agar grafik selalu hidup tanpa koneksi fisik
+        if (! app()->runningUnitTests()) {
+            $device = self::simulateTelemetryTick($deviceModel);
+        } else {
+            $device = self::formatMonitoringDevice($deviceModel);
         }
-
-        $device = self::formatMonitoringDevice($deviceModel);
 
         return response()->json([
             'success' => true,
@@ -533,6 +748,7 @@ class MonitoringController extends Controller
                 'tx_mbps' => $device['tx_mbps'] ?? '0 Mbps',
                 'packet_loss' => (float) ($device['packet_loss'] ?? 0.0),
             ],
+            'interfaces' => $device['interfaces'] ?? [],
         ]);
     }
 
@@ -579,11 +795,10 @@ class MonitoringController extends Controller
     public function pollAllNodes(Request $request): JsonResponse
     {
         if (! app()->runningUnitTests()) {
-            $mikrotikService = new MikrotikService;
             $nodes = MonitoringDevice::all();
 
             foreach ($nodes as $node) {
-                self::pollSingleNode($node, $mikrotikService);
+                self::simulateTelemetryTick($node);
             }
         }
 
@@ -630,45 +845,17 @@ class MonitoringController extends Controller
         $quality = $status === 'offline' ? 'Offline / Unreachable' : 'Normal / Ready';
 
         if ($deviceModel && ! empty($deviceModel->ip_address) && ! app()->runningUnitTests()) {
-            $mikrotikService = new MikrotikService;
-            $isNonMikrotik = MikrotikService::isNonMikrotik($deviceModel->unit_type, $deviceModel->api_port);
-            $port = (int) ($deviceModel->api_port ?? ($isNonMikrotik ? 80 : 8728));
+            $device = self::simulateTelemetryTick($deviceModel);
+            $status = $device['status'] ?? 'online';
+            $ping = (float) ($device['last_ping_ms'] ?? 0.0);
+            $port = (int) ($deviceModel->api_port ?? 8728);
 
-            $test = $mikrotikService->testConnection(
-                $deviceModel->ip_address,
-                $deviceModel->api_username,
-                (string) ($deviceModel->api_password ?? ''),
-                $port,
-                2,
-                $deviceModel->unit_type
-            );
-
-            if ($test['success']) {
-                $ping = (float) ($test['latency_ms'] ?? 1.0);
-                if ($isNonMikrotik) {
-                    $snmpStatus = "HTTP/TCP Port {$port} Aktif ({$ping} ms)";
-                } else {
-                    $snmpStatus = "RouterOS v{$test['resource']['version']} ({$test['resource']['board_name']}) OK";
-                }
-                $quality = "Connected via Port {$port}";
-                $status = 'online';
-                $deviceModel->update([
-                    'status' => 'online',
-                    'status_label' => 'ONLINE',
-                    'last_ping_ms' => (int) $ping,
-                    'packet_loss' => 0.0,
-                ]);
+            if ($status === 'offline') {
+                $snmpStatus = 'Offline (Status Perangkat Nonaktif)';
+                $quality = 'Offline / Unreachable';
             } else {
-                $snmpStatus = 'Unreachable: '.$test['message'];
-                $quality = "Port {$port} Timeout";
-                $status = 'offline';
-                $ping = 0.0;
-                $deviceModel->update([
-                    'status' => 'offline',
-                    'status_label' => 'OFFLINE',
-                    'last_ping_ms' => null,
-                    'packet_loss' => 100.0,
-                ]);
+                $snmpStatus = "Telemetri Simulasi Aktif · Port {$port} ({$ping} ms)";
+                $quality = $status === 'warning' ? 'Degraded / High Latency' : 'Normal / Ready';
             }
         }
 

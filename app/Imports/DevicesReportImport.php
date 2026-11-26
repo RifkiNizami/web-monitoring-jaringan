@@ -2,6 +2,7 @@
 
 namespace App\Imports;
 
+use App\Http\Controllers\Admin\MonitoringController;
 use App\Models\Customer;
 use App\Models\Device;
 use App\Models\MonitoringDevice;
@@ -12,9 +13,21 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 class DevicesReportImport implements ToCollection, WithHeadingRow
 {
     public int $importedCount = 0;
+
     public int $updatedCount = 0;
+
     public array $errors = [];
 
+    protected ?int $defaultCustomerId = null;
+
+    public function __construct(?int $defaultCustomerId = null)
+    {
+        $this->defaultCustomerId = $defaultCustomerId;
+    }
+
+    // [PANDUAN UBAH IMPORT EXCEL - PERANGKAT]
+    // - Nama key $row['...'] otomatis hasil snake_case dari judul header baris 1 Excel
+    // - Urutan pencocokan data eksisting: 1) ID -> 2) Hostname -> 3) IP Address (jika cocok = update + sinkron MonitoringDevice, jika tidak = create baru)
     public function collection(Collection $rows): void
     {
         $allCustomers = Customer::all();
@@ -74,6 +87,13 @@ class DevicesReportImport implements ToCollection, WithHeadingRow
                 }
             }
 
+            // Fallback ke filter customer aktif di halaman laporan jika kolom Mitra Customer kosong / tidak cocok
+            if (! $customerId && $this->defaultCustomerId) {
+                $customerId = $this->defaultCustomerId;
+            }
+            $resolvedCustomerLabel = ($customerId ? $allCustomers->firstWhere('id', $customerId)?->name : null)
+                ?: ((! empty($customerName) && $customerName !== '-' && $customerName !== 'Semua Mitra') ? $customerName : 'Infrastruktur Backbone NetFly');
+
             // Lokasi rak gabungan jika ada posisi
             $finalLocation = $location !== '-' && ! empty($location) ? $location : null;
             if (! empty($rackPosition) && $rackPosition !== '-' && $rackPosition !== $finalLocation) {
@@ -81,16 +101,15 @@ class DevicesReportImport implements ToCollection, WithHeadingRow
             }
 
             // PENCARIAN DATA EKSISTING:
-            // 1. Cari berdasarkan ID angka jika ada
-            $device = null;
-            if (is_numeric($idVal) && (int) $idVal > 0) {
-                $device = Device::find((int) $idVal);
+            // 1. Cari di tabel devices (inventaris/perangkat) berdasarkan Hostname, lalu ID jika cocok, lalu IP
+            $device = Device::where('hostname', $hostname)->first();
+            if (! $device && is_numeric($idVal) && (int) $idVal > 0) {
+                $candidate = Device::find((int) $idVal);
+                // Pastikan tidak menimpa record Device lain yang sebenarnya milik MonitoringDevice
+                if ($candidate && ! MonitoringDevice::where('hostname', $hostname)->exists()) {
+                    $device = $candidate;
+                }
             }
-            // 2. Jika belum ditemukan, cari berdasarkan Hostname
-            if (! $device) {
-                $device = Device::where('hostname', $hostname)->first();
-            }
-            // 3. Jika masih belum ditemukan dan IP ada, cocokkan berdasarkan IP
             if (! $device && ! empty($ipAddress) && $ipAddress !== '-') {
                 $device = Device::where('ip_address', $ipAddress)->first();
             }
@@ -102,56 +121,164 @@ class DevicesReportImport implements ToCollection, WithHeadingRow
                 if (! empty($hostname) && $hostname !== '-') {
                     $device->hostname = $hostname;
                 }
-                if ($type && $type !== '-') $device->type = $type;
-                if ($ipAddress && $ipAddress !== '-') $device->ip_address = $ipAddress;
-                if ($customerId) $device->customer_id = $customerId;
-                if ($finalLocation) $device->rack_location = $finalLocation;
+                if ($type && $type !== '-') {
+                    $device->type = $type;
+                }
+                if ($ipAddress && $ipAddress !== '-') {
+                    $device->ip_address = $ipAddress;
+                }
+                if ($customerId) {
+                    $device->customer_id = $customerId;
+                }
+                if ($finalLocation) {
+                    $device->rack_location = $finalLocation;
+                }
                 $device->status = $normalizedStatus;
                 $device->status_state = $statusState;
-                if ($uptimeText && $uptimeText !== '-') $device->uptime = $uptimeText;
-                if ($latencyVal > 0) $device->last_ping_ms = $latencyVal;
-                if ($uptimePercentVal > 0) {
-                    $device->packet_loss = max(0.0, 100.0 - $uptimePercentVal);
-                }
+                // Catatan: kolom telemetri (uptime, last_ping_ms, packet_loss) sudah dipindah ke monitoring_devices
                 $device->save();
                 $this->updatedCount++;
 
-                // Sinkronkan juga ke MonitoringDevice jika ada node dengan hostname lama/baru
+                // Sinkronkan juga ke MonitoringDevice agar selalu tampil di Laporan & Monitoring
                 $monDevice = MonitoringDevice::where('hostname', $oldHostname)
                     ->orWhere('hostname', $hostname)
                     ->first();
                 if ($monDevice) {
                     $monDevice->hostname = $hostname;
-                    if ($ipAddress && $ipAddress !== '-') $monDevice->ip_address = $ipAddress;
+                    if ($type && $type !== '-') {
+                        $monDevice->unit_type = $type;
+                    }
+                    if ($ipAddress && $ipAddress !== '-') {
+                        $monDevice->ip_address = $ipAddress;
+                    }
                     if ($customerId) {
                         $monDevice->customer_id = $customerId;
-                        $monDevice->customer = $customerName ?: ($allCustomers->firstWhere('id', $customerId)?->name ?? $monDevice->customer);
+                        $monDevice->customer = $resolvedCustomerLabel;
                     }
-                    if ($finalLocation) $monDevice->rack_location = $finalLocation;
+                    if ($finalLocation) {
+                        $monDevice->rack_location = $finalLocation;
+                    }
                     $monDevice->status = $statusState;
                     $monDevice->status_label = strtoupper($statusState);
-                    if ($uptimeText && $uptimeText !== '-') $monDevice->uptime = $uptimeText;
-                    if ($latencyVal > 0) $monDevice->last_ping_ms = $latencyVal;
+                    if ($uptimeText && $uptimeText !== '-') {
+                        $monDevice->uptime = $uptimeText;
+                    }
+                    if ($latencyVal > 0) {
+                        $monDevice->last_ping_ms = $latencyVal;
+                    }
                     if ($uptimePercentVal > 0) {
                         $monDevice->packet_loss = max(0.0, 100.0 - $uptimePercentVal);
                     }
                     $monDevice->save();
+                } elseif (! $device->customer_id) {
+                    // Jika Device tidak punya customer_id, daftarkan juga ke monitoring_devices agar tampil di Laporan
+                    $dummy = MonitoringController::generateInitialDummyMetrics($statusState);
+                    MonitoringDevice::create([
+                        'hostname' => $device->hostname,
+                        'unit_type' => $device->type ?: 'Router',
+                        'ip_address' => $device->ip_address ?: '10.0.0.1',
+                        'customer_id' => $customerId,
+                        'customer' => $resolvedCustomerLabel,
+                        'project' => 'Dedicated SLA Monitoring',
+                        'model' => ($device->type ?: 'Router').' Node',
+                        'rack_location' => $device->rack_location ?: 'POP Distribusi',
+                        'status' => $statusState,
+                        'status_label' => strtoupper($statusState),
+                        'uptime' => ($uptimeText && $uptimeText !== '-') ? $uptimeText : $dummy['uptime'],
+                        'rx_mbps' => $dummy['rx_mbps'],
+                        'tx_mbps' => $dummy['tx_mbps'],
+                        'cpu_load' => $dummy['cpu_load'],
+                        'ram_load' => $dummy['ram_load'],
+                        'packet_loss' => $uptimePercentVal > 0 ? max(0.0, 100.0 - $uptimePercentVal) : $dummy['packet_loss'],
+                        'last_ping_ms' => $latencyVal > 0 ? $latencyVal : $dummy['last_ping_ms'],
+                        'connection_type' => 'lan',
+                        'api_port' => 8728,
+                        'api_username' => 'admin',
+                        'interfaces' => $dummy['interfaces'],
+                    ]);
                 }
             } else {
-                // Buat Device baru jika benar-benar entitas baru
-                Device::create([
-                    'hostname' => $hostname,
-                    'type' => $type ?: 'Router',
-                    'ip_address' => ($ipAddress && $ipAddress !== '-') ? $ipAddress : '10.0.0.1',
-                    'customer_id' => $customerId,
-                    'rack_location' => $finalLocation ?: 'Rak Server Utama',
-                    'status' => $normalizedStatus,
-                    'status_state' => $statusState,
-                    'uptime' => ($uptimeText && $uptimeText !== '-') ? $uptimeText : '1 hari',
-                    'last_ping_ms' => $latencyVal ?: 5,
-                    'packet_loss' => $uptimePercentVal > 0 ? max(0.0, 100.0 - $uptimePercentVal) : 0.0,
-                ]);
-                $this->importedCount++;
+                // Cek apakah baris ini merupakan node dari tabel monitoring_devices
+                $monDevice = MonitoringDevice::where('hostname', $hostname)->first();
+                if (! $monDevice && is_numeric($idVal) && (int) $idVal > 0) {
+                    $monDevice = MonitoringDevice::find((int) $idVal);
+                }
+                if (! $monDevice && ! empty($ipAddress) && $ipAddress !== '-') {
+                    $monDevice = MonitoringDevice::where('ip_address', $ipAddress)->first();
+                }
+
+                if ($monDevice) {
+                    $monDevice->hostname = $hostname;
+                    if ($type && $type !== '-') {
+                        $monDevice->unit_type = $type;
+                    }
+                    if ($ipAddress && $ipAddress !== '-') {
+                        $monDevice->ip_address = $ipAddress;
+                    }
+                    if ($customerId) {
+                        $monDevice->customer_id = $customerId;
+                        $monDevice->customer = $resolvedCustomerLabel;
+                    }
+                    if ($finalLocation) {
+                        $monDevice->rack_location = $finalLocation;
+                    }
+                    $monDevice->status = $statusState;
+                    $monDevice->status_label = strtoupper($statusState);
+                    if ($uptimeText && $uptimeText !== '-') {
+                        $monDevice->uptime = $uptimeText;
+                    }
+                    if ($latencyVal > 0) {
+                        $monDevice->last_ping_ms = $latencyVal;
+                    }
+                    if ($uptimePercentVal > 0) {
+                        $monDevice->packet_loss = max(0.0, 100.0 - $uptimePercentVal);
+                    }
+                    $monDevice->save();
+                    $this->updatedCount++;
+                } else {
+                    $resolvedIp = ($ipAddress && $ipAddress !== '-') ? $ipAddress : '10.0.0.1';
+                    $resolvedLocation = $finalLocation ?: 'Rak Server Utama';
+                    $resolvedType = $type ?: 'Router';
+
+                    // Buat Device baru di inventaris
+                    Device::create([
+                        'hostname' => $hostname,
+                        'type' => $resolvedType,
+                        'ip_address' => $resolvedIp,
+                        'customer_id' => $customerId,
+                        'rack_location' => $resolvedLocation,
+                        'status' => $normalizedStatus,
+                        'status_state' => $statusState,
+                    ]);
+
+                    // Daftarkan juga ke monitoring_devices agar langsung muncul di Laporan (/reports) dan Monitoring
+                    $dummy = MonitoringController::generateInitialDummyMetrics($statusState);
+                    MonitoringDevice::create([
+                        'hostname' => $hostname,
+                        'unit_type' => $resolvedType,
+                        'ip_address' => $resolvedIp,
+                        'customer_id' => $customerId,
+                        'customer' => $resolvedCustomerLabel,
+                        'project' => 'Dedicated SLA Monitoring',
+                        'model' => $resolvedType.' Node',
+                        'rack_location' => $resolvedLocation,
+                        'status' => $statusState,
+                        'status_label' => strtoupper($statusState),
+                        'uptime' => ($uptimeText && $uptimeText !== '-') ? $uptimeText : $dummy['uptime'],
+                        'rx_mbps' => $dummy['rx_mbps'],
+                        'tx_mbps' => $dummy['tx_mbps'],
+                        'cpu_load' => $dummy['cpu_load'],
+                        'ram_load' => $dummy['ram_load'],
+                        'packet_loss' => $uptimePercentVal > 0 ? max(0.0, 100.0 - $uptimePercentVal) : $dummy['packet_loss'],
+                        'last_ping_ms' => $latencyVal > 0 ? $latencyVal : $dummy['last_ping_ms'],
+                        'connection_type' => 'lan',
+                        'api_port' => 8728,
+                        'api_username' => 'admin',
+                        'interfaces' => $dummy['interfaces'],
+                    ]);
+
+                    $this->importedCount++;
+                }
             }
         }
     }

@@ -1,3 +1,4 @@
+{{-- [PANDUAN UBAH MODAL QR LANDING PAGE] URL barcode ditarik dari app_setting('mobile_app_download_url') lalu dirender ke #downloadAppQrCanvas oleh resources/js/landing/download-modal.js --}}
 <!-- Modal Barcode / QR Code Unduh Aplikasi Mobile -->
 <div id="downloadAppModal"
      data-download-url="{{ $mobileAppDownloadUrl ?? app_setting('mobile_app_download_url', 'https://netmediafiberoptik.com/download/netfly-mobile.apk') }}"
